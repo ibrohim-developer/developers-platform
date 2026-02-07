@@ -1,39 +1,45 @@
-import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { BookOpen, Clock, HelpCircle, FileText, Play } from 'lucide-react'
+import Link from "next/link";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { BookOpen, Clock, HelpCircle, FileText, Play } from "lucide-react";
 
 // Sample tests data (will be replaced with Supabase data)
 const readingTests = [
   {
-    id: '1',
-    title: 'Reading Practice Test 1',
-    description: 'Academic reading passages with various question types',
-    difficulty: 'medium',
+    id: "1",
+    title: "Reading Practice Test 1",
+    description: "Academic reading passages with various question types",
+    difficulty: "medium",
     duration: 60,
     questions: 40,
     passages: 3,
   },
   {
-    id: '2',
-    title: 'Reading Practice Test 2',
-    description: 'General training reading test',
-    difficulty: 'easy',
+    id: "2",
+    title: "Reading Practice Test 2",
+    description: "General training reading test",
+    difficulty: "easy",
     duration: 60,
     questions: 40,
     passages: 3,
   },
   {
-    id: '3',
-    title: 'Reading Practice Test 3',
-    description: 'Advanced academic reading with complex passages',
-    difficulty: 'hard',
+    id: "3",
+    title: "Reading Practice Test 3",
+    description: "Advanced academic reading with complex passages",
+    difficulty: "hard",
     duration: 60,
     questions: 40,
     passages: 3,
   },
-]
+];
 
 export default function ReadingTestsPage() {
   return (
@@ -46,14 +52,16 @@ export default function ReadingTestsPage() {
           </div>
           <div>
             <h1 className="text-3xl font-bold">Reading Tests</h1>
-            <p className="text-muted-foreground">Improve your reading comprehension and speed</p>
+            <p className="text-muted-foreground">
+              Improve your reading comprehension and speed
+            </p>
           </div>
         </div>
       </div>
 
       {/* Test Info */}
       <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
-        <CardContent className="pt-6">
+        <CardContent>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="flex items-center gap-3">
               <Clock className="w-5 h-5 text-green-600" />
@@ -66,14 +74,18 @@ export default function ReadingTestsPage() {
               <HelpCircle className="w-5 h-5 text-green-600" />
               <div>
                 <p className="font-medium">Questions</p>
-                <p className="text-sm text-muted-foreground">40 questions total</p>
+                <p className="text-sm text-muted-foreground">
+                  40 questions total
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <FileText className="w-5 h-5 text-green-600" />
               <div>
                 <p className="font-medium">Passages</p>
-                <p className="text-sm text-muted-foreground">3 reading passages</p>
+                <p className="text-sm text-muted-foreground">
+                  3 reading passages
+                </p>
               </div>
             </div>
           </div>
@@ -89,8 +101,11 @@ export default function ReadingTestsPage() {
                 <CardTitle className="text-lg">{test.title}</CardTitle>
                 <Badge
                   variant={
-                    test.difficulty === 'easy' ? 'secondary' :
-                    test.difficulty === 'medium' ? 'default' : 'destructive'
+                    test.difficulty === "easy"
+                      ? "secondary"
+                      : test.difficulty === "medium"
+                        ? "default"
+                        : "destructive"
                   }
                 >
                   {test.difficulty}
@@ -120,5 +135,5 @@ export default function ReadingTestsPage() {
         ))}
       </div>
     </div>
-  )
+  );
 }

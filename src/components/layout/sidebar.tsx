@@ -13,17 +13,48 @@ import {
   User,
   LogOut,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ClipboardList,
+  Settings,
+  Mic,
+  Sun,
+  Moon
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { signOut } from '@/actions/auth'
 import { useState } from 'react'
+import { useTheme } from 'next-themes'
+
+interface SidebarProps {
+  user?: {
+    id: string
+    email?: string
+    user_metadata?: {
+      full_name?: string
+      avatar_url?: string
+    }
+  } | null
+}
 
 const menuItems = [
   {
     title: 'Dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
+  },
+  {
+    title: 'Full Mock Test',
+    href: '/dashboard/full-mock-test',
+    icon: ClipboardList,
   },
   {
     title: 'Listening Tests',
@@ -41,20 +72,23 @@ const menuItems = [
     icon: PenTool,
   },
   {
-    title: 'Test History',
-    href: '/dashboard/history',
-    icon: History,
-  },
-  {
-    title: 'Profile',
-    href: '/dashboard/profile',
-    icon: User,
+    title: 'Speaking Tests',
+    href: '/dashboard/speaking',
+    icon: Mic,
   },
 ]
 
-export function Sidebar() {
+export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const { theme, setTheme } = useTheme()
+
+  const userInitials = user?.user_metadata?.full_name
+    ?.split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2) || user?.email?.[0]?.toUpperCase() || 'U'
 
   return (
     <aside
@@ -96,7 +130,10 @@ export function Sidebar() {
         {/* Navigation */}
         <nav className="flex-1 space-y-1 p-2 overflow-y-auto">
           {menuItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+            // More precise active state check
+            const isActive = item.href === '/dashboard'
+              ? pathname === '/dashboard'
+              : pathname.startsWith(item.href)
             return (
               <Link
                 key={item.href}
@@ -117,21 +154,83 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* Sign Out */}
+        {/* Theme Toggle */}
+        <div className="px-2 pb-1">
+          <button
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className={cn(
+              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors w-full text-muted-foreground hover:bg-muted hover:text-foreground',
+              isCollapsed && 'justify-center px-2'
+            )}
+            title={isCollapsed ? 'Toggle theme' : undefined}
+          >
+            <Sun className="h-5 w-5 shrink-0 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-5 w-5 shrink-0 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            {!isCollapsed && <span>Toggle Theme</span>}
+          </button>
+        </div>
+
+        {/* User Profile */}
         <div className="border-t p-2">
-          <form action={signOut}>
-            <Button
-              type="submit"
-              variant="ghost"
-              className={cn(
-                'w-full justify-start gap-3 text-muted-foreground hover:text-foreground',
-                isCollapsed && 'justify-center px-2'
-              )}
-            >
-              <LogOut className="h-5 w-5" />
-              {!isCollapsed && <span>Sign Out</span>}
-            </Button>
-          </form>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className={cn(
+                  'w-full gap-3 text-left hover:bg-muted',
+                  isCollapsed ? 'justify-center px-2' : 'justify-start px-3'
+                )}
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.full_name || 'User'} />
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {userInitials}
+                  </AvatarFallback>
+                </Avatar>
+                {!isCollapsed && (
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <span className="text-sm font-medium truncate">
+                      {user?.user_metadata?.full_name || 'User'}
+                    </span>
+                    <span className="text-xs text-muted-foreground truncate">
+                      {user?.email}
+                    </span>
+                  </div>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/profile" className="cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/history" className="cursor-pointer">
+                  <History className="mr-2 h-4 w-4" />
+                  <span>Test History</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/settings" className="cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <form action={signOut} className="w-full">
+                  <button type="submit" className="flex w-full items-center cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </form>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </aside>

@@ -1,36 +1,42 @@
-import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Headphones, Clock, HelpCircle, Play } from 'lucide-react'
+import Link from "next/link";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Headphones, Clock, HelpCircle, Play } from "lucide-react";
 
 // Sample tests data (will be replaced with Supabase data)
 const listeningTests = [
   {
-    id: '1',
-    title: 'Listening Practice Test 1',
-    description: 'Academic listening test with conversations and lectures',
-    difficulty: 'medium',
+    id: "1",
+    title: "Listening Practice Test 1",
+    description: "Academic listening test with conversations and lectures",
+    difficulty: "medium",
     duration: 30,
     questions: 40,
   },
   {
-    id: '2',
-    title: 'Listening Practice Test 2',
-    description: 'General training listening test',
-    difficulty: 'easy',
+    id: "2",
+    title: "Listening Practice Test 2",
+    description: "General training listening test",
+    difficulty: "easy",
     duration: 30,
     questions: 40,
   },
   {
-    id: '3',
-    title: 'Listening Practice Test 3',
-    description: 'Advanced academic listening test',
-    difficulty: 'hard',
+    id: "3",
+    title: "Listening Practice Test 3",
+    description: "Advanced academic listening test",
+    difficulty: "hard",
     duration: 30,
     questions: 40,
   },
-]
+];
 
 export default function ListeningTestsPage() {
   return (
@@ -43,14 +49,16 @@ export default function ListeningTestsPage() {
           </div>
           <div>
             <h1 className="text-3xl font-bold">Listening Tests</h1>
-            <p className="text-muted-foreground">Practice your listening comprehension skills</p>
+            <p className="text-muted-foreground">
+              Practice your listening comprehension skills
+            </p>
           </div>
         </div>
       </div>
 
       {/* Test Info */}
       <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-        <CardContent className="pt-6">
+        <CardContent>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="flex items-center gap-3">
               <Clock className="w-5 h-5 text-blue-600" />
@@ -63,7 +71,9 @@ export default function ListeningTestsPage() {
               <HelpCircle className="w-5 h-5 text-blue-600" />
               <div>
                 <p className="font-medium">Questions</p>
-                <p className="text-sm text-muted-foreground">40 questions in 4 sections</p>
+                <p className="text-sm text-muted-foreground">
+                  40 questions in 4 sections
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -86,8 +96,11 @@ export default function ListeningTestsPage() {
                 <CardTitle className="text-lg">{test.title}</CardTitle>
                 <Badge
                   variant={
-                    test.difficulty === 'easy' ? 'secondary' :
-                    test.difficulty === 'medium' ? 'default' : 'destructive'
+                    test.difficulty === "easy"
+                      ? "secondary"
+                      : test.difficulty === "medium"
+                        ? "default"
+                        : "destructive"
                   }
                 >
                   {test.difficulty}
@@ -117,5 +130,5 @@ export default function ListeningTestsPage() {
         ))}
       </div>
     </div>
-  )
+  );
 }

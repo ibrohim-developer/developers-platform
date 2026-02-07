@@ -327,6 +327,54 @@ export type Database = {
           updated_at?: string
         }
       }
+      full_mock_test_attempts: {
+        Row: {
+          id: string
+          user_id: string
+          test_id: string
+          status: 'in_progress' | 'completed' | 'abandoned'
+          started_at: string
+          completed_at: string | null
+          listening_score: number | null
+          reading_score: number | null
+          writing_score: number | null
+          speaking_score: number | null
+          overall_band_score: number | null
+          time_spent_seconds: number | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          test_id: string
+          status?: 'in_progress' | 'completed' | 'abandoned'
+          started_at?: string
+          completed_at?: string | null
+          listening_score?: number | null
+          reading_score?: number | null
+          writing_score?: number | null
+          speaking_score?: number | null
+          overall_band_score?: number | null
+          time_spent_seconds?: number | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          test_id?: string
+          status?: 'in_progress' | 'completed' | 'abandoned'
+          started_at?: string
+          completed_at?: string | null
+          listening_score?: number | null
+          reading_score?: number | null
+          writing_score?: number | null
+          speaking_score?: number | null
+          overall_band_score?: number | null
+          time_spent_seconds?: number | null
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
