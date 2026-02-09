@@ -33,6 +33,7 @@ export type Database = {
           target_band_score?: number | null
           updated_at?: string
         }
+        Relationships: []
       }
       tests: {
         Row: {
@@ -60,6 +61,7 @@ export type Database = {
           is_published?: boolean
           updated_at?: string
         }
+        Relationships: []
       }
       listening_sections: {
         Row: {
@@ -87,6 +89,7 @@ export type Database = {
           audio_duration_seconds?: number | null
           transcript?: string | null
         }
+        Relationships: []
       }
       reading_passages: {
         Row: {
@@ -114,6 +117,7 @@ export type Database = {
           content?: string
           word_count?: number | null
         }
+        Relationships: []
       }
       writing_tasks: {
         Row: {
@@ -147,6 +151,7 @@ export type Database = {
           min_words?: number
           sample_answer?: string | null
         }
+        Relationships: []
       }
       questions: {
         Row: {
@@ -189,6 +194,7 @@ export type Database = {
           points?: number
           metadata?: Json | null
         }
+        Relationships: []
       }
       test_attempts: {
         Row: {
@@ -227,6 +233,7 @@ export type Database = {
           raw_score?: number | null
           band_score?: number | null
         }
+        Relationships: []
       }
       user_answers: {
         Row: {
@@ -255,6 +262,7 @@ export type Database = {
           points_earned?: number
           answered_at?: string
         }
+        Relationships: []
       }
       writing_submissions: {
         Row: {
@@ -298,6 +306,7 @@ export type Database = {
           feedback?: string | null
           submitted_at?: string
         }
+        Relationships: []
       }
       test_progress: {
         Row: {
@@ -326,6 +335,7 @@ export type Database = {
           answers_snapshot?: Json | null
           updated_at?: string
         }
+        Relationships: []
       }
       full_mock_test_attempts: {
         Row: {
@@ -374,6 +384,7 @@ export type Database = {
           time_spent_seconds?: number | null
           updated_at?: string
         }
+        Relationships: []
       }
     }
     Views: {
