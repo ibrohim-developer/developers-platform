@@ -12,6 +12,7 @@ import { ReloadWarningDialog } from '@/components/test/common/reload-warning-dia
 import { WritingEditor } from '@/components/test/writing/writing-editor'
 import { useTestStore } from '@/stores/test-store'
 import { TEST_CONFIG } from '@/lib/constants/test-config'
+import { WritingFeedback } from '@/components/test/writing/writing-feedback'
 import { Send, Loader2, Clock, PenTool, FileText, ArrowLeft, Sparkles } from 'lucide-react'
 
 interface WritingTask {
@@ -490,9 +491,7 @@ export default function WritingTestPage() {
                       {submission.feedback && (
                         <div>
                           <h4 className="text-sm font-medium mb-2">Detailed Feedback</h4>
-                          <p className="text-sm text-muted-foreground whitespace-pre-line">
-                            {submission.feedback}
-                          </p>
+                          <WritingFeedback feedback={submission.feedback} />
                         </div>
                       )}
                     </CardContent>

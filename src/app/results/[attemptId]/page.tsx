@@ -17,6 +17,7 @@ import {
   Eye,
   Sparkles
 } from 'lucide-react'
+import { WritingFeedback } from '@/components/test/writing/writing-feedback'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface ResultsPageProps {
@@ -553,8 +554,8 @@ function WritingResultsContent({ attempt, tasks, submissions }: {
                           <Sparkles className="h-4 w-4 text-purple-500" />
                           AI Feedback
                         </h4>
-                        <div className="p-4 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20 text-sm whitespace-pre-line">
-                          {submission.feedback}
+                        <div className="p-4 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20">
+                          <WritingFeedback feedback={submission.feedback} />
                         </div>
                       </div>
                     )}
