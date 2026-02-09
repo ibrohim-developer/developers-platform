@@ -51,12 +51,12 @@ export function FillInBlank({
   if (hasInlineBlank) {
     const parts = questionText.split('_____')
     return (
-      <div className="space-y-4">
-        <div className="flex gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
+      <div id={`question-${questionId}`} className="space-y-3">
+        <div className="flex gap-2 items-start">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gray-200 text-xs font-bold text-gray-700">
             {questionNumber}
           </span>
-          <div className="text-base leading-relaxed flex flex-wrap items-center gap-1">
+          <div className="text-sm leading-relaxed text-gray-800 flex flex-wrap items-center gap-1">
             {parts.map((part, index) => (
               <span key={index} className="inline-flex items-center gap-1">
                 {part}
@@ -84,17 +84,17 @@ export function FillInBlank({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-3">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
+    <div id={`question-${questionId}`} className="space-y-3">
+      <div className="flex gap-2 items-start">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gray-200 text-xs font-bold text-gray-700">
           {questionNumber}
         </span>
-        <p className="text-base leading-relaxed">
+        <p className="text-sm leading-relaxed text-gray-800">
           {questionText}
           {getQuestionBadge()}
         </p>
       </div>
-      <div className="ml-10 space-y-2">
+      <div className="ml-8 space-y-2">
         <Input
           value={displayValue}
           onChange={(e) => onChange(e.target.value)}

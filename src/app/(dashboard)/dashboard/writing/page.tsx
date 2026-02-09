@@ -9,36 +9,51 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PenTool, Clock, FileText, AlignLeft, Play } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 
-// Sample tests data (will be replaced with Supabase data)
-const writingTests = [
-  {
-    id: "1",
-    title: "Writing Practice Test 1",
-    description: "Academic writing with graph description and essay",
-    difficulty: "medium",
-    duration: 60,
-    tasks: 2,
-  },
-  {
-    id: "2",
-    title: "Writing Practice Test 2",
-    description: "General training letter and essay writing",
-    difficulty: "easy",
-    duration: 60,
-    tasks: 2,
-  },
-  {
-    id: "3",
-    title: "Writing Practice Test 3",
-    description: "Advanced academic writing tasks",
-    difficulty: "hard",
-    duration: 60,
-    tasks: 2,
-  },
-];
+// Revalidate every 5 minutes
+export const revalidate = 300
 
-export default function WritingTestsPage() {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export default async function WritingTestsPage() {
+  const supabase = await createClient();
+
+  // Optimized: Fetch all data in one query
+  const { data: tasks } = await supabase
+    .from("writing_tasks")
+    .select(`
+      id,
+      test_id,
+      tests!inner (
+        id,
+        title,
+        description,
+        difficulty_level,
+        is_published
+      )
+    `)
+    .eq("tests.is_published", true);
+
+  // Group by test and calculate totals
+  const testMap = new Map<string, any>();
+  (tasks ?? []).forEach((task: any) => {
+    const test = task.tests;
+    if (!testMap.has(test.id)) {
+      testMap.set(test.id, {
+        id: test.id,
+        title: test.title,
+        description: test.description ?? "",
+        difficulty: test.difficulty_level ?? "medium",
+        duration: 60,
+        tasks: 0,
+      });
+    }
+    const testData = testMap.get(test.id);
+    testData.tasks += 1;
+  });
+
+  const writingTests = Array.from(testMap.values());
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -93,45 +108,54 @@ export default function WritingTestsPage() {
 
       {/* Tests Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {writingTests.map((test) => (
-          <Card key={test.id} className="group hover:shadow-lg transition-all">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-lg">{test.title}</CardTitle>
-                <Badge
-                  variant={
-                    test.difficulty === "easy"
-                      ? "secondary"
-                      : test.difficulty === "medium"
-                        ? "default"
-                        : "destructive"
-                  }
-                >
-                  {test.difficulty}
-                </Badge>
-              </div>
-              <CardDescription>{test.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                <span className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {test.duration} min
-                </span>
-                <span className="flex items-center gap-1">
-                  <FileText className="w-4 h-4" />
-                  {test.tasks} tasks
-                </span>
-              </div>
-              <Link href={`/test/new?module=writing&testId=${test.id}`}>
-                <Button className="w-full">
-                  <Play className="mr-2 h-4 w-4" />
-                  Start Test
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        ))}
+        {writingTests.length > 0 ? (
+          writingTests.map((test) => (
+            <Card
+              key={test.id}
+              className="group hover:shadow-lg transition-all"
+            >
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <CardTitle className="text-lg">{test.title}</CardTitle>
+                  <Badge
+                    variant={
+                      test.difficulty === "easy"
+                        ? "secondary"
+                        : test.difficulty === "medium"
+                          ? "default"
+                          : "destructive"
+                    }
+                  >
+                    {test.difficulty}
+                  </Badge>
+                </div>
+                <CardDescription>{test.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    {test.duration} min
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <FileText className="w-4 h-4" />
+                    {test.tasks} tasks
+                  </span>
+                </div>
+                <Link href={`/writing?testId=${test.id}`}>
+                  <Button className="w-full">
+                    <Play className="mr-2 h-4 w-4" />
+                    Start Test
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full text-center py-12 text-muted-foreground">
+            <p>No writing tests available yet.</p>
+          </div>
+        )}
       </div>
     </div>
   );

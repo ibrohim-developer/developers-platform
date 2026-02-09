@@ -1,3 +1,6 @@
+'use client'
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Card,
@@ -8,60 +11,92 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Clock, HelpCircle, FileText, Play } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { BookOpen, Clock, HelpCircle, FileText, Play, Loader2 } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+
+interface ReadingTest {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: string;
+  duration: number;
+  questions: number;
+  passages: number;
+}
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export default async function ReadingTestsPage() {
-  const supabase = await createClient();
+export default function ReadingTestsPage() {
+  const [readingTests, setReadingTests] = useState<ReadingTest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch published tests
-  const { data: tests } = await supabase
-    .from("tests")
-    .select("*")
-    .eq("is_published", true);
+  useEffect(() => {
+    async function fetchTests() {
+      const supabase = createClient();
 
-  // For each test, get passage and question counts, only include tests with reading passages
-  const testsWithData = await Promise.all(
-    (tests ?? []).map(async (test: any) => {
-      const { count: passageCount } = await supabase
-        .from("reading_passages")
-        .select("*", { count: "exact", head: true })
-        .eq("test_id", test.id);
-
-      const passageIds: string[] = [];
+      // Optimized: Fetch all data in one query
       const { data: passages } = await supabase
         .from("reading_passages")
-        .select("id")
-        .eq("test_id", test.id);
-      if (passages) {
-        passages.forEach((p: any) => passageIds.push(p.id));
+        .select(`
+          id,
+          test_id,
+          tests!inner (
+            id,
+            title,
+            description,
+            difficulty_level,
+            is_published
+          )
+        `)
+        .eq("tests.is_published", true);
+
+      // Get all passage IDs for question counting
+      const passageIds = (passages ?? []).map((p: any) => p.id);
+
+      if (passageIds.length === 0) {
+        setReadingTests([]);
+        setIsLoading(false);
+        return;
       }
 
-      let questionCount = 0;
-      if (passageIds.length > 0) {
-        const { count } = await supabase
-          .from("questions")
-          .select("*", { count: "exact", head: true })
-          .eq("module_type", "reading")
-          .in("section_id", passageIds);
-        questionCount = count ?? 0;
-      }
+      // Count questions per passage in one query
+      const { data: questionCounts } = await supabase
+        .from("questions")
+        .select("section_id")
+        .eq("module_type", "reading")
+        .in("section_id", passageIds);
 
-      return {
-        id: test.id,
-        title: test.title,
-        description: test.description ?? "",
-        difficulty: test.difficulty_level ?? "medium",
-        duration: 60,
-        questions: questionCount,
-        passages: passageCount ?? 0,
-      };
-    })
-  );
+      // Build question count map
+      const questionCountMap: Record<string, number> = {};
+      (questionCounts ?? []).forEach((q: any) => {
+        questionCountMap[q.section_id] = (questionCountMap[q.section_id] || 0) + 1;
+      });
 
-  // Filter to only include tests that have reading passages
-  const readingTests = testsWithData.filter(test => test.passages > 0);
+      // Group by test and calculate totals
+      const testMap = new Map<string, any>();
+      (passages ?? []).forEach((passage: any) => {
+        const test = passage.tests;
+        if (!testMap.has(test.id)) {
+          testMap.set(test.id, {
+            id: test.id,
+            title: test.title,
+            description: test.description ?? "",
+            difficulty: test.difficulty_level ?? "medium",
+            duration: 60,
+            questions: 0,
+            passages: 0,
+          });
+        }
+        const testData = testMap.get(test.id);
+        testData.passages += 1;
+        testData.questions += questionCountMap[passage.id] || 0;
+      });
+
+      setReadingTests(Array.from(testMap.values()));
+      setIsLoading(false);
+    }
+
+    fetchTests();
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -115,7 +150,11 @@ export default async function ReadingTestsPage() {
 
       {/* Tests Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {readingTests.length > 0 ? (
+        {isLoading ? (
+          <div className="col-span-full flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : readingTests.length > 0 ? (
           readingTests.map((test) => (
             <Card key={test.id} className="group hover:shadow-lg transition-all">
               <CardHeader>

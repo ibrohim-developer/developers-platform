@@ -11,57 +11,66 @@ import { Badge } from "@/components/ui/badge";
 import { Headphones, Clock, HelpCircle, Play } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 
+// Revalidate every 5 minutes
+export const revalidate = 300
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function ListeningTestsPage() {
   const supabase = await createClient();
 
-  // Fetch published tests
-  const { data: tests } = await supabase
-    .from("tests")
-    .select("*")
-    .eq("is_published", true);
+  // Optimized: Fetch all data in one query
+  const { data: sections } = await supabase
+    .from("listening_sections")
+    .select(`
+      id,
+      test_id,
+      tests!inner (
+        id,
+        title,
+        description,
+        difficulty_level,
+        is_published
+      )
+    `)
+    .eq("tests.is_published", true);
 
-  // For each test, get section and question counts, only include tests with listening sections
-  const testsWithData = await Promise.all(
-    (tests ?? []).map(async (test: any) => {
-      const { count: sectionCount } = await supabase
-        .from("listening_sections")
-        .select("*", { count: "exact", head: true })
-        .eq("test_id", test.id);
+  // Get all section IDs for question counting
+  const sectionIds = (sections ?? []).map((s: any) => s.id);
 
-      const sectionIds: string[] = [];
-      const { data: sections } = await supabase
-        .from("listening_sections")
-        .select("id")
-        .eq("test_id", test.id);
-      if (sections) {
-        sections.forEach((s: any) => sectionIds.push(s.id));
-      }
+  // Count questions per section in one query
+  const { data: questionCounts } = await supabase
+    .from("questions")
+    .select("section_id")
+    .eq("module_type", "listening")
+    .in("section_id", sectionIds);
 
-      let questionCount = 0;
-      if (sectionIds.length > 0) {
-        const { count } = await supabase
-          .from("questions")
-          .select("*", { count: "exact", head: true })
-          .eq("module_type", "listening")
-          .in("section_id", sectionIds);
-        questionCount = count ?? 0;
-      }
+  // Build question count map
+  const questionCountMap: Record<string, number> = {};
+  (questionCounts ?? []).forEach((q: any) => {
+    questionCountMap[q.section_id] = (questionCountMap[q.section_id] || 0) + 1;
+  });
 
-      return {
+  // Group by test and calculate totals
+  const testMap = new Map<string, any>();
+  (sections ?? []).forEach((section: any) => {
+    const test = section.tests;
+    if (!testMap.has(test.id)) {
+      testMap.set(test.id, {
         id: test.id,
         title: test.title,
         description: test.description ?? "",
         difficulty: test.difficulty_level ?? "medium",
         duration: 30,
-        questions: questionCount,
-        sections: sectionCount ?? 0,
-      };
-    })
-  );
+        questions: 0,
+        sections: 0,
+      });
+    }
+    const testData = testMap.get(test.id);
+    testData.sections += 1;
+    testData.questions += questionCountMap[section.id] || 0;
+  });
 
-  // Filter to only include tests that have listening sections
-  const listeningTests = testsWithData.filter(test => test.sections > 0);
+  const listeningTests = Array.from(testMap.values());
   return (
     <div className="space-y-8">
       {/* Header */}

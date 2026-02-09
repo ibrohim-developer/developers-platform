@@ -19,9 +19,9 @@ interface TrueFalseNotGivenProps {
 }
 
 const options = [
-  { value: 'TRUE', label: 'True' },
-  { value: 'FALSE', label: 'False' },
-  { value: 'NOT_GIVEN', label: 'Not Given' },
+  { value: 'TRUE', label: 'TRUE' },
+  { value: 'FALSE', label: 'FALSE' },
+  { value: 'NOT_GIVEN', label: 'NOT GIVEN' },
 ]
 
 export function TrueFalseNotGiven({
@@ -51,12 +51,12 @@ export function TrueFalseNotGiven({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-3">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
+    <div id={`question-${questionId}`} className="space-y-3">
+      <div className="flex gap-2 items-start">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gray-200 text-xs font-bold text-gray-700">
           {questionNumber}
         </span>
-        <p className="text-base leading-relaxed">
+        <p className="text-sm leading-relaxed text-gray-800">
           {questionText}
           {getQuestionBadge()}
         </p>
@@ -66,7 +66,7 @@ export function TrueFalseNotGiven({
         value={value}
         onValueChange={onChange}
         disabled={disabled}
-        className="ml-10 flex gap-4"
+        className="ml-8 space-y-2"
       >
         {options.map((option) => {
           const isUserAnswer = value === option.value
@@ -74,19 +74,21 @@ export function TrueFalseNotGiven({
             <div
               key={option.value}
               className={cn(
-                'flex items-center gap-2 rounded-lg border px-4 py-3 transition-colors',
+                'flex items-center gap-2',
                 !disabled && 'cursor-pointer',
-                reviewMode && isUserAnswer && isCorrect && 'border-green-500 bg-green-50 dark:bg-green-950/20',
-                reviewMode && isUserAnswer && !isCorrect && 'border-red-500 bg-red-50 dark:bg-red-950/20',
-                !reviewMode && value === option.value && 'border-primary bg-primary/5',
-                !reviewMode && !value && 'hover:bg-muted/50'
+                reviewMode && isUserAnswer && isCorrect && 'text-green-600',
+                reviewMode && isUserAnswer && !isCorrect && 'text-red-600',
               )}
               onClick={() => !disabled && onChange(option.value)}
             >
-              <RadioGroupItem value={option.value} id={`${questionId}-${option.value}`} />
+              <RadioGroupItem
+                value={option.value}
+                id={`${questionId}-${option.value}`}
+                className="border-gray-400 text-gray-700 data-[state=checked]:border-gray-700 data-[state=checked]:text-gray-700"
+              />
               <Label
                 htmlFor={`${questionId}-${option.value}`}
-                className={cn("font-medium", !disabled && "cursor-pointer")}
+                className={cn("text-sm font-normal text-gray-700", !disabled && "cursor-pointer")}
               >
                 {option.label}
               </Label>

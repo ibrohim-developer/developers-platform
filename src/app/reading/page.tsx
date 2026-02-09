@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TestTimer } from '@/components/test/common/test-timer'
 import { SubmitDialog } from '@/components/test/common/submit-dialog'
 import { ReloadWarningDialog } from '@/components/test/common/reload-warning-dialog'
@@ -15,7 +14,7 @@ import { TrueFalseNotGiven } from '@/components/test/questions/true-false-not-gi
 import { FillInBlank } from '@/components/test/questions/fill-in-blank'
 import { useTestStore } from '@/stores/test-store'
 import { TEST_CONFIG } from '@/lib/constants/test-config'
-import { Send, Loader2, Clock, BookOpen, ArrowLeft } from 'lucide-react'
+import { Send, Loader2, Clock, BookOpen, ArrowLeft, Maximize2, Minimize2, Bell, Menu, PenSquare, ChevronLeft, ChevronRight, Check } from 'lucide-react'
 
 interface Question {
   id: string
@@ -51,6 +50,7 @@ export default function ReadingTestPage() {
   const [reviewData, setReviewData] = useState<Record<string, { userAnswer: string; correctAnswer: string; isCorrect: boolean }>>({})
   const [unansweredQuestions, setUnansweredQuestions] = useState<Set<string>>(new Set())
   const [showReloadWarning, setShowReloadWarning] = useState(false)
+  const [activeQuestionNumber, setActiveQuestionNumber] = useState(1)
 
   const {
     attemptId,
@@ -63,6 +63,7 @@ export default function ReadingTestPage() {
   } = useTestStore()
 
   const [activePassageId, setActivePassageId] = useState<string>('')
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   const loadReviewMode = useCallback(async () => {
     if (!reviewAttemptId) {
@@ -82,7 +83,6 @@ export default function ReadingTestPage() {
       setPassages(data.passages)
       setActivePassageId(data.passages[0]?.id ?? '')
 
-      // Build review data map
       const reviewMap: Record<string, { userAnswer: string; correctAnswer: string; isCorrect: boolean }> = {}
       const unanswered = new Set<string>()
 
@@ -129,7 +129,6 @@ export default function ReadingTestPage() {
       const data = await res.json()
       setPassages(data.passages)
       setActivePassageId(data.passages[0]?.id ?? '')
-      // Initialize test but don't start timer yet (false parameter)
       initTest(data.attemptId, testId, 'reading', TEST_CONFIG.reading.totalTime, false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start test')
@@ -164,11 +163,9 @@ export default function ReadingTestPage() {
       }
     }
 
-    // Push a state so back button triggers popstate instead of navigating
     window.history.pushState({ testInProgress: true }, '')
 
     const handlePopState = () => {
-      // Re-push state to prevent navigation and show warning
       window.history.pushState({ testInProgress: true }, '')
       setShowReloadWarning(true)
     }
@@ -183,10 +180,46 @@ export default function ReadingTestPage() {
     }
   }, [hasStarted, isReviewMode])
 
+  // Get the active passage index
+  const activePassageIndex = passages.findIndex(p => p.id === activePassageId)
   const currentPassage = passages.find(p => p.id === activePassageId)
   const allQuestions = passages.flatMap(p => p.questions)
   const answeredCount = Object.values(answers).filter(a => a.answer.trim() !== '').length
   const totalQuestions = allQuestions.length
+
+  // Calculate question number offset for current passage
+  const questionOffset = passages
+    .slice(0, activePassageIndex)
+    .reduce((acc, p) => acc + p.questions.length, 0)
+
+  // Get first and last question numbers for the current passage
+  const firstQuestionNum = questionOffset + 1
+  const lastQuestionNum = questionOffset + (currentPassage?.questions.length ?? 0)
+
+  // Get question group info for current passage (group by type)
+  const getQuestionGroups = () => {
+    if (!currentPassage) return []
+    const groups: { type: string; startNum: number; endNum: number; questions: Question[] }[] = []
+    let currentType = ''
+
+    currentPassage.questions.forEach((q, idx) => {
+      const qNum = questionOffset + idx + 1
+      if (q.type !== currentType) {
+        if (currentType !== '') {
+          groups[groups.length - 1].endNum = qNum - 1
+        }
+        currentType = q.type
+        groups.push({ type: q.type, startNum: qNum, endNum: qNum, questions: [q] })
+      } else {
+        groups[groups.length - 1].questions.push(q)
+        groups[groups.length - 1].endNum = qNum
+      }
+    })
+
+    return groups
+  }
+
+  const questionGroups = getQuestionGroups()
 
   const handleAnswer = (questionId: string, value: string) => {
     setAnswer(questionId, value)
@@ -230,10 +263,40 @@ export default function ReadingTestPage() {
     setShowSubmitDialog(true)
   }
 
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+      setIsFullscreen(true)
+    } else {
+      document.exitFullscreen()
+      setIsFullscreen(false)
+    }
+  }
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [])
+
+  const getTypeInstruction = (type: string) => {
+    switch (type) {
+      case 'true_false_not_given':
+        return 'Choose TRUE if the statement agrees with the information given in the text, choose FALSE if the statement contradicts the information, or choose NOT GIVEN if there is no information on this.'
+      case 'multiple_choice':
+        return 'Choose the correct letter, A, B, C or D.'
+      case 'fill_in_blank':
+      case 'sentence_completion':
+        return 'Complete the sentences below. Write NO MORE THAN TWO WORDS from the passage for each answer.'
+      default:
+        return ''
+    }
+  }
+
   const renderQuestion = (question: Question, index: number) => {
-    const globalIndex = passages
-      .slice(0, passages.findIndex(p => p.id === activePassageId))
-      .reduce((acc, p) => acc + p.questions.length, 0) + index
+    const globalIndex = questionOffset + index
 
     const review = reviewData[question.id]
     const value = isReviewMode ? (review?.userAnswer || '') : (answers[question.id]?.answer || '')
@@ -320,7 +383,7 @@ export default function ReadingTestPage() {
           <CardContent className="space-y-6">
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                   <Clock className="h-4 w-4 text-primary" />
                 </div>
                 <div>
@@ -332,7 +395,7 @@ export default function ReadingTestPage() {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                   <BookOpen className="h-4 w-4 text-primary" />
                 </div>
                 <div>
@@ -344,7 +407,7 @@ export default function ReadingTestPage() {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                   <Send className="h-4 w-4 text-primary" />
                 </div>
                 <div>
@@ -352,7 +415,7 @@ export default function ReadingTestPage() {
                   <ul className="text-sm text-muted-foreground space-y-1 mt-1 list-disc list-inside">
                     <li>Read each passage carefully before answering questions</li>
                     <li>You can navigate between passages using the tabs</li>
-                    <li>The timer will start when you click "Begin Test"</li>
+                    <li>The timer will start when you click &quot;Begin Test&quot;</li>
                     <li>You can submit your test at any time</li>
                   </ul>
                 </div>
@@ -384,49 +447,73 @@ export default function ReadingTestPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30 flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background border-b">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {isReviewMode && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.push(`/results/${reviewAttemptId}`)}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Results
-              </Button>
-            )}
-            <h1 className="text-lg font-semibold">
-              IELTS Reading Test {isReviewMode && <span className="text-sm text-muted-foreground">(Review Mode)</span>}
-            </h1>
-            <Tabs value={activePassageId} onValueChange={setActivePassageId}>
-              <TabsList>
-                {passages.map((passage, index) => (
-                  <TabsTrigger key={passage.id} value={passage.id}>
-                    Passage {index + 1}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </Tabs>
+    <div className="h-screen bg-white flex flex-col overflow-hidden">
+      {/* Top Header Bar */}
+      <header className="shrink-0 bg-white border-b border-gray-200 h-12 flex items-center px-4 justify-between">
+        <div className="flex items-center gap-3">
+          {/* Back button */}
+          <button
+            onClick={() => isReviewMode ? router.push(`/results/${reviewAttemptId}`) : router.push('/dashboard/reading')}
+            className="flex items-center gap-1 text-gray-700 hover:text-gray-900 text-sm"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back</span>
+          </button>
+
+          {/* IELTS badge */}
+          <div className="bg-red-600 text-white px-3 py-0.5 text-sm font-bold rounded">
+            IELTS
           </div>
+
+          {/* Test ID */}
+          <span className="text-gray-500 text-sm">
+            ID: {attemptId?.slice(0, 5) || '-----'}
+          </span>
+        </div>
+
+        {/* Center - Timer and Start */}
+        <div className="flex items-center gap-3">
           {!isReviewMode && (
-            <div className="flex items-center gap-4">
-              <TestTimer onTimeUp={handleTimeUp} />
-              <Button onClick={() => setShowSubmitDialog(true)}>
-                <Send className="mr-2 h-4 w-4" />
-                Submit
-              </Button>
-            </div>
+            <>
+              <TestTimer onTimeUp={handleTimeUp} className="bg-transparent text-gray-800 px-2 py-1 text-base" />
+              <button
+                onClick={() => setShowSubmitDialog(true)}
+                className="bg-red-500 hover:bg-red-600 text-white text-sm font-medium px-4 py-1 rounded transition-colors"
+              >
+                Start
+              </button>
+            </>
           )}
+        </div>
+
+        {/* Right icons */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleFullscreen}
+            className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+          </button>
+          <button className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors">
+            <Bell className="h-5 w-5" />
+          </button>
+          <button className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors">
+            <Menu className="h-5 w-5" />
+          </button>
+          <button className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors">
+            <PenSquare className="h-5 w-5" />
+          </button>
         </div>
       </header>
 
+      {/* Part instruction sub-header */}
+      <div className="shrink-0 bg-gray-100 border-b border-gray-200 px-6 py-2.5">
+        <p className="font-bold text-sm text-gray-900">Part {activePassageIndex + 1}</p>
+        <p className="text-sm text-gray-700">Read the text and answer questions {firstQuestionNum}-{lastQuestionNum}.</p>
+      </div>
+
       {/* Main Content - Split View */}
-      <div className="flex-1">
+      <div className="flex-1 min-h-0">
         <SplitView
           leftPanel={
             <PassageDisplay
@@ -435,29 +522,116 @@ export default function ReadingTestPage() {
             />
           }
           rightPanel={
-            <div className="p-6 space-y-8">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Questions {
-                  passages.slice(0, passages.findIndex(p => p.id === activePassageId))
-                    .reduce((acc, p) => acc + p.questions.length, 0) + 1
-                } - {
-                  passages.slice(0, passages.findIndex(p => p.id === activePassageId) + 1)
-                    .reduce((acc, p) => acc + p.questions.length, 0)
-                }</h3>
-                <span className="text-sm text-muted-foreground">
-                  {currentPassage.questions.filter(q => answers[q.id]).length} / {currentPassage.questions.length} answered
-                </span>
-              </div>
-              <div className="space-y-8">
-                {currentPassage.questions.map((question, index) => (
-                  <div key={question.id} className="pb-6 border-b last:border-0">
-                    {renderQuestion(question, index)}
+            <div className="p-6 space-y-6 bg-white">
+              {questionGroups.map((group, groupIndex) => (
+                <div key={groupIndex}>
+                  {/* Group header */}
+                  <div className="mb-4">
+                    <h3 className="font-bold text-base text-gray-900 mb-2">
+                      Questions {group.startNum}-{group.endNum}
+                    </h3>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {getTypeInstruction(group.type)}
+                    </p>
                   </div>
-                ))}
-              </div>
+
+                  {/* Questions */}
+                  <div className="space-y-6">
+                    {group.questions.map((question) => {
+                      const globalIdx = currentPassage.questions.indexOf(question)
+                      return (
+                        <div key={question.id}>
+                          {renderQuestion(question, globalIdx)}
+                        </div>
+                      )
+                    })}
+                  </div>
+
+                  {/* Separator between groups */}
+                  {groupIndex < questionGroups.length - 1 && (
+                    <hr className="my-6 border-gray-200" />
+                  )}
+                </div>
+              ))}
             </div>
           }
         />
+      </div>
+
+      {/* Bottom Navigation Bar */}
+      <div className="shrink-0 bg-white border-t border-gray-200 h-10 flex items-center px-4 justify-between">
+        {/* Left: Part label */}
+        <div className="flex items-center gap-1">
+          <span className="text-sm font-bold text-gray-700 mr-2">Part {activePassageIndex + 1}</span>
+          {/* Question number buttons */}
+          {currentPassage.questions.map((q, idx) => {
+            const qNum = questionOffset + idx + 1
+            const isAnswered = !!answers[q.id]?.answer?.trim()
+            const isActive = activeQuestionNumber === qNum
+            return (
+              <button
+                key={q.id}
+                onClick={() => {
+                  setActiveQuestionNumber(qNum)
+                  // Scroll to question
+                  const el = document.getElementById(`question-${q.id}`)
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                }}
+                className={`w-7 h-7 text-xs font-medium rounded-sm border transition-colors ${
+                  isActive
+                    ? 'border-blue-500 bg-white text-blue-600 font-bold'
+                    : isAnswered
+                    ? 'border-gray-300 bg-gray-100 text-gray-700'
+                    : 'border-gray-300 bg-white text-gray-600'
+                }`}
+              >
+                {qNum}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Right: Navigation arrows and submit */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => {
+              const currentQIdx = activeQuestionNumber - questionOffset - 1
+              if (currentQIdx > 0) {
+                const prevNum = activeQuestionNumber - 1
+                setActiveQuestionNumber(prevNum)
+                const prevQ = currentPassage.questions[currentQIdx - 1]
+                const el = document.getElementById(`question-${prevQ.id}`)
+                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }
+            }}
+            className="w-8 h-8 flex items-center justify-center bg-gray-700 text-white rounded-sm hover:bg-gray-600 transition-colors"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => {
+              const currentQIdx = activeQuestionNumber - questionOffset - 1
+              if (currentQIdx < currentPassage.questions.length - 1) {
+                const nextNum = activeQuestionNumber + 1
+                setActiveQuestionNumber(nextNum)
+                const nextQ = currentPassage.questions[currentQIdx + 1]
+                const el = document.getElementById(`question-${nextQ.id}`)
+                el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+              }
+            }}
+            className="w-8 h-8 flex items-center justify-center bg-gray-700 text-white rounded-sm hover:bg-gray-600 transition-colors"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+          {!isReviewMode && (
+            <button
+              onClick={() => setShowSubmitDialog(true)}
+              className="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 text-gray-600 rounded-sm hover:bg-gray-50 transition-colors ml-2"
+            >
+              <Check className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       <SubmitDialog
@@ -474,7 +648,6 @@ export default function ReadingTestPage() {
         onOpenChange={setShowReloadWarning}
         onConfirm={() => {
           setShowReloadWarning(false)
-          // Go back twice: once for our pushed state, once for the actual back
           window.history.go(-2)
         }}
       />

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { GripVertical } from 'lucide-react'
 
 interface SplitViewProps {
   leftPanel: React.ReactNode
@@ -36,33 +35,34 @@ export function SplitView({ leftPanel, rightPanel, defaultRatio = 50 }: SplitVie
 
   return (
     <div
-      className="flex h-full"
+      className="flex h-full bg-white"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
       {/* Left Panel - Passage */}
       <div
-        className="overflow-y-auto border-r"
+        className="overflow-y-auto border-r border-gray-200 bg-white"
         style={{ width: `${ratio}%` }}
       >
         {leftPanel}
       </div>
 
-      {/* Resizer */}
+      {/* Resizer - thin draggable line */}
       <div
         className={cn(
-          'w-2 flex items-center justify-center cursor-col-resize transition-colors hover:bg-primary/20',
-          isDragging && 'bg-primary/30'
+          'w-0.75 bg-gray-200 cursor-col-resize hover:bg-gray-400 transition-colors flex items-center justify-center',
+          isDragging && 'bg-gray-400'
         )}
         onMouseDown={handleMouseDown}
       >
-        <GripVertical className="h-6 w-6 text-muted-foreground" />
+        {/* Small drag indicator dot */}
+        <div className="w-1.5 h-8 rounded-full bg-gray-300 opacity-0 hover:opacity-100 transition-opacity" />
       </div>
 
       {/* Right Panel - Questions */}
       <div
-        className="overflow-y-auto"
+        className="overflow-y-auto bg-white"
         style={{ width: `${100 - ratio}%` }}
       >
         {rightPanel}
