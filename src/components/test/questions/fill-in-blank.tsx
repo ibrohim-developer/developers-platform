@@ -1,6 +1,8 @@
 'use client'
 
 import { Input } from '@/components/ui/input'
+import { CheckCircle, XCircle } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface FillInBlankProps {
   questionId: string
@@ -9,6 +11,10 @@ interface FillInBlankProps {
   value: string
   onChange: (value: string) => void
   disabled?: boolean
+  reviewMode?: boolean
+  correctAnswer?: string
+  isCorrect?: boolean
+  isUnanswered?: boolean
 }
 
 export function FillInBlank({
@@ -18,7 +24,27 @@ export function FillInBlank({
   value,
   onChange,
   disabled,
+  reviewMode,
+  correctAnswer,
+  isCorrect,
+  isUnanswered,
 }: FillInBlankProps) {
+  const getQuestionBadge = () => {
+    if (!reviewMode) return null
+
+    if (isUnanswered) {
+      return <span className="ml-2 text-xs px-2 py-1 rounded bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400">Unanswered</span>
+    }
+
+    if (isCorrect) {
+      return <CheckCircle className="ml-2 h-5 w-5 text-green-600 inline" />
+    } else {
+      return <XCircle className="ml-2 h-5 w-5 text-red-600 inline" />
+    }
+  }
+
+  const displayValue = reviewMode && isUnanswered ? 'N/A' : value
+
   // Check if question has inline blank (marked with _____)
   const hasInlineBlank = questionText.includes('_____')
 
@@ -36,15 +62,21 @@ export function FillInBlank({
                 {part}
                 {index < parts.length - 1 && (
                   <Input
-                    value={value}
+                    value={displayValue}
                     onChange={(e) => onChange(e.target.value)}
-                    className="inline-block w-32 h-8 text-center mx-1"
+                    className={cn(
+                      "inline-block w-32 h-8 text-center mx-1",
+                      reviewMode && isCorrect && "border-green-500 bg-green-50 dark:bg-green-950/20",
+                      reviewMode && !isCorrect && !isUnanswered && "border-red-500 bg-red-50 dark:bg-red-950/20",
+                      reviewMode && isUnanswered && "border-red-400 bg-red-50 dark:bg-red-950/20 text-red-500"
+                    )}
                     placeholder="..."
                     disabled={disabled}
                   />
                 )}
               </span>
             ))}
+            {getQuestionBadge()}
           </div>
         </div>
       </div>
@@ -57,14 +89,22 @@ export function FillInBlank({
         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
           {questionNumber}
         </span>
-        <p className="text-base leading-relaxed">{questionText}</p>
+        <p className="text-base leading-relaxed">
+          {questionText}
+          {getQuestionBadge()}
+        </p>
       </div>
-      <div className="ml-10">
+      <div className="ml-10 space-y-2">
         <Input
-          value={value}
+          value={displayValue}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Type your answer here..."
-          className="max-w-md"
+          className={cn(
+            "max-w-md",
+            reviewMode && isCorrect && "border-green-500 bg-green-50 dark:bg-green-950/20",
+            reviewMode && !isCorrect && !isUnanswered && "border-red-500 bg-red-50 dark:bg-red-950/20",
+            reviewMode && isUnanswered && "border-red-400 bg-red-50 dark:bg-red-950/20 text-red-500"
+          )}
           disabled={disabled}
         />
       </div>

@@ -5,6 +5,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 interface UseAudioPlayerOptions {
   onEnded?: () => void
   onTimeUpdate?: (currentTime: number, duration: number) => void
+  autoPlay?: boolean
 }
 
 export function useAudioPlayer(audioUrl: string, options: UseAudioPlayerOptions = {}) {
@@ -22,6 +23,18 @@ export function useAudioPlayer(audioUrl: string, options: UseAudioPlayerOptions 
     const handleLoadedMetadata = () => {
       setDuration(audio.duration)
       setIsLoaded(true)
+
+      // Auto-play if enabled - with a small delay to ensure everything is ready
+      if (options.autoPlay) {
+        setTimeout(() => {
+          audio.play().then(() => {
+            setIsPlaying(true)
+          }).catch((error) => {
+            // Silently fail - user can still manually play if needed
+            console.warn('Auto-play blocked by browser:', error.message)
+          })
+        }, 100)
+      }
     }
 
     const handleTimeUpdate = () => {
@@ -34,15 +47,28 @@ export function useAudioPlayer(audioUrl: string, options: UseAudioPlayerOptions 
       options.onEnded?.()
     }
 
+    const handlePlay = () => {
+      setIsPlaying(true)
+    }
+
+    const handlePause = () => {
+      setIsPlaying(false)
+    }
+
     audio.addEventListener('loadedmetadata', handleLoadedMetadata)
     audio.addEventListener('timeupdate', handleTimeUpdate)
     audio.addEventListener('ended', handleEnded)
+    audio.addEventListener('play', handlePlay)
+    audio.addEventListener('pause', handlePause)
 
     return () => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
       audio.removeEventListener('timeupdate', handleTimeUpdate)
       audio.removeEventListener('ended', handleEnded)
+      audio.removeEventListener('play', handlePlay)
+      audio.removeEventListener('pause', handlePause)
       audio.pause()
+      audio.src = '' // Clear source to prevent memory leaks
     }
   }, [audioUrl, options])
 

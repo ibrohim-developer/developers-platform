@@ -20,7 +20,7 @@ interface TestState {
   answers: Record<string, Answer>
 
   // Actions
-  initTest: (attemptId: string, testId: string, moduleType: 'listening' | 'reading' | 'writing', totalTime: number) => void
+  initTest: (attemptId: string, testId: string, moduleType: 'listening' | 'reading' | 'writing', totalTime: number, startTimer?: boolean) => void
   setAnswer: (questionId: string, answer: string) => void
   goToQuestion: (section: number, question: number) => void
   tick: () => void
@@ -42,14 +42,14 @@ export const useTestStore = create<TestState>()(
       isTimerRunning: false,
       answers: {},
 
-      initTest: (attemptId, testId, moduleType, totalTime) => set({
+      initTest: (attemptId, testId, moduleType, totalTime, startTimer = true) => set({
         attemptId,
         testId,
         moduleType,
         currentSection: 1,
         currentQuestion: 1,
         timeRemaining: totalTime,
-        isTimerRunning: true,
+        isTimerRunning: startTimer,
         answers: {},
       }),
 

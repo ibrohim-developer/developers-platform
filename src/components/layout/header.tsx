@@ -3,13 +3,27 @@
 import Link from 'next/link'
 import { BookOpen, Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useState } from 'react'
 
 interface HeaderProps {
   isLoggedIn?: boolean
+  userEmail?: string | null
+  userAvatar?: string | null
+  userName?: string | null
 }
 
-export function Header({ isLoggedIn = false }: HeaderProps) {
+export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: HeaderProps) {
+  // Get initials for avatar fallback
+  const getInitials = () => {
+    if (userName) {
+      return userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    }
+    if (userEmail) {
+      return userEmail.slice(0, 2).toUpperCase()
+    }
+    return 'U'
+  }
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
@@ -40,9 +54,15 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
             {isLoggedIn ? (
-              <Link href="/dashboard">
-                <Button>Dashboard</Button>
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link href="/dashboard">
+                  <Button>Dashboard</Button>
+                </Link>
+                <Avatar>
+                  <AvatarImage src={userAvatar || undefined} alt={userName || userEmail || 'User'} />
+                  <AvatarFallback>{getInitials()}</AvatarFallback>
+                </Avatar>
+              </div>
             ) : (
               <>
                 <Link href="/sign-in">
@@ -79,9 +99,21 @@ export function Header({ isLoggedIn = false }: HeaderProps) {
               </Link>
               <div className="flex flex-col gap-2 pt-4 border-t">
                 {isLoggedIn ? (
-                  <Link href="/dashboard">
-                    <Button className="w-full">Dashboard</Button>
-                  </Link>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 px-3 py-2">
+                      <Avatar>
+                        <AvatarImage src={userAvatar || undefined} alt={userName || userEmail || 'User'} />
+                        <AvatarFallback>{getInitials()}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col text-sm">
+                        <span className="font-medium">{userName || 'User'}</span>
+                        <span className="text-muted-foreground text-xs">{userEmail}</span>
+                      </div>
+                    </div>
+                    <Link href="/dashboard">
+                      <Button className="w-full">Dashboard</Button>
+                    </Link>
+                  </div>
                 ) : (
                   <>
                     <Link href="/sign-in">

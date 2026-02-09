@@ -17,11 +17,19 @@ import {
   Award,
   TrendingUp
 } from 'lucide-react'
+import { getUser } from '@/actions/auth'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const user = await getUser()
+
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <Header
+        isLoggedIn={!!user}
+        userEmail={user?.email}
+        userAvatar={user?.user_metadata?.avatar_url}
+        userName={user?.user_metadata?.full_name}
+      />
 
       <main className="flex-1">
         {/* Hero Section */}

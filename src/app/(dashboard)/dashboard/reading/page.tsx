@@ -9,39 +9,60 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Clock, HelpCircle, FileText, Play } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 
-// Sample tests data (will be replaced with Supabase data)
-const readingTests = [
-  {
-    id: "1",
-    title: "Reading Practice Test 1",
-    description: "Academic reading passages with various question types",
-    difficulty: "medium",
-    duration: 60,
-    questions: 40,
-    passages: 3,
-  },
-  {
-    id: "2",
-    title: "Reading Practice Test 2",
-    description: "General training reading test",
-    difficulty: "easy",
-    duration: 60,
-    questions: 40,
-    passages: 3,
-  },
-  {
-    id: "3",
-    title: "Reading Practice Test 3",
-    description: "Advanced academic reading with complex passages",
-    difficulty: "hard",
-    duration: 60,
-    questions: 40,
-    passages: 3,
-  },
-];
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export default async function ReadingTestsPage() {
+  const supabase = await createClient();
 
-export default function ReadingTestsPage() {
+  // Fetch published tests
+  const { data: tests } = await supabase
+    .from("tests")
+    .select("*")
+    .eq("is_published", true);
+
+  // For each test, get passage and question counts, only include tests with reading passages
+  const testsWithData = await Promise.all(
+    (tests ?? []).map(async (test: any) => {
+      const { count: passageCount } = await supabase
+        .from("reading_passages")
+        .select("*", { count: "exact", head: true })
+        .eq("test_id", test.id);
+
+      const passageIds: string[] = [];
+      const { data: passages } = await supabase
+        .from("reading_passages")
+        .select("id")
+        .eq("test_id", test.id);
+      if (passages) {
+        passages.forEach((p: any) => passageIds.push(p.id));
+      }
+
+      let questionCount = 0;
+      if (passageIds.length > 0) {
+        const { count } = await supabase
+          .from("questions")
+          .select("*", { count: "exact", head: true })
+          .eq("module_type", "reading")
+          .in("section_id", passageIds);
+        questionCount = count ?? 0;
+      }
+
+      return {
+        id: test.id,
+        title: test.title,
+        description: test.description ?? "",
+        difficulty: test.difficulty_level ?? "medium",
+        duration: 60,
+        questions: questionCount,
+        passages: passageCount ?? 0,
+      };
+    })
+  );
+
+  // Filter to only include tests that have reading passages
+  const readingTests = testsWithData.filter(test => test.passages > 0);
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -94,45 +115,51 @@ export default function ReadingTestsPage() {
 
       {/* Tests Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {readingTests.map((test) => (
-          <Card key={test.id} className="group hover:shadow-lg transition-all">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-lg">{test.title}</CardTitle>
-                <Badge
-                  variant={
-                    test.difficulty === "easy"
-                      ? "secondary"
-                      : test.difficulty === "medium"
-                        ? "default"
-                        : "destructive"
-                  }
-                >
-                  {test.difficulty}
-                </Badge>
-              </div>
-              <CardDescription>{test.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                <span className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {test.duration} min
-                </span>
-                <span className="flex items-center gap-1">
-                  <FileText className="w-4 h-4" />
-                  {test.passages} passages
-                </span>
-              </div>
-              <Link href={`/test/new?module=reading&testId=${test.id}`}>
-                <Button className="w-full">
-                  <Play className="mr-2 h-4 w-4" />
-                  Start Test
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        ))}
+        {readingTests.length > 0 ? (
+          readingTests.map((test) => (
+            <Card key={test.id} className="group hover:shadow-lg transition-all">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <CardTitle className="text-lg">{test.title}</CardTitle>
+                  <Badge
+                    variant={
+                      test.difficulty === "easy"
+                        ? "secondary"
+                        : test.difficulty === "medium"
+                          ? "default"
+                          : "destructive"
+                    }
+                  >
+                    {test.difficulty}
+                  </Badge>
+                </div>
+                <CardDescription>{test.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    {test.duration} min
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <FileText className="w-4 h-4" />
+                    {test.passages} passages
+                  </span>
+                </div>
+                <Link href={`/reading?testId=${test.id}`}>
+                  <Button className="w-full">
+                    <Play className="mr-2 h-4 w-4" />
+                    Start Test
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-full text-center py-12 text-muted-foreground">
+            <p>No reading tests available yet.</p>
+          </div>
+        )}
       </div>
     </div>
   );

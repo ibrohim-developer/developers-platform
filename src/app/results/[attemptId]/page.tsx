@@ -13,19 +13,29 @@ import {
   XCircle,
   ArrowLeft,
   Download,
-  RotateCcw
+  RotateCcw,
+  Eye
 } from 'lucide-react'
-import { notFound } from 'next/navigation'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 interface ResultsPageProps {
   params: Promise<{ attemptId: string }>
+}
+
+interface AnswerResult {
+  id: string
+  questionNumber: number
+  questionText: string
+  userAnswer: string
+  correctAnswer: string
+  isCorrect: boolean
 }
 
 export default async function ResultsPage({ params }: ResultsPageProps) {
   const { attemptId } = await params
   const supabase = await createClient()
 
-  // Fetch attempt with related data
+  // Fetch attempt
   const { data: attempt, error } = await supabase
     .from('test_attempts')
     .select('*')
@@ -33,38 +43,69 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     .single()
 
   if (error || !attempt) {
-    // For demo, show sample results
-    const sampleAttempt = {
-      id: attemptId,
-      module_type: 'reading',
-      status: 'completed',
-      raw_score: 32,
-      band_score: 7.5,
-      time_spent_seconds: 3420,
-      created_at: new Date().toISOString(),
-      completed_at: new Date().toISOString(),
-    }
-
-    return <ResultsContent attempt={sampleAttempt} />
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <p className="text-destructive font-medium">Test attempt not found.</p>
+          <Link href="/dashboard">
+            <Button variant="outline">Back to Dashboard</Button>
+          </Link>
+        </div>
+      </div>
+    )
   }
 
-  return <ResultsContent attempt={attempt} />
+  // Fetch user answers for this attempt
+  const { data: userAnswers } = await supabase
+    .from('user_answers')
+    .select('id, user_answer, is_correct, question_id')
+    .eq('attempt_id', attemptId)
+
+  // Fetch question details for answered questions
+  const questionIds = (userAnswers ?? []).map((ua: any) => ua.question_id)
+  let questionsMap = new Map<string, any>()
+  if (questionIds.length > 0) {
+    const { data: questions } = await supabase
+      .from('questions')
+      .select('id, question_number, question_text, correct_answer')
+      .in('id', questionIds)
+    if (questions) {
+      questionsMap = new Map(questions.map((q: any) => [q.id, q]))
+    }
+  }
+
+  const answerResults: AnswerResult[] = (userAnswers ?? []).map((ua: any) => {
+    const question = questionsMap.get(ua.question_id)
+    return {
+      id: ua.id,
+      questionNumber: question?.question_number ?? 0,
+      questionText: question?.question_text ?? '',
+      userAnswer: ua.user_answer ?? '',
+      correctAnswer: question?.correct_answer ?? '',
+      isCorrect: ua.is_correct ?? false,
+    }
+  }).sort((a: AnswerResult, b: AnswerResult) => a.questionNumber - b.questionNumber)
+
+  return <ResultsContent attempt={attempt} answerResults={answerResults} />
 }
 
-function ResultsContent({ attempt }: { attempt: {
-  id: string
-  module_type: string
-  status: string
-  raw_score: number | null
-  band_score: number | null
-  time_spent_seconds: number | null
-  created_at: string
-  completed_at: string | null
-}}) {
-  const bandScore = attempt.band_score || 7.0
-  const rawScore = attempt.raw_score || 32
-  const totalQuestions = 40
-  const correctPercentage = (rawScore / totalQuestions) * 100
+function ResultsContent({ attempt, answerResults }: {
+  attempt: {
+    id: string
+    module_type: string
+    status: string
+    raw_score: number | null
+    band_score: number | null
+    time_spent_seconds: number | null
+    created_at: string
+    completed_at: string | null
+  }
+  answerResults: AnswerResult[]
+}) {
+  const bandScore = attempt.band_score || 0
+  const rawScore = attempt.raw_score || 0
+  const totalQuestions = answerResults.length || 40
+  const correctPercentage = totalQuestions > 0 ? (rawScore / totalQuestions) * 100 : 0
 
   const moduleIcon = {
     listening: Headphones,
@@ -85,15 +126,6 @@ function ResultsContent({ attempt }: { attempt: {
     const secs = seconds % 60
     return `${mins}m ${secs}s`
   }
-
-  // Sample question results for demo
-  const sampleResults = [
-    { id: 1, correct: true, userAnswer: 'B', correctAnswer: 'B' },
-    { id: 2, correct: true, userAnswer: 'neutrality', correctAnswer: 'neutrality' },
-    { id: 3, correct: false, userAnswer: 'TRUE', correctAnswer: 'FALSE' },
-    { id: 4, correct: true, userAnswer: 'TRUE', correctAnswer: 'TRUE' },
-    { id: 5, correct: true, userAnswer: 'C', correctAnswer: 'C' },
-  ]
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -189,45 +221,47 @@ function ResultsContent({ attempt }: { attempt: {
             </Card>
 
             {/* Answer Review */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Answer Review</CardTitle>
-                <CardDescription>Review your answers</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {sampleResults.map((result) => (
-                    <div
-                      key={result.id}
-                      className={`flex items-center justify-between p-4 rounded-lg border ${
-                        result.correct ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
-                      }`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-background text-sm font-medium">
-                          {result.id}
-                        </span>
-                        <div>
-                          <p className="text-sm">
-                            Your answer: <span className="font-medium">{result.userAnswer}</span>
-                          </p>
-                          {!result.correct && (
-                            <p className="text-sm text-green-600">
-                              Correct: <span className="font-medium">{result.correctAnswer}</span>
+            {answerResults.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Answer Review</CardTitle>
+                  <CardDescription>Review your answers</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {answerResults.map((result) => (
+                      <div
+                        key={result.id}
+                        className={`flex items-center justify-between p-4 rounded-lg border ${
+                          result.isCorrect ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-background text-sm font-medium">
+                            {result.questionNumber}
+                          </span>
+                          <div>
+                            <p className="text-sm">
+                              Your answer: <span className="font-medium">{result.userAnswer}</span>
                             </p>
-                          )}
+                            {!result.isCorrect && (
+                              <p className="text-sm text-green-600">
+                                Correct: <span className="font-medium">{result.correctAnswer}</span>
+                              </p>
+                            )}
+                          </div>
                         </div>
+                        {result.isCorrect ? (
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-600" />
+                        )}
                       </div>
-                      {result.correct ? (
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                      ) : (
-                        <XCircle className="h-5 w-5 text-red-600" />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -260,6 +294,12 @@ function ResultsContent({ attempt }: { attempt: {
                 <CardTitle>Next Steps</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <Link href={`/${attempt.module_type}?review=true&attemptId=${attempt.id}`}>
+                  <Button variant="secondary" className="w-full">
+                    <Eye className="mr-2 h-4 w-4" />
+                    Review Test
+                  </Button>
+                </Link>
                 <Link href={`/dashboard/${attempt.module_type}`}>
                   <Button className="w-full">
                     <RotateCcw className="mr-2 h-4 w-4" />

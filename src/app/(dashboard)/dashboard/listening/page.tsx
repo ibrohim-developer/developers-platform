@@ -9,36 +9,59 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Headphones, Clock, HelpCircle, Play } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 
-// Sample tests data (will be replaced with Supabase data)
-const listeningTests = [
-  {
-    id: "1",
-    title: "Listening Practice Test 1",
-    description: "Academic listening test with conversations and lectures",
-    difficulty: "medium",
-    duration: 30,
-    questions: 40,
-  },
-  {
-    id: "2",
-    title: "Listening Practice Test 2",
-    description: "General training listening test",
-    difficulty: "easy",
-    duration: 30,
-    questions: 40,
-  },
-  {
-    id: "3",
-    title: "Listening Practice Test 3",
-    description: "Advanced academic listening test",
-    difficulty: "hard",
-    duration: 30,
-    questions: 40,
-  },
-];
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export default async function ListeningTestsPage() {
+  const supabase = await createClient();
 
-export default function ListeningTestsPage() {
+  // Fetch published tests
+  const { data: tests } = await supabase
+    .from("tests")
+    .select("*")
+    .eq("is_published", true);
+
+  // For each test, get section and question counts, only include tests with listening sections
+  const testsWithData = await Promise.all(
+    (tests ?? []).map(async (test: any) => {
+      const { count: sectionCount } = await supabase
+        .from("listening_sections")
+        .select("*", { count: "exact", head: true })
+        .eq("test_id", test.id);
+
+      const sectionIds: string[] = [];
+      const { data: sections } = await supabase
+        .from("listening_sections")
+        .select("id")
+        .eq("test_id", test.id);
+      if (sections) {
+        sections.forEach((s: any) => sectionIds.push(s.id));
+      }
+
+      let questionCount = 0;
+      if (sectionIds.length > 0) {
+        const { count } = await supabase
+          .from("questions")
+          .select("*", { count: "exact", head: true })
+          .eq("module_type", "listening")
+          .in("section_id", sectionIds);
+        questionCount = count ?? 0;
+      }
+
+      return {
+        id: test.id,
+        title: test.title,
+        description: test.description ?? "",
+        difficulty: test.difficulty_level ?? "medium",
+        duration: 30,
+        questions: questionCount,
+        sections: sectionCount ?? 0,
+      };
+    })
+  );
+
+  // Filter to only include tests that have listening sections
+  const listeningTests = testsWithData.filter(test => test.sections > 0);
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -89,7 +112,8 @@ export default function ListeningTestsPage() {
 
       {/* Tests Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {listeningTests.map((test) => (
+        {listeningTests.length > 0 ? (
+          listeningTests.map((test) => (
           <Card key={test.id} className="group hover:shadow-lg transition-all">
             <CardHeader>
               <div className="flex items-start justify-between">
@@ -119,7 +143,7 @@ export default function ListeningTestsPage() {
                   {test.questions} questions
                 </span>
               </div>
-              <Link href={`/test/new?module=listening&testId=${test.id}`}>
+              <Link href={`/listening?testId=${test.id}`}>
                 <Button className="w-full">
                   <Play className="mr-2 h-4 w-4" />
                   Start Test
@@ -127,7 +151,12 @@ export default function ListeningTestsPage() {
               </Link>
             </CardContent>
           </Card>
-        ))}
+          ))
+        ) : (
+          <div className="col-span-full text-center py-12 text-muted-foreground">
+            <p>No listening tests available yet.</p>
+          </div>
+        )}
       </div>
     </div>
   );

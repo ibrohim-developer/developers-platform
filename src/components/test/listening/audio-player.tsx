@@ -10,9 +10,11 @@ interface AudioPlayerProps {
   audioUrl: string
   onEnded?: () => void
   allowReplay?: boolean
+  autoPlay?: boolean
+  examMode?: boolean // Strict IELTS exam mode: no controls, auto-play, no replay
 }
 
-export function AudioPlayer({ audioUrl, onEnded, allowReplay = false }: AudioPlayerProps) {
+export function AudioPlayer({ audioUrl, onEnded, allowReplay = false, autoPlay = false, examMode = false }: AudioPlayerProps) {
   const [hasPlayed, setHasPlayed] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
 
@@ -27,6 +29,7 @@ export function AudioPlayer({ audioUrl, onEnded, allowReplay = false }: AudioPla
     toggle,
     setVolume,
   } = useAudioPlayer(audioUrl, {
+    autoPlay: autoPlay || examMode,
     onEnded: () => {
       setHasPlayed(true)
       onEnded?.()
@@ -51,6 +54,78 @@ export function AudioPlayer({ audioUrl, onEnded, allowReplay = false }: AudioPla
 
   const canPlay = allowReplay || !hasPlayed
 
+  // Exam mode: minimal UI, no controls
+  if (examMode) {
+    return (
+      <div className="rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-6 border">
+        <div className="flex items-center gap-4">
+          {/* Visual indicator or manual play for first time */}
+          {!hasPlayed && !isPlaying ? (
+            <Button
+              size="lg"
+              variant="default"
+              onClick={() => {
+                play()
+                setHasPlayed(true)
+              }}
+              disabled={!isLoaded}
+              className="h-14 w-14 rounded-full shrink-0"
+              title="Click to start audio if it doesn't play automatically"
+            >
+              <Play className="h-6 w-6 ml-1" />
+            </Button>
+          ) : (
+            <div className="flex items-center justify-center h-14 w-14 rounded-full bg-blue-100 dark:bg-blue-900/30 shrink-0">
+              {isPlaying ? (
+                <div className="flex gap-1">
+                  <div className="w-1 h-4 bg-blue-600 dark:bg-blue-400 animate-pulse" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-1 h-4 bg-blue-600 dark:bg-blue-400 animate-pulse" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-1 h-4 bg-blue-600 dark:bg-blue-400 animate-pulse" style={{ animationDelay: '300ms' }}></div>
+                </div>
+              ) : (
+                <Play className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              )}
+            </div>
+          )}
+
+          <div className="flex-1 space-y-2">
+            <Progress value={progress} className="h-2" />
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration)}</span>
+            </div>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleMuteToggle}
+            className="shrink-0"
+          >
+            {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+          </Button>
+        </div>
+
+        <div className="mt-4 text-center">
+          {isPlaying ? (
+            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+              🔊 Audio is playing... Listen carefully, it will only play once.
+            </p>
+          ) : hasPlayed ? (
+            <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+              ✓ Audio has finished. You cannot replay in exam mode.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              {isLoaded ? 'Click play to start audio (plays only once)' : 'Loading audio...'}
+            </p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Regular mode with controls
   return (
     <div className="rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-6 border">
       <div className="flex items-center gap-4">
