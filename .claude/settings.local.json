@@ -16,7 +16,8 @@
       "Bash(pnpm --version:*)",
       "Bash(npm ls:*)",
       "Bash(pnpm add:*)",
-      "Bash(npx next:*)"
+      "Bash(npx next:*)",
+      "Bash(wc:*)"
     ],
     "additionalDirectories": [
       "c:\\web\\developers-platform"

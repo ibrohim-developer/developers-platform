@@ -10,13 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  BookOpen,
-  Clock,
-  HelpCircle,
-  FileText,
-  Play,
-} from "lucide-react";
+import { BookOpen, Clock, HelpCircle, FileText, Play } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { cacheLife, cacheTag } from "next/cache";
 
@@ -69,8 +63,7 @@ async function getReadingTests(): Promise<ReadingTest[]> {
 
   const questionCountMap: Record<string, number> = {};
   (questionCounts ?? []).forEach((q: any) => {
-    questionCountMap[q.section_id] =
-      (questionCountMap[q.section_id] || 0) + 1;
+    questionCountMap[q.section_id] = (questionCountMap[q.section_id] || 0) + 1;
   });
 
   const testMap = new Map<string, any>();

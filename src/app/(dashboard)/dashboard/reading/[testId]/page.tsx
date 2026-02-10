@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect, useCallback, Suspense } from "react";
+import { use, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +20,11 @@ import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-gi
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
 import { useTestStore } from "@/stores/test-store";
 import { TEST_CONFIG } from "@/lib/constants/test-config";
+import { getTypeInstruction } from "@/lib/constants/reading-instructions";
+import { useReadingTest } from "@/hooks/use-reading-test";
+import { useFullscreen } from "@/hooks/use-fullscreen";
+import { useNavigationProtection } from "@/hooks/use-navigation-protection";
+import { useQuestionNavigation } from "@/hooks/use-question-navigation";
 import {
   Send,
   Loader2,
@@ -43,15 +48,6 @@ interface Question {
   text: string;
   options: string[] | null;
   metadata: Record<string, unknown> | null;
-}
-
-interface Passage {
-  id: string;
-  passageNumber: number;
-  title: string;
-  content: string;
-  wordCount: number | null;
-  questions: Question[];
 }
 
 export default function ReadingTestPage({
@@ -83,294 +79,53 @@ function ReadingTestContent({ testId }: { testId: string }) {
   const isReviewMode = searchParams.get("review") === "true";
   const reviewAttemptId = searchParams.get("attemptId");
 
-  const [showSubmitDialog, setShowSubmitDialog] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [passages, setPassages] = useState<Passage[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [hasStarted, setHasStarted] = useState(false);
-  const [reviewData, setReviewData] = useState<
-    Record<
-      string,
-      { userAnswer: string; correctAnswer: string; isCorrect: boolean }
-    >
-  >({});
-  const [unansweredQuestions, setUnansweredQuestions] = useState<Set<string>>(
-    new Set(),
-  );
-  const [showReloadWarning, setShowReloadWarning] = useState(false);
-  const [activeQuestionNumber, setActiveQuestionNumber] = useState(1);
+  const { resumeTimer } = useTestStore();
+  const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   const {
+    passages,
+    isLoading,
+    error,
+    hasStarted,
+    setHasStarted,
+    isSubmitting,
+    isTimeUp,
+    showSubmitDialog,
+    setShowSubmitDialog,
+    reviewData,
+    unansweredQuestions,
+    activePassageId,
     attemptId,
-    initTest,
     answers,
-    setAnswer,
-    resetTest,
-    timeRemaining,
-    resumeTimer,
-  } = useTestStore();
+    answeredCount,
+    handleAnswer,
+    handleSubmit,
+    handleTimeUp,
+  } = useReadingTest(testId, isReviewMode, reviewAttemptId);
 
-  const [activePassageId, setActivePassageId] = useState<string>("");
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const {
+    activePassageIndex,
+    currentPassage,
+    questionOffset,
+    firstQuestionNum,
+    lastQuestionNum,
+    totalQuestions,
+    questionGroups,
+    activeQuestionNumber,
+    goToQuestion,
+    goToPrevQuestion,
+    goToNextQuestion,
+  } = useQuestionNavigation(passages, activePassageId);
 
-  const loadReviewMode = useCallback(async () => {
-    if (!reviewAttemptId) {
-      setError("No attempt ID provided for review");
-      setIsLoading(false);
-      return;
-    }
+  const [showReloadWarning, setShowReloadWarning] = useState(false);
 
-    try {
-      const res = await fetch(
-        `/api/reading/review?attemptId=${reviewAttemptId}`,
-      );
-
-      if (!res.ok) {
-        throw new Error("Failed to load review data");
-      }
-
-      const data = await res.json();
-      setPassages(data.passages);
-      setActivePassageId(data.passages[0]?.id ?? "");
-
-      const reviewMap: Record<
-        string,
-        { userAnswer: string; correctAnswer: string; isCorrect: boolean }
-      > = {};
-      const unanswered = new Set<string>();
-
-      data.userAnswers.forEach((ua: any) => {
-        reviewMap[ua.question_id] = {
-          userAnswer: ua.user_answer || "",
-          correctAnswer: ua.correct_answer,
-          isCorrect: ua.is_correct,
-        };
-        if (!ua.user_answer || ua.user_answer.trim() === "") {
-          unanswered.add(ua.question_id);
-        }
-      });
-
-      setReviewData(reviewMap);
-      setUnansweredQuestions(unanswered);
-      setHasStarted(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load review");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [reviewAttemptId]);
-
-  const startTest = useCallback(async () => {
-    if (!testId) {
-      setError("No test ID provided");
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      const res = await fetch("/api/reading/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ testId }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to start test");
-      }
-
-      const data = await res.json();
-      setPassages(data.passages);
-      setActivePassageId(data.passages[0]?.id ?? "");
-      initTest(
-        data.attemptId,
-        testId,
-        "reading",
-        TEST_CONFIG.reading.totalTime,
-        false,
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to start test");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [testId, initTest]);
-
-  useEffect(() => {
-    if (isReviewMode) {
-      loadReviewMode();
-    } else {
-      startTest();
-    }
-  }, [isReviewMode, loadReviewMode, startTest]);
-
-  // Warn user before reload/leave during active test
-  useEffect(() => {
-    if (!hasStarted || isReviewMode) return;
-
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "F5" || ((e.ctrlKey || e.metaKey) && e.key === "r")) {
-        e.preventDefault();
-        setShowReloadWarning(true);
-      }
-    };
-
-    window.history.pushState({ testInProgress: true }, "");
-
-    const handlePopState = () => {
-      window.history.pushState({ testInProgress: true }, "");
-      setShowReloadWarning(true);
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, [hasStarted, isReviewMode]);
-
-  // Get the active passage index
-  const activePassageIndex = passages.findIndex(
-    (p) => p.id === activePassageId,
-  );
-  const currentPassage = passages.find((p) => p.id === activePassageId);
-  const allQuestions = passages.flatMap((p) => p.questions);
-  const answeredCount = Object.values(answers).filter(
-    (a) => a.answer.trim() !== "",
-  ).length;
-  const totalQuestions = allQuestions.length;
-
-  // Calculate question number offset for current passage
-  const questionOffset = passages
-    .slice(0, activePassageIndex)
-    .reduce((acc, p) => acc + p.questions.length, 0);
-
-  // Get first and last question numbers for the current passage
-  const firstQuestionNum = questionOffset + 1;
-  const lastQuestionNum =
-    questionOffset + (currentPassage?.questions.length ?? 0);
-
-  // Get question group info for current passage (group by type)
-  const getQuestionGroups = () => {
-    if (!currentPassage) return [];
-    const groups: {
-      type: string;
-      startNum: number;
-      endNum: number;
-      questions: Question[];
-    }[] = [];
-    let currentType = "";
-
-    currentPassage.questions.forEach((q, idx) => {
-      const qNum = questionOffset + idx + 1;
-      if (q.type !== currentType) {
-        if (currentType !== "") {
-          groups[groups.length - 1].endNum = qNum - 1;
-        }
-        currentType = q.type;
-        groups.push({
-          type: q.type,
-          startNum: qNum,
-          endNum: qNum,
-          questions: [q],
-        });
-      } else {
-        groups[groups.length - 1].questions.push(q);
-        groups[groups.length - 1].endNum = qNum;
-      }
-    });
-
-    return groups;
-  };
-
-  const questionGroups = getQuestionGroups();
-
-  const handleAnswer = (questionId: string, value: string) => {
-    setAnswer(questionId, value);
-  };
-
-  const handleSubmit = async () => {
-    if (!attemptId) return;
-    setIsSubmitting(true);
-
-    try {
-      const answersPayload: Record<string, string> = {};
-      for (const [qId, ans] of Object.entries(answers)) {
-        answersPayload[qId] = ans.answer;
-      }
-
-      const timeSpentSeconds = TEST_CONFIG.reading.totalTime - timeRemaining;
-
-      const res = await fetch("/api/reading/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          attemptId,
-          answers: answersPayload,
-          timeSpentSeconds,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to submit test");
-      }
-
-      const result = await res.json();
-      resetTest();
-      router.push(`/dashboard/results/${result.attemptId}`);
-    } catch {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleTimeUp = () => {
-    setShowSubmitDialog(true);
-  };
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
-    }
-  };
-
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () =>
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-  }, []);
-
-  const getTypeInstruction = (type: string) => {
-    switch (type) {
-      case "true_false_not_given":
-        return "Choose TRUE if the statement agrees with the information given in the text, choose FALSE if the statement contradicts the information, or choose NOT GIVEN if there is no information on this.";
-      case "multiple_choice":
-        return "Choose the correct letter, A, B, C or D.";
-      case "fill_in_blank":
-      case "sentence_completion":
-        return "Complete the sentences below. Write NO MORE THAN TWO WORDS from the passage for each answer.";
-      default:
-        return "";
-    }
-  };
+  useNavigationProtection({
+    enabled: hasStarted && !isReviewMode,
+    onShowWarning: useCallback(() => setShowReloadWarning(true), []),
+  });
 
   const renderQuestion = (question: Question, index: number) => {
     const globalIndex = questionOffset + index;
-
     const review = reviewData[question.id];
     const value = isReviewMode
       ? review?.userAnswer || ""
@@ -437,7 +192,6 @@ function ReadingTestContent({ testId }: { testId: string }) {
 
   if (!currentPassage) return null;
 
-  // Show start screen before beginning the test
   if (!hasStarted) {
     return (
       <div className="min-h-screen bg-muted/30 flex items-center justify-center">
@@ -526,7 +280,6 @@ function ReadingTestContent({ testId }: { testId: string }) {
       {/* Top Header Bar */}
       <header className="shrink-0 bg-white border-b border-gray-200 h-12 flex items-center px-4 justify-between">
         <div className="flex items-center gap-3">
-          {/* Back button */}
           <button
             onClick={() =>
               isReviewMode
@@ -538,19 +291,14 @@ function ReadingTestContent({ testId }: { testId: string }) {
             <ArrowLeft className="h-4 w-4" />
             <span>Back</span>
           </button>
-
-          {/* IELTS badge */}
           <div className="bg-red-600 text-white px-3 py-0.5 text-sm font-bold rounded">
             IELTS
           </div>
-
-          {/* Test ID */}
           <span className="text-gray-500 text-sm">
             ID: {attemptId?.slice(0, 5) || "-----"}
           </span>
         </div>
 
-        {/* Center - Timer and Start */}
         <div className="flex items-center gap-3">
           {!isReviewMode && (
             <>
@@ -568,7 +316,6 @@ function ReadingTestContent({ testId }: { testId: string }) {
           )}
         </div>
 
-        {/* Right icons */}
         <div className="flex items-center gap-2">
           <button
             onClick={toggleFullscreen}
@@ -616,7 +363,6 @@ function ReadingTestContent({ testId }: { testId: string }) {
             <div className="p-6 space-y-6 bg-white">
               {questionGroups.map((group, groupIndex) => (
                 <div key={groupIndex}>
-                  {/* Group header */}
                   <div className="mb-4">
                     <h3 className="font-bold text-base text-gray-900 mb-2">
                       Questions {group.startNum}-{group.endNum}
@@ -625,8 +371,6 @@ function ReadingTestContent({ testId }: { testId: string }) {
                       {getTypeInstruction(group.type)}
                     </p>
                   </div>
-
-                  {/* Questions */}
                   <div className="space-y-6">
                     {group.questions.map((question) => {
                       const globalIdx =
@@ -638,8 +382,6 @@ function ReadingTestContent({ testId }: { testId: string }) {
                       );
                     })}
                   </div>
-
-                  {/* Separator between groups */}
                   {groupIndex < questionGroups.length - 1 && (
                     <hr className="my-6 border-gray-200" />
                   )}
@@ -652,12 +394,10 @@ function ReadingTestContent({ testId }: { testId: string }) {
 
       {/* Bottom Navigation Bar */}
       <div className="shrink-0 bg-white border-t border-gray-200 h-10 flex items-center px-4 justify-between">
-        {/* Left: Part label */}
         <div className="flex items-center gap-1">
           <span className="text-sm font-bold text-gray-700 mr-2">
             Part {activePassageIndex + 1}
           </span>
-          {/* Question number buttons */}
           {currentPassage.questions.map((q, idx) => {
             const qNum = questionOffset + idx + 1;
             const isAnswered = !!answers[q.id]?.answer?.trim();
@@ -665,12 +405,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
             return (
               <button
                 key={q.id}
-                onClick={() => {
-                  setActiveQuestionNumber(qNum);
-                  // Scroll to question
-                  const el = document.getElementById(`question-${q.id}`);
-                  el?.scrollIntoView({ behavior: "smooth", block: "center" });
-                }}
+                onClick={() => goToQuestion(qNum)}
                 className={`w-7 h-7 text-xs font-medium rounded-sm border transition-colors ${
                   isActive
                     ? "border-blue-500 bg-white text-blue-600 font-bold"
@@ -685,34 +420,15 @@ function ReadingTestContent({ testId }: { testId: string }) {
           })}
         </div>
 
-        {/* Right: Navigation arrows and submit */}
         <div className="flex items-center gap-1">
           <button
-            onClick={() => {
-              const currentQIdx = activeQuestionNumber - questionOffset - 1;
-              if (currentQIdx > 0) {
-                const prevNum = activeQuestionNumber - 1;
-                setActiveQuestionNumber(prevNum);
-                const prevQ = currentPassage.questions[currentQIdx - 1];
-                const el = document.getElementById(`question-${prevQ.id}`);
-                el?.scrollIntoView({ behavior: "smooth", block: "center" });
-              }
-            }}
+            onClick={goToPrevQuestion}
             className="w-8 h-8 flex items-center justify-center bg-gray-700 text-white rounded-sm hover:bg-gray-600 transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <button
-            onClick={() => {
-              const currentQIdx = activeQuestionNumber - questionOffset - 1;
-              if (currentQIdx < currentPassage.questions.length - 1) {
-                const nextNum = activeQuestionNumber + 1;
-                setActiveQuestionNumber(nextNum);
-                const nextQ = currentPassage.questions[currentQIdx + 1];
-                const el = document.getElementById(`question-${nextQ.id}`);
-                el?.scrollIntoView({ behavior: "smooth", block: "center" });
-              }
-            }}
+            onClick={goToNextQuestion}
             className="w-8 h-8 flex items-center justify-center bg-gray-700 text-white rounded-sm hover:bg-gray-600 transition-colors"
           >
             <ChevronRight className="h-4 w-4" />
@@ -735,6 +451,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
         answeredCount={answeredCount}
         totalQuestions={totalQuestions}
         isSubmitting={isSubmitting}
+        timeUp={isTimeUp}
       />
 
       <ReloadWarningDialog
