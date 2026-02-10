@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, Suspense } from 'react'
+import { use, useState, useEffect, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
@@ -37,7 +37,13 @@ interface ReviewSubmission {
   feedback: string | null
 }
 
-export default function WritingTestPage() {
+export default function WritingTestPage({
+  params,
+}: {
+  params: Promise<{ testId: string }>
+}) {
+  const { testId } = use(params)
+
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
@@ -47,15 +53,14 @@ export default function WritingTestPage() {
         </div>
       </div>
     }>
-      <WritingTestContent />
+      <WritingTestContent testId={testId} />
     </Suspense>
   )
 }
 
-function WritingTestContent() {
+function WritingTestContent({ testId }: { testId: string }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const testId = searchParams.get('testId')
   const isReviewMode = searchParams.get('review') === 'true'
   const reviewAttemptId = searchParams.get('attemptId')
 
@@ -224,7 +229,7 @@ function WritingTestContent() {
 
       const result = await res.json()
       resetTest()
-      router.push(`/results/${result.attemptId}`)
+      router.push(`/dashboard/results/${result.attemptId}`)
     } catch {
       setIsSubmitting(false)
     }
@@ -351,7 +356,7 @@ function WritingTestContent() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => router.push(`/results/${reviewAttemptId}`)}
+                onClick={() => router.push(`/dashboard/results/${reviewAttemptId}`)}
                 className="flex items-center gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />

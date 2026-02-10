@@ -1,3 +1,5 @@
+"use cache";
+
 import Link from "next/link";
 import {
   Card,
@@ -10,18 +12,20 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PenTool, Clock, FileText, AlignLeft, Play } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-
-// Revalidate every 5 minutes
-export const revalidate = 300
+import { cacheLife, cacheTag } from "next/cache";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export default async function WritingTestsPage() {
+async function getWritingTests() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("writing-tests");
+
   const supabase = await createClient();
 
-  // Optimized: Fetch all data in one query
   const { data: tasks } = await supabase
     .from("writing_tasks")
-    .select(`
+    .select(
+      `
       id,
       test_id,
       tests!inner (
@@ -31,10 +35,10 @@ export default async function WritingTestsPage() {
         difficulty_level,
         is_published
       )
-    `)
+    `,
+    )
     .eq("tests.is_published", true);
 
-  // Group by test and calculate totals
   const testMap = new Map<string, any>();
   (tasks ?? []).forEach((task: any) => {
     const test = task.tests;
@@ -52,7 +56,14 @@ export default async function WritingTestsPage() {
     testData.tasks += 1;
   });
 
-  const writingTests = Array.from(testMap.values());
+  return Array.from(testMap.values());
+}
+
+export default async function WritingTestsPage() {
+  cacheLife("minutes");
+  cacheTag("writing-page");
+
+  const writingTests = await getWritingTests();
 
   return (
     <div className="space-y-8">
@@ -142,7 +153,7 @@ export default async function WritingTestsPage() {
                     {test.tasks} tasks
                   </span>
                 </div>
-                <Link href={`/writing?testId=${test.id}`}>
+                <Link href={`/dashboard/writing/${test.id}`}>
                   <Button className="w-full">
                     <Play className="mr-2 h-4 w-4" />
                     Start Test

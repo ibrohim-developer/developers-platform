@@ -1,20 +1,18 @@
 'use client'
 
-import { useState, useEffect, useCallback, Suspense } from 'react'
+import { use, useState, useEffect, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TestTimer } from '@/components/test/common/test-timer'
 import { SubmitDialog } from '@/components/test/common/submit-dialog'
 import { ReloadWarningDialog } from '@/components/test/common/reload-warning-dialog'
-import { SplitView } from '@/components/test/reading/split-view'
-import { PassageDisplay } from '@/components/test/reading/passage-display'
+import { AudioPlayer } from '@/components/test/listening/audio-player'
 import { MultipleChoice } from '@/components/test/questions/multiple-choice'
-import { TrueFalseNotGiven } from '@/components/test/questions/true-false-not-given'
 import { FillInBlank } from '@/components/test/questions/fill-in-blank'
 import { useTestStore } from '@/stores/test-store'
 import { TEST_CONFIG } from '@/lib/constants/test-config'
-import { Send, Loader2, Clock, BookOpen, ArrowLeft, Maximize2, Minimize2, Bell, Menu, PenSquare, ChevronLeft, ChevronRight, Check } from 'lucide-react'
+import { Send, Loader2, Clock, Headphones, ArrowLeft, Maximize2, Minimize2, Bell, Menu, PenSquare, ChevronLeft, ChevronRight, Check } from 'lucide-react'
 
 interface Question {
   id: string
@@ -25,16 +23,22 @@ interface Question {
   metadata: Record<string, unknown> | null
 }
 
-interface Passage {
+interface Section {
   id: string
-  passageNumber: number
-  title: string
-  content: string
-  wordCount: number | null
+  sectionNumber: number
+  audioUrl: string
+  audioDurationSeconds: number
+  transcript: string
   questions: Question[]
 }
 
-export default function ReadingTestPage() {
+export default function ListeningTestPage({
+  params,
+}: {
+  params: Promise<{ testId: string }>
+}) {
+  const { testId } = use(params)
+
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
@@ -44,28 +48,29 @@ export default function ReadingTestPage() {
         </div>
       </div>
     }>
-      <ReadingTestContent />
+      <ListeningTestContent testId={testId} />
     </Suspense>
   )
 }
 
-function ReadingTestContent() {
+function ListeningTestContent({ testId }: { testId: string }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const testId = searchParams.get('testId')
   const isReviewMode = searchParams.get('review') === 'true'
   const reviewAttemptId = searchParams.get('attemptId')
 
   const [showSubmitDialog, setShowSubmitDialog] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [passages, setPassages] = useState<Passage[]>([])
+  const [sections, setSections] = useState<Section[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [hasStarted, setHasStarted] = useState(false)
   const [reviewData, setReviewData] = useState<Record<string, { userAnswer: string; correctAnswer: string; isCorrect: boolean }>>({})
   const [unansweredQuestions, setUnansweredQuestions] = useState<Set<string>>(new Set())
   const [showReloadWarning, setShowReloadWarning] = useState(false)
+  const [activeSectionIndex, setActiveSectionIndex] = useState(0)
   const [activeQuestionNumber, setActiveQuestionNumber] = useState(1)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   const {
     attemptId,
@@ -77,9 +82,6 @@ function ReadingTestContent() {
     resumeTimer,
   } = useTestStore()
 
-  const [activePassageId, setActivePassageId] = useState<string>('')
-  const [isFullscreen, setIsFullscreen] = useState(false)
-
   const loadReviewMode = useCallback(async () => {
     if (!reviewAttemptId) {
       setError('No attempt ID provided for review')
@@ -88,15 +90,14 @@ function ReadingTestContent() {
     }
 
     try {
-      const res = await fetch(`/api/reading/review?attemptId=${reviewAttemptId}`)
+      const res = await fetch(`/api/listening/review?attemptId=${reviewAttemptId}`)
 
       if (!res.ok) {
         throw new Error('Failed to load review data')
       }
 
       const data = await res.json()
-      setPassages(data.passages)
-      setActivePassageId(data.passages[0]?.id ?? '')
+      setSections(data.sections)
 
       const reviewMap: Record<string, { userAnswer: string; correctAnswer: string; isCorrect: boolean }> = {}
       const unanswered = new Set<string>()
@@ -130,7 +131,7 @@ function ReadingTestContent() {
     }
 
     try {
-      const res = await fetch('/api/reading/start', {
+      const res = await fetch('/api/listening/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ testId }),
@@ -142,9 +143,8 @@ function ReadingTestContent() {
       }
 
       const data = await res.json()
-      setPassages(data.passages)
-      setActivePassageId(data.passages[0]?.id ?? '')
-      initTest(data.attemptId, testId, 'reading', TEST_CONFIG.reading.totalTime, false)
+      setSections(data.sections)
+      initTest(data.attemptId, testId, 'listening', TEST_CONFIG.listening.totalTime, false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start test')
     } finally {
@@ -195,29 +195,26 @@ function ReadingTestContent() {
     }
   }, [hasStarted, isReviewMode])
 
-  // Get the active passage index
-  const activePassageIndex = passages.findIndex(p => p.id === activePassageId)
-  const currentPassage = passages.find(p => p.id === activePassageId)
-  const allQuestions = passages.flatMap(p => p.questions)
+  const currentSection = sections[activeSectionIndex]
+  const allQuestions = sections.flatMap(s => s.questions)
   const answeredCount = Object.values(answers).filter(a => a.answer.trim() !== '').length
   const totalQuestions = allQuestions.length
 
-  // Calculate question number offset for current passage
-  const questionOffset = passages
-    .slice(0, activePassageIndex)
-    .reduce((acc, p) => acc + p.questions.length, 0)
+  // Calculate question number offset for current section
+  const questionOffset = sections
+    .slice(0, activeSectionIndex)
+    .reduce((acc, s) => acc + s.questions.length, 0)
 
-  // Get first and last question numbers for the current passage
   const firstQuestionNum = questionOffset + 1
-  const lastQuestionNum = questionOffset + (currentPassage?.questions.length ?? 0)
+  const lastQuestionNum = questionOffset + (currentSection?.questions.length ?? 0)
 
-  // Get question group info for current passage (group by type)
+  // Get question groups for current section (group by type)
   const getQuestionGroups = () => {
-    if (!currentPassage) return []
+    if (!currentSection) return []
     const groups: { type: string; startNum: number; endNum: number; questions: Question[] }[] = []
     let currentType = ''
 
-    currentPassage.questions.forEach((q, idx) => {
+    currentSection.questions.forEach((q, idx) => {
       const qNum = questionOffset + idx + 1
       if (q.type !== currentType) {
         if (currentType !== '') {
@@ -240,36 +237,45 @@ function ReadingTestContent() {
     setAnswer(questionId, value)
   }
 
+  const getTypeInstruction = (type: string) => {
+    switch (type) {
+      case 'multiple_choice':
+        return 'Choose the correct answer.'
+      case 'fill_in_blank':
+        return 'Write NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.'
+      default:
+        return ''
+    }
+  }
+
   const handleSubmit = async () => {
     if (!attemptId) return
-    setIsSubmitting(true)
 
+    setIsSubmitting(true)
     try {
       const answersPayload: Record<string, string> = {}
-      for (const [qId, ans] of Object.entries(answers)) {
-        answersPayload[qId] = ans.answer
-      }
+      Object.entries(answers).forEach(([questionId, answer]) => {
+        answersPayload[questionId] = answer.answer
+      })
 
-      const timeSpentSeconds = TEST_CONFIG.reading.totalTime - timeRemaining
+      const timeSpentSeconds = Math.floor((TEST_CONFIG.listening.totalTime - timeRemaining) / 1000)
 
-      const res = await fetch('/api/reading/submit', {
+      const res = await fetch('/api/listening/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          attemptId,
-          answers: answersPayload,
-          timeSpentSeconds,
-        }),
+        body: JSON.stringify({ attemptId, answers: answersPayload, timeSpentSeconds }),
       })
 
       if (!res.ok) {
-        throw new Error('Failed to submit test')
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to submit test')
       }
 
       const result = await res.json()
       resetTest()
-      router.push(`/results/${result.attemptId}`)
-    } catch {
+      router.push(`/dashboard/results/${result.attemptId}`)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to submit test')
       setIsSubmitting(false)
     }
   }
@@ -296,22 +302,8 @@ function ReadingTestContent() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
   }, [])
 
-  const getTypeInstruction = (type: string) => {
-    switch (type) {
-      case 'true_false_not_given':
-        return 'Choose TRUE if the statement agrees with the information given in the text, choose FALSE if the statement contradicts the information, or choose NOT GIVEN if there is no information on this.'
-      case 'multiple_choice':
-        return 'Choose the correct letter, A, B, C or D.'
-      case 'fill_in_blank':
-      case 'sentence_completion':
-        return 'Complete the sentences below. Write NO MORE THAN TWO WORDS from the passage for each answer.'
-      default:
-        return ''
-    }
-  }
-
-  const renderQuestion = (question: Question, index: number) => {
-    const globalIndex = questionOffset + index
+  const renderQuestion = (question: Question, localIndex: number) => {
+    const globalIndex = questionOffset + localIndex
 
     const review = reviewData[question.id]
     const value = isReviewMode ? (review?.userAnswer || '') : (answers[question.id]?.answer || '')
@@ -335,18 +327,10 @@ function ReadingTestContent() {
           <MultipleChoice
             key={question.id}
             {...commonProps}
-            options={question.options ?? []}
-          />
-        )
-      case 'true_false_not_given':
-        return (
-          <TrueFalseNotGiven
-            key={question.id}
-            {...commonProps}
+            options={question.options || []}
           />
         )
       case 'fill_in_blank':
-      case 'sentence_completion':
         return (
           <FillInBlank
             key={question.id}
@@ -374,15 +358,15 @@ function ReadingTestContent() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-center">
           <p className="text-destructive font-medium">{error}</p>
-          <Button variant="outline" onClick={() => router.push('/dashboard/reading')}>
-            Back to Reading Tests
+          <Button variant="outline" onClick={() => router.push('/dashboard/listening')}>
+            Back to Listening Tests
           </Button>
         </div>
       </div>
     )
   }
 
-  if (!currentPassage) return null
+  if (totalQuestions === 0) return null
 
   // Show start screen before beginning the test
   if (!hasStarted) {
@@ -390,7 +374,7 @@ function ReadingTestContent() {
       <div className="min-h-screen bg-muted/30 flex items-center justify-center">
         <Card className="max-w-2xl w-full mx-4">
           <CardHeader>
-            <CardTitle className="text-2xl">IELTS Reading Test</CardTitle>
+            <CardTitle className="text-2xl">IELTS Listening Test</CardTitle>
             <CardDescription>
               Please read the instructions carefully before starting
             </CardDescription>
@@ -404,19 +388,19 @@ function ReadingTestContent() {
                 <div>
                   <p className="font-medium">Time Limit</p>
                   <p className="text-sm text-muted-foreground">
-                    You have {TEST_CONFIG.reading.totalTime / 60} minutes to complete this test
+                    You have {TEST_CONFIG.listening.totalTime / 60} minutes to complete this test
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <BookOpen className="h-4 w-4 text-primary" />
+                  <Headphones className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium">Reading Passages</p>
+                  <p className="font-medium">Listening Sections</p>
                   <p className="text-sm text-muted-foreground">
-                    This test contains {passages.length} passage{passages.length > 1 ? 's' : ''} with {totalQuestions} questions total
+                    This test contains {sections.length} section{sections.length > 1 ? 's' : ''} with {totalQuestions} questions total
                   </p>
                 </div>
               </div>
@@ -428,10 +412,10 @@ function ReadingTestContent() {
                 <div>
                   <p className="font-medium">Instructions</p>
                   <ul className="text-sm text-muted-foreground space-y-1 mt-1 list-disc list-inside">
-                    <li>Read each passage carefully before answering questions</li>
-                    <li>You can navigate between passages using the tabs</li>
+                    <li>Audio will start automatically when you begin the test</li>
+                    <li>Listen carefully - audio plays only once and cannot be paused</li>
+                    <li>Answer questions while listening or after audio finishes</li>
                     <li>The timer will start when you click &quot;Begin Test&quot;</li>
-                    <li>You can submit your test at any time</li>
                   </ul>
                 </div>
               </div>
@@ -441,7 +425,7 @@ function ReadingTestContent() {
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => router.push('/dashboard/reading')}
+                onClick={() => router.push('/dashboard/listening')}
               >
                 Cancel
               </Button>
@@ -468,7 +452,7 @@ function ReadingTestContent() {
         <div className="flex items-center gap-3">
           {/* Back button */}
           <button
-            onClick={() => isReviewMode ? router.push(`/results/${reviewAttemptId}`) : router.push('/dashboard/reading')}
+            onClick={() => isReviewMode ? router.push(`/dashboard/results/${reviewAttemptId}`) : router.push('/dashboard/listening')}
             className="flex items-center gap-1 text-gray-700 hover:text-gray-900 text-sm"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -480,24 +464,16 @@ function ReadingTestContent() {
             IELTS
           </div>
 
-          {/* Test ID */}
+          {/* Test taker ID */}
           <span className="text-gray-500 text-sm">
-            ID: {attemptId?.slice(0, 5) || '-----'}
+            Test taker ID: {attemptId?.slice(0, 5) || '-----'}
           </span>
         </div>
 
-        {/* Center - Timer and Start */}
+        {/* Center - Timer */}
         <div className="flex items-center gap-3">
           {!isReviewMode && (
-            <>
-              <TestTimer onTimeUp={handleTimeUp} className="bg-transparent text-gray-800 px-2 py-1 text-base" />
-              <button
-                onClick={() => setShowSubmitDialog(true)}
-                className="bg-red-500 hover:bg-red-600 text-white text-sm font-medium px-4 py-1 rounded transition-colors"
-              >
-                Start
-              </button>
-            </>
+            <TestTimer onTimeUp={handleTimeUp} className="bg-transparent text-gray-800 px-2 py-1 text-base" />
           )}
         </div>
 
@@ -523,63 +499,61 @@ function ReadingTestContent() {
 
       {/* Part instruction sub-header */}
       <div className="shrink-0 bg-gray-100 border-b border-gray-200 px-6 py-2.5">
-        <p className="font-bold text-sm text-gray-900">Part {activePassageIndex + 1}</p>
-        <p className="text-sm text-gray-700">Read the text and answer questions {firstQuestionNum}-{lastQuestionNum}.</p>
+        <p className="font-bold text-sm text-gray-900">Part {activeSectionIndex + 1}</p>
+        <p className="text-sm text-gray-700">Listen and answer questions {firstQuestionNum}-{lastQuestionNum}.</p>
       </div>
 
-      {/* Main Content - Split View */}
-      <div className="flex-1 min-h-0">
-        <SplitView
-          leftPanel={
-            <PassageDisplay
-              title={currentPassage.title}
-              content={currentPassage.content}
+      {/* Main Content - Full width questions */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="max-w-4xl mx-auto p-6 space-y-6">
+          {/* Audio Player (only in non-review mode) */}
+          {!isReviewMode && currentSection && (
+            <AudioPlayer
+              audioUrl={currentSection.audioUrl}
+              examMode={!isReviewMode}
             />
-          }
-          rightPanel={
-            <div className="p-6 space-y-6 bg-white">
-              {questionGroups.map((group, groupIndex) => (
-                <div key={groupIndex}>
-                  {/* Group header */}
-                  <div className="mb-4">
-                    <h3 className="font-bold text-base text-gray-900 mb-2">
-                      Questions {group.startNum}-{group.endNum}
-                    </h3>
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {getTypeInstruction(group.type)}
-                    </p>
-                  </div>
+          )}
 
-                  {/* Questions */}
-                  <div className="space-y-6">
-                    {group.questions.map((question) => {
-                      const globalIdx = currentPassage.questions.indexOf(question)
-                      return (
-                        <div key={question.id}>
-                          {renderQuestion(question, globalIdx)}
-                        </div>
-                      )
-                    })}
-                  </div>
+          {/* Question groups */}
+          {questionGroups.map((group, groupIndex) => (
+            <div key={groupIndex}>
+              {/* Group header */}
+              <div className="mb-4">
+                <h3 className="font-bold text-base text-gray-900 mb-1">
+                  Questions {group.startNum}-{group.endNum}
+                </h3>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {getTypeInstruction(group.type)}
+                </p>
+              </div>
 
-                  {/* Separator between groups */}
-                  {groupIndex < questionGroups.length - 1 && (
-                    <hr className="my-6 border-gray-200" />
-                  )}
-                </div>
-              ))}
+              {/* Questions */}
+              <div className="space-y-6">
+                {group.questions.map((question) => {
+                  const globalIdx = currentSection.questions.indexOf(question)
+                  return (
+                    <div key={question.id}>
+                      {renderQuestion(question, globalIdx)}
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Separator between groups */}
+              {groupIndex < questionGroups.length - 1 && (
+                <hr className="my-6 border-gray-200" />
+              )}
             </div>
-          }
-        />
+          ))}
+        </div>
       </div>
 
       {/* Bottom Navigation Bar */}
       <div className="shrink-0 bg-white border-t border-gray-200 h-10 flex items-center px-4 justify-between">
-        {/* Left: Part label */}
+        {/* Left: Part label and question numbers */}
         <div className="flex items-center gap-1">
-          <span className="text-sm font-bold text-gray-700 mr-2">Part {activePassageIndex + 1}</span>
-          {/* Question number buttons */}
-          {currentPassage.questions.map((q, idx) => {
+          <span className="text-sm font-bold text-gray-700 mr-2">Part {activeSectionIndex + 1}</span>
+          {currentSection?.questions.map((q, idx) => {
             const qNum = questionOffset + idx + 1
             const isAnswered = !!answers[q.id]?.answer?.trim()
             const isActive = activeQuestionNumber === qNum
@@ -588,7 +562,6 @@ function ReadingTestContent() {
                 key={q.id}
                 onClick={() => {
                   setActiveQuestionNumber(qNum)
-                  // Scroll to question
                   const el = document.getElementById(`question-${q.id}`)
                   el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
                 }}
@@ -611,10 +584,10 @@ function ReadingTestContent() {
           <button
             onClick={() => {
               const currentQIdx = activeQuestionNumber - questionOffset - 1
-              if (currentQIdx > 0) {
+              if (currentQIdx > 0 && currentSection) {
                 const prevNum = activeQuestionNumber - 1
                 setActiveQuestionNumber(prevNum)
-                const prevQ = currentPassage.questions[currentQIdx - 1]
+                const prevQ = currentSection.questions[currentQIdx - 1]
                 const el = document.getElementById(`question-${prevQ.id}`)
                 el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
               }
@@ -626,10 +599,10 @@ function ReadingTestContent() {
           <button
             onClick={() => {
               const currentQIdx = activeQuestionNumber - questionOffset - 1
-              if (currentQIdx < currentPassage.questions.length - 1) {
+              if (currentSection && currentQIdx < currentSection.questions.length - 1) {
                 const nextNum = activeQuestionNumber + 1
                 setActiveQuestionNumber(nextNum)
-                const nextQ = currentPassage.questions[currentQIdx + 1]
+                const nextQ = currentSection.questions[currentQIdx + 1]
                 const el = document.getElementById(`question-${nextQ.id}`)
                 el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
               }
