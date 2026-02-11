@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Clock, HelpCircle, FileText, Play } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { cacheLife, cacheTag } from "next/cache";
 
 interface ReadingTest {
@@ -30,7 +30,7 @@ async function getReadingTests(): Promise<ReadingTest[]> {
   cacheLife("minutes");
   cacheTag("reading-tests");
 
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const { data: passages } = await supabase
     .from("reading_passages")
