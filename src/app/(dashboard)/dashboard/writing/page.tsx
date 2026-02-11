@@ -1,5 +1,3 @@
-"use cache";
-
 import Link from "next/link";
 import {
   Card,
@@ -11,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PenTool, Clock, FileText, AlignLeft, Play } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/service";
 import { cacheLife, cacheTag } from "next/cache";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -20,7 +18,7 @@ async function getWritingTests() {
   cacheLife("minutes");
   cacheTag("writing-tests");
 
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const { data: tasks } = await supabase
     .from("writing_tasks")
@@ -60,9 +58,6 @@ async function getWritingTests() {
 }
 
 export default async function WritingTestsPage() {
-  cacheLife("minutes");
-  cacheTag("writing-page");
-
   const writingTests = await getWritingTests();
 
   return (
