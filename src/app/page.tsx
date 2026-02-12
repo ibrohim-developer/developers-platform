@@ -7,8 +7,6 @@ import {
   Pencil,
   Zap,
   CalendarDays,
-  Play,
-  ChevronDown,
 } from 'lucide-react'
 import { getUser } from '@/actions/auth'
 import { RotatingText } from '@/components/rotating-text'
@@ -29,7 +27,7 @@ export default async function HomePage() {
         {/* Hero Section */}
         <header className="relative pt-24 pb-20 lg:pt-32 lg:pb-32 overflow-hidden border-b border-black">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] mb-12 rounded-full">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary text-white text-[10px] font-black uppercase tracking-[0.2em] mb-10 rounded-full">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
@@ -37,7 +35,7 @@ export default async function HomePage() {
               AI-Powered Band Scoring Live
             </div>
 
-            <h1 className="text-7xl md:text-[140px] font-black text-black mb-12 leading-[0.8] tracking-tighter uppercase">
+            <h1 className="text-7xl md:text-[140px] font-black text-black mb-12 leading-[0.8] tracking-tighter uppercase font-bold">
               Get Your <br />
               <span className="text-primary">IELTS</span> Band <br className="hidden md:block" /> Score <RotatingText />
             </h1>
@@ -66,28 +64,28 @@ export default async function HomePage() {
         <section className="py-32 bg-white border-b border-black" id="how-it-works">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-24">
-              <h2 className="text-5xl md:text-8xl font-black text-black mb-4 uppercase tracking-tighter">Methodology</h2>
+              <h2 className="text-5xl md:text-8xl font-black text-black mb-4 uppercase tracking-tighter font-bold">Methodology</h2>
               <div className="h-3 w-32 bg-primary"></div>
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
               <div className="p-12 border border-black rounded-2xl hover:bg-neutral-50 transition-colors">
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] block mb-12 text-primary">Step 01</span>
-                <h3 className="text-4xl font-black mb-6 uppercase tracking-tighter">Choose Test</h3>
+                <h3 className="text-4xl font-black mb-6 uppercase tracking-tighter font-bold">Choose Test</h3>
                 <p className="text-neutral-600 leading-snug font-normal text-lg">
                   Select Academic or General training and pick a specific module: Listening, Reading, Writing, or Speaking.
                 </p>
               </div>
               <div className="p-12 border border-black rounded-2xl hover:bg-neutral-50 transition-colors">
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] block mb-12 text-primary">Step 02</span>
-                <h3 className="text-4xl font-black mb-6 uppercase tracking-tighter">Execute Tasks</h3>
+                <h3 className="text-4xl font-black mb-6 uppercase tracking-tighter font-bold">Execute Tasks</h3>
                 <p className="text-neutral-600 leading-snug font-normal text-lg">
                   Experience a realistic exam interface with strict time constraints and authentic question types.
                 </p>
               </div>
               <div className="p-12 border border-black rounded-2xl hover:bg-neutral-50 transition-colors">
                 <span className="text-[10px] font-black uppercase tracking-[0.3em] block mb-12 text-primary">Step 03</span>
-                <h3 className="text-4xl font-black mb-6 uppercase tracking-tighter">AI Feedback</h3>
+                <h3 className="text-4xl font-black mb-6 uppercase tracking-tighter font-bold">AI Feedback</h3>
                 <p className="text-neutral-600 leading-snug font-normal text-lg">
                   Receive an AI-generated band score and detailed breakdown of your performance metrics instantly.
                 </p>
@@ -101,7 +99,7 @@ export default async function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-20 items-start">
               <div>
-                <h2 className="text-6xl md:text-8xl font-black text-black mb-16 leading-[0.85] uppercase tracking-tighter">
+                <h2 className="text-6xl md:text-8xl font-black text-black mb-16 leading-[0.85] uppercase tracking-tighter font-bold">
                   Superior <br />Mock Tech.
                 </h2>
 
@@ -110,7 +108,7 @@ export default async function HomePage() {
                     <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
                       <Timer className="text-white w-4 h-4" />
                     </div>
-                    <h4 className="font-black text-xl uppercase tracking-tight">Real Exam Format</h4>
+                    <h4 className="font-black text-xl uppercase tracking-tight font-bold">Real Exam Format</h4>
                     <p className="text-neutral-600 font-normal leading-snug">
                       Timed sessions that strictly mimic the official IELTS test environment.
                     </p>
@@ -119,7 +117,7 @@ export default async function HomePage() {
                     <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
                       <Pencil className="text-white w-4 h-4" />
                     </div>
-                    <h4 className="font-black text-xl uppercase tracking-tight">Writing Correction</h4>
+                    <h4 className="font-black text-xl uppercase tracking-tight font-bold">Writing Correction</h4>
                     <p className="text-neutral-600 font-normal leading-snug">
                       Deep analysis of grammar, vocabulary range, and coherence.
                     </p>
@@ -128,7 +126,7 @@ export default async function HomePage() {
                     <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                       <Zap className="text-white w-4 h-4" />
                     </div>
-                    <h4 className="font-black text-xl uppercase tracking-tight">Instant Band Score</h4>
+                    <h4 className="font-black text-xl uppercase tracking-tight font-bold">Instant Band Score</h4>
                     <p className="text-neutral-600 font-normal leading-snug">
                       Predictive scoring models with industrial-grade precision.
                     </p>
@@ -137,7 +135,7 @@ export default async function HomePage() {
                     <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
                       <CalendarDays className="text-white w-4 h-4" />
                     </div>
-                    <h4 className="font-black text-xl uppercase tracking-tight">Daily Practice</h4>
+                    <h4 className="font-black text-xl uppercase tracking-tight font-bold">Daily Practice</h4>
                     <p className="text-neutral-600 font-normal leading-snug">
                       Access 500+ fresh questions updated on a weekly cycle.
                     </p>
@@ -183,7 +181,7 @@ export default async function HomePage() {
         <section className="py-32 bg-black text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-left mb-20 border-b border-white/20 pb-12">
-              <h2 className="text-6xl md:text-8xl font-black mb-4 uppercase tracking-tighter">Live Analysis</h2>
+              <h2 className="text-6xl md:text-8xl font-black mb-4 uppercase tracking-tighter font-bold">Live Analysis</h2>
               <p className="text-neutral-400 font-normal text-xl">High-precision linguistic feedback engine.</p>
             </div>
 
@@ -362,7 +360,7 @@ export default async function HomePage() {
         <section className="py-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="border-[16px] border-primary p-20 text-center bg-white rounded-3xl">
-              <h2 className="text-7xl md:text-9xl font-black mb-10 tracking-tighter uppercase leading-[0.8]">
+              <h2 className="text-7xl md:text-9xl font-black mb-10 tracking-tighter uppercase leading-[0.8] font-bold">
                 Join the <br />
                 <span className="text-primary">Standard.</span>
               </h2>
@@ -373,7 +371,7 @@ export default async function HomePage() {
                 href="/sign-up"
                 className="inline-block bg-primary text-white px-20 py-8 text-base font-black uppercase tracking-[0.3em] hover:bg-primary/90 transition-all rounded-xl"
               >
-                Access Now
+                Start for free
               </Link>
             </div>
           </div>

@@ -30,7 +30,7 @@ export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: 
         <div className="flex justify-between items-center h-20">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl font-black tracking-tighter text-black">
-              ielts<span className="text-primary">.</span>zone
+              Nimadur
             </span>
           </Link>
 

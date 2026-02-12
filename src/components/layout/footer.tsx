@@ -7,7 +7,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-16 mb-24">
           <div className="col-span-2 md:col-span-1">
             <div className="text-3xl font-black tracking-tighter text-black mb-8">
-              ielts<span className="text-primary">.</span>zone
+              Nimadur
             </div>
             <p className="text-neutral-500 text-base leading-snug font-normal">
               Industrial precision in English language assessment.
