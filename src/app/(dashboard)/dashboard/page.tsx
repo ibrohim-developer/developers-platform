@@ -232,7 +232,7 @@ export default async function DashboardPage() {
                       {attempt.status === 'completed' ? `Band ${attempt.band_score}` : 'In Progress'}
                     </Badge>
                     {attempt.status === 'completed' && (
-                      <Link href={`/results/${attempt.id}`}>
+                      <Link href={`/dashboard/results/${attempt.id}`}>
                         <Button variant="ghost" size="sm">
                           View Results
                         </Button>

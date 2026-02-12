@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+import { GoogleAnalytics } from "@/components/google-analytics";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "IELTS Mock - Practice Tests Online",
-  description: "Prepare for IELTS with comprehensive mock tests. Practice Listening, Reading, and Writing with real exam conditions.",
+  title: "ielts.zone - AI IELTS Mock Exam",
+  description: "Practice with real exam questions and get instant AI-powered feedback. Target band 5.0 to 8.0+ with precision.",
 };
 
 export default function RootLayout({
@@ -25,6 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <GoogleAnalytics />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

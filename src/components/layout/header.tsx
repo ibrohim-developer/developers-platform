@@ -1,8 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { BookOpen, Menu, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Menu, X } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useState } from 'react'
 
@@ -14,7 +13,6 @@ interface HeaderProps {
 }
 
 export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: HeaderProps) {
-  // Get initials for avatar fallback
   const getInitials = () => {
     if (userName) {
       return userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
@@ -27,55 +25,42 @@ export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
+    <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-black">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-20">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-xl">IELTS Mock</span>
+            <span className="text-2xl font-black tracking-tighter text-black">
+              Nimadur
+            </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/reading" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Reading
-            </Link>
-            <Link href="/writing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Writing
-            </Link>
-            <Link href="/listening" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Listening
-            </Link>
-          </nav>
-
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center space-x-10 text-xs font-bold uppercase tracking-widest">
+            <a className="hover:text-primary transition-colors" href="#features">Features</a>
+            <a className="hover:text-primary transition-colors" href="#how-it-works">How it Works</a>
+            <a className="hover:text-primary transition-colors" href="#pricing">Pricing</a>
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
-                <Link href="/dashboard">
-                  <Button>Dashboard</Button>
+                <Link
+                  href="/dashboard"
+                  className="bg-primary text-white px-6 py-3 font-black hover:bg-primary/90 transition-all uppercase text-[11px] tracking-widest rounded-lg"
+                >
+                  Dashboard
                 </Link>
-                <Avatar>
+                <Avatar className="h-8 w-8">
                   <AvatarImage src={userAvatar || undefined} alt={userName || userEmail || 'User'} />
-                  <AvatarFallback>{getInitials()}</AvatarFallback>
+                  <AvatarFallback className="text-xs">{getInitials()}</AvatarFallback>
                 </Avatar>
               </div>
             ) : (
-              <>
-                <Link href="/sign-in">
-                  <Button variant="ghost">Sign In</Button>
-                </Link>
-                <Link href="/sign-up">
-                  <Button>Get Started</Button>
-                </Link>
-              </>
+              <Link
+                href="/sign-up"
+                className="bg-primary text-white px-6 py-3 font-black hover:bg-primary/90 transition-all uppercase text-[11px] tracking-widest rounded-lg"
+              >
+                Free Mock Test
+              </Link>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             className="md:hidden p-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -84,51 +69,53 @@ export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: 
           </button>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t">
-            <nav className="flex flex-col gap-4">
-              <Link href="/reading" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-                Reading
-              </Link>
-              <Link href="/writing" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-                Writing
-              </Link>
-              <Link href="/listening" className="text-sm font-medium text-muted-foreground hover:text-foreground">
-                Listening
-              </Link>
-              <div className="flex flex-col gap-2 pt-4 border-t">
+          <div className="md:hidden py-6 border-t border-black">
+            <nav className="flex flex-col gap-6">
+              <a className="text-xs font-bold uppercase tracking-widest hover:text-primary" href="#features">Features</a>
+              <a className="text-xs font-bold uppercase tracking-widest hover:text-primary" href="#how-it-works">How it Works</a>
+              <a className="text-xs font-bold uppercase tracking-widest hover:text-primary" href="#pricing">Pricing</a>
+              <div className="pt-4 border-t border-black">
                 {isLoggedIn ? (
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2 px-3 py-2">
-                      <Avatar>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-8 w-8">
                         <AvatarImage src={userAvatar || undefined} alt={userName || userEmail || 'User'} />
-                        <AvatarFallback>{getInitials()}</AvatarFallback>
+                        <AvatarFallback className="text-xs">{getInitials()}</AvatarFallback>
                       </Avatar>
-                      <div className="flex flex-col text-sm">
-                        <span className="font-medium">{userName || 'User'}</span>
-                        <span className="text-muted-foreground text-xs">{userEmail}</span>
+                      <div className="flex flex-col text-xs">
+                        <span className="font-bold">{userName || 'User'}</span>
+                        <span className="text-neutral-500">{userEmail}</span>
                       </div>
                     </div>
-                    <Link href="/dashboard">
-                      <Button className="w-full">Dashboard</Button>
+                    <Link
+                      href="/dashboard"
+                      className="bg-primary text-white px-6 py-3 font-black hover:bg-primary/90 transition-all uppercase text-[11px] tracking-widest rounded-lg text-center"
+                    >
+                      Dashboard
                     </Link>
                   </div>
                 ) : (
-                  <>
-                    <Link href="/sign-in">
-                      <Button variant="outline" className="w-full">Sign In</Button>
+                  <div className="flex flex-col gap-3">
+                    <Link
+                      href="/sign-in"
+                      className="border border-black text-black hover:bg-neutral-50 px-6 py-3 font-black text-[11px] tracking-widest transition-all uppercase text-center rounded-lg"
+                    >
+                      Sign In
                     </Link>
-                    <Link href="/sign-up">
-                      <Button className="w-full">Get Started</Button>
+                    <Link
+                      href="/sign-up"
+                      className="bg-primary text-white px-6 py-3 font-black hover:bg-primary/90 transition-all uppercase text-[11px] tracking-widest rounded-lg text-center"
+                    >
+                      Free Mock Test
                     </Link>
-                  </>
+                  </div>
                 )}
               </div>
             </nav>
           </div>
         )}
       </div>
-    </header>
+    </nav>
   )
 }

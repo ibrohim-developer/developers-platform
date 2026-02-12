@@ -15,7 +15,10 @@
       "Bash(pnpm install:*)",
       "Bash(pnpm --version:*)",
       "Bash(npm ls:*)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "Bash(npx next:*)",
+      "Bash(wc:*)",
+      "Bash(xargs -I {} bash -c \"echo ''=== {} ==='' && head -30 {}\")"
     ],
     "additionalDirectories": [
       "c:\\web\\developers-platform"
