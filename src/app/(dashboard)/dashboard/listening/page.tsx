@@ -1,25 +1,11 @@
-"use cache";
-
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Headphones, Clock, HelpCircle, Play } from "lucide-react";
+import { Clock, HelpCircle, Headphones } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { cacheLife, cacheTag } from "next/cache";
+import { DifficultyDots } from "@/components/test/common/difficulty-dots";
+import { TestFilters } from "@/components/test/common/test-filters";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 async function getListeningTests() {
-  "use cache";
-  cacheLife("minutes");
-  cacheTag("listening-tests");
-
   const supabase = await createClient();
 
   const { data: sections } = await supabase
@@ -27,6 +13,7 @@ async function getListeningTests() {
     .select(`
       id,
       test_id,
+      section_number,
       tests!inner (
         id,
         title,
@@ -38,6 +25,10 @@ async function getListeningTests() {
     .eq("tests.is_published", true);
 
   const sectionIds = (sections ?? []).map((s: any) => s.id);
+
+  if (sectionIds.length === 0) {
+    return [];
+  }
 
   const { data: questionCounts } = await supabase
     .from("questions")
@@ -72,105 +63,96 @@ async function getListeningTests() {
   return Array.from(testMap.values());
 }
 
-export default async function ListeningTestsPage() {
-  cacheLife("minutes");
-  cacheTag("listening-page");
+const listeningFilters = [
+  {
+    placeholder: "All Levels",
+    options: [
+      { value: "all", label: "All Levels" },
+      { value: "easy", label: "Easy" },
+      { value: "medium", label: "Medium" },
+      { value: "hard", label: "Hard" },
+    ],
+  },
+  {
+    placeholder: "All Sections",
+    options: [
+      { value: "all", label: "All Sections" },
+      { value: "1", label: "Section 1" },
+      { value: "2", label: "Section 2" },
+      { value: "3", label: "Section 3" },
+      { value: "4", label: "Section 4" },
+    ],
+  },
+];
 
+export default async function ListeningTestsPage() {
   const listeningTests = await getListeningTests();
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-            <Headphones className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">Listening Tests</h1>
-            <p className="text-muted-foreground">
-              Practice your listening comprehension skills
-            </p>
-          </div>
+    <div className="space-y-8 pb-12">
+      <TestFilters filters={listeningFilters} />
+
+      <div className="flex items-end justify-between">
+        <div>
+          <h2 className="text-3xl font-black mb-1">Listening Challenge</h2>
+          <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
+            {listeningTests.length} Available Tests
+          </p>
         </div>
+        <Link
+          href="/dashboard/history"
+          className="flex items-center gap-2 text-xs font-bold px-4 py-2 border border-border rounded-lg hover:bg-card transition-colors"
+        >
+          <Clock className="h-3.5 w-3.5" />
+          Completed Tests
+        </Link>
       </div>
 
-      {/* Test Info */}
-      <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-        <CardContent>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="flex items-center gap-3">
-              <Clock className="w-5 h-5 text-blue-600" />
-              <div>
-                <p className="font-medium">Duration</p>
-                <p className="text-sm text-muted-foreground">30 minutes</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <HelpCircle className="w-5 h-5 text-blue-600" />
-              <div>
-                <p className="font-medium">Questions</p>
-                <p className="text-sm text-muted-foreground">
-                  40 questions in 4 sections
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Headphones className="w-5 h-5 text-blue-600" />
-              <div>
-                <p className="font-medium">Audio</p>
-                <p className="text-sm text-muted-foreground">Plays only once</p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Tests Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {listeningTests.length > 0 ? (
-          listeningTests.map((test) => (
-          <Card key={test.id} className="group hover:shadow-lg transition-all">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-lg">{test.title}</CardTitle>
-                <Badge
-                  variant={
-                    test.difficulty === "easy"
-                      ? "secondary"
-                      : test.difficulty === "medium"
-                        ? "default"
-                        : "destructive"
-                  }
-                >
-                  {test.difficulty}
-                </Badge>
+          listeningTests.map((test, index) => (
+            <div
+              key={test.id}
+              className="bg-card border border-border p-6 rounded-xl flex items-center justify-between"
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-lg font-black">
+                    Day {index + 1}: {test.title}
+                  </h3>
+                </div>
+                <p className="text-[11px] text-muted-foreground font-bold uppercase mb-4">
+                  {test.sections} Sections
+                </p>
+                <div className="flex items-center gap-8 text-xs font-bold text-muted-foreground">
+                  <DifficultyDots difficulty={test.difficulty} />
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="h-4 w-4" />
+                    {test.duration} mins
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <HelpCircle className="h-4 w-4" />
+                    {test.questions} questions
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Headphones className="h-4 w-4" />
+                    Audio
+                  </span>
+                </div>
               </div>
-              <CardDescription>{test.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                <span className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {test.duration} min
-                </span>
-                <span className="flex items-center gap-1">
-                  <HelpCircle className="w-4 h-4" />
-                  {test.questions} questions
-                </span>
-              </div>
-              <Link href={`/dashboard/listening/${test.id}`}>
-                <Button className="w-full">
-                  <Play className="mr-2 h-4 w-4" />
-                  Start Test
-                </Button>
+              <Link
+                href={`/dashboard/listening/${test.id}`}
+                className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-black text-xs tracking-widest hover:opacity-90 transition-all uppercase"
+              >
+                Start Test
               </Link>
-            </CardContent>
-          </Card>
+            </div>
           ))
         ) : (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            <p>No listening tests available yet.</p>
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <p className="text-muted-foreground">
+              No listening tests available yet.
+            </p>
           </div>
         )}
       </div>

@@ -4,23 +4,17 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
-  BookOpen,
-  LayoutDashboard,
-  Headphones,
   BookOpenCheck,
+  Headphones,
   PenTool,
+  Mic,
   History,
   User,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
-  ClipboardList,
   Settings,
-  Mic,
   Sun,
   Moon
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -31,7 +25,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { signOut } from '@/actions/auth'
-import { useState } from 'react'
 import { useTheme } from 'next-themes'
 
 interface SidebarProps {
@@ -47,41 +40,37 @@ interface SidebarProps {
 
 const menuItems = [
   {
-    title: 'Dashboard',
-    href: '/dashboard',
-    icon: LayoutDashboard,
-  },
-  {
-    title: 'Full Mock Test',
-    href: '/dashboard/full-mock-test',
-    icon: ClipboardList,
-  },
-  {
-    title: 'Listening Tests',
-    href: '/dashboard/listening',
-    icon: Headphones,
-  },
-  {
-    title: 'Reading Tests',
+    title: 'Reading',
     href: '/dashboard/reading',
     icon: BookOpenCheck,
   },
   {
-    title: 'Writing Tests',
+    title: 'Listening',
+    href: '/dashboard/listening',
+    icon: Headphones,
+  },
+  {
+    title: 'Writing',
     href: '/dashboard/writing',
     icon: PenTool,
   },
   {
-    title: 'Speaking Tests',
+    title: 'Speaking',
     href: '/dashboard/speaking',
     icon: Mic,
   },
 ]
 
+const testRoutePattern = /^\/dashboard\/(reading|listening|writing|speaking)\/[^/]+$/
+
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
-  const [isCollapsed, setIsCollapsed] = useState(false)
   const { theme, setTheme } = useTheme()
+
+  // Hide sidebar on test pages
+  if (testRoutePattern.test(pathname)) {
+    return null
+  }
 
   const userInitials = user?.user_metadata?.full_name
     ?.split(' ')
@@ -91,147 +80,107 @@ export function Sidebar({ user }: SidebarProps) {
     .slice(0, 2) || user?.email?.[0]?.toUpperCase() || 'U'
 
   return (
-    <aside
-      className={cn(
-        'fixed left-0 top-0 z-40 h-screen border-r bg-background transition-all duration-300',
-        isCollapsed ? 'w-16' : 'w-64'
-      )}
-    >
-      <div className="flex h-full flex-col">
-        {/* Logo */}
-        <div className="flex h-16 items-center justify-between border-b px-4">
-          {!isCollapsed && (
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="font-bold text-lg">IELTS Mock</span>
-            </Link>
-          )}
-          {isCollapsed && (
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center mx-auto">
-              <BookOpen className="w-5 h-5 text-primary-foreground" />
-            </div>
-          )}
-        </div>
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-card border-r border-border flex flex-col shrink-0">
+      {/* Logo */}
+      <div className="p-8">
+        <Link href="/dashboard" className="inline-block">
+          <span className="text-2xl font-black tracking-tighter text-foreground">
+            ielts<span className="text-primary">.</span>zone
+          </span>
+        </Link>
+      </div>
 
-        {/* Toggle Button */}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-3 top-20 z-50 flex h-6 w-6 items-center justify-center rounded-full border bg-background shadow-sm hover:bg-muted"
-        >
-          {isCollapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )}
-        </button>
+      {/* Navigation */}
+      <nav className="flex-1 px-4 space-y-1">
+        {menuItems.map((item) => {
+          const isActive = item.href === '/dashboard'
+            ? pathname === '/dashboard'
+            : pathname.startsWith(item.href)
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1 p-2 overflow-y-auto">
-          {menuItems.map((item) => {
-            // More precise active state check
-            const isActive = item.href === '/dashboard'
-              ? pathname === '/dashboard'
-              : pathname.startsWith(item.href)
-            return (
+          return (
+            <div key={item.href}>
               <Link
-                key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                  'flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all rounded-lg',
                   isActive
                     ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-                  isCollapsed && 'justify-center px-2'
+                    : 'text-muted-foreground hover:bg-muted'
                 )}
-                title={isCollapsed ? item.title : undefined}
               >
                 <item.icon className="h-5 w-5 shrink-0" />
-                {!isCollapsed && <span>{item.title}</span>}
+                <span>{item.title}</span>
               </Link>
-            )
-          })}
-        </nav>
+            </div>
+          )
+        })}
+      </nav>
 
-        {/* Theme Toggle */}
-        <div className="px-2 pb-1">
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors w-full text-muted-foreground hover:bg-muted hover:text-foreground',
-              isCollapsed && 'justify-center px-2'
-            )}
-            title={isCollapsed ? 'Toggle theme' : undefined}
-          >
-            <Sun className="h-5 w-5 shrink-0 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-5 w-5 shrink-0 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            {!isCollapsed && <span>Toggle Theme</span>}
-          </button>
-        </div>
+      {/* Theme Toggle */}
+      <div className="px-4 pb-2">
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="flex items-center gap-3 px-4 py-3 text-sm font-bold transition-all rounded-lg w-full text-muted-foreground hover:bg-muted"
+        >
+          <Sun className="h-5 w-5 shrink-0 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+          <Moon className="absolute h-5 w-5 shrink-0 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+          <span>Toggle Theme</span>
+        </button>
+      </div>
 
-        {/* User Profile */}
-        <div className="border-t p-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className={cn(
-                  'w-full gap-3 text-left hover:bg-muted',
-                  isCollapsed ? 'justify-center px-2' : 'justify-start px-3'
-                )}
-              >
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.full_name || 'User'} />
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    {userInitials}
-                  </AvatarFallback>
-                </Avatar>
-                {!isCollapsed && (
-                  <div className="flex flex-col flex-1 min-w-0">
-                    <span className="text-sm font-medium truncate">
-                      {user?.user_metadata?.full_name || 'User'}
-                    </span>
-                    <span className="text-xs text-muted-foreground truncate">
-                      {user?.email}
-                    </span>
-                  </div>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard/profile" className="cursor-pointer">
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard/history" className="cursor-pointer">
-                  <History className="mr-2 h-4 w-4" />
-                  <span>Test History</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings" className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <form action={signOut} className="w-full">
-                  <button type="submit" className="flex w-full items-center cursor-pointer">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Sign Out</span>
-                  </button>
-                </form>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+      {/* User Profile */}
+      <div className="p-4 border-t border-border">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-3 w-full text-left px-2 py-1 rounded-lg hover:bg-muted transition-colors">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.full_name || 'User'} />
+                <AvatarFallback className="bg-muted text-muted-foreground font-bold">
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col flex-1 min-w-0">
+                <span className="text-xs font-bold truncate">
+                  {user?.user_metadata?.full_name || 'User'}
+                </span>
+                <span className="text-[10px] text-muted-foreground truncate">
+                  {user?.email}
+                </span>
+              </div>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/profile" className="cursor-pointer">
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/history" className="cursor-pointer">
+                <History className="mr-2 h-4 w-4" />
+                <span>Test History</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/settings" className="cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <form action={signOut} className="w-full">
+                <button type="submit" className="flex w-full items-center cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sign Out</span>
+                </button>
+              </form>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </aside>
   )

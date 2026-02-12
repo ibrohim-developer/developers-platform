@@ -1,16 +1,8 @@
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Mic, Clock, MessageSquare, User, Play } from "lucide-react";
+import { Clock, MessageSquare } from "lucide-react";
+import { DifficultyDots } from "@/components/test/common/difficulty-dots";
+import { TestFilters } from "@/components/test/common/test-filters";
 
-// Sample tests data (will be replaced with Supabase data)
 const speakingTests = [
   {
     id: "1",
@@ -38,146 +30,82 @@ const speakingTests = [
   },
 ];
 
+const speakingFilters = [
+  {
+    placeholder: "All Levels",
+    options: [
+      { value: "all", label: "All Levels" },
+      { value: "easy", label: "Easy" },
+      { value: "medium", label: "Medium" },
+      { value: "hard", label: "Hard" },
+    ],
+  },
+  {
+    placeholder: "All Parts",
+    options: [
+      { value: "all", label: "All Parts" },
+      { value: "1", label: "Part 1" },
+      { value: "2", label: "Part 2" },
+      { value: "3", label: "Part 3" },
+    ],
+  },
+];
+
 export default function SpeakingTestsPage() {
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-            <Mic className="w-6 h-6 text-red-600 dark:text-red-400" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">Speaking Tests</h1>
-            <p className="text-muted-foreground">
-              Practice your speaking skills with AI-powered feedback
-            </p>
-          </div>
+    <div className="space-y-8 pb-12">
+      <TestFilters filters={speakingFilters} />
+
+      <div className="flex items-end justify-between">
+        <div>
+          <h2 className="text-3xl font-black mb-1">Speaking Challenge</h2>
+          <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
+            {speakingTests.length} Available Tests
+          </p>
         </div>
+        <Link
+          href="/dashboard/history"
+          className="flex items-center gap-2 text-xs font-bold px-4 py-2 border border-border rounded-lg hover:bg-card transition-colors"
+        >
+          <Clock className="h-3.5 w-3.5" />
+          Completed Tests
+        </Link>
       </div>
 
-      {/* Test Info */}
-      <Card className="bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800">
-        <CardContent className="pt-6">
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="flex items-center gap-3">
-              <Clock className="w-5 h-5 text-red-600" />
-              <div>
-                <p className="font-medium">Duration</p>
-                <p className="text-sm text-muted-foreground">
-                  11-14 minutes
-                </p>
+      <div className="space-y-4">
+        {speakingTests.map((test, index) => (
+          <div
+            key={test.id}
+            className="bg-card border border-border p-6 rounded-xl flex items-center justify-between"
+          >
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-lg font-black">
+                  Day {index + 1}: {test.title}
+                </h3>
               </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <User className="w-5 h-5 text-red-600" />
-              <div>
-                <p className="font-medium">Part 1</p>
-                <p className="text-sm text-muted-foreground">
-                  Introduction & interview
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <MessageSquare className="w-5 h-5 text-red-600" />
-              <div>
-                <p className="font-medium">Parts 2 & 3</p>
-                <p className="text-sm text-muted-foreground">
-                  Cue card & discussion
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Test Structure Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Speaking Test Structure</CardTitle>
-          <CardDescription>
-            Understand the format before you begin
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-4 p-4 rounded-lg border">
-            <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-              <span className="text-lg font-bold text-red-600">1</span>
-            </div>
-            <div>
-              <h3 className="font-semibold">Part 1: Introduction (4-5 minutes)</h3>
-              <p className="text-sm text-muted-foreground">
-                General questions about yourself, home, family, work, studies, and interests
+              <p className="text-[11px] text-muted-foreground font-bold uppercase mb-4">
+                {test.parts} Parts - AI Feedback
               </p>
-            </div>
-          </div>
-
-          <div className="flex gap-4 p-4 rounded-lg border">
-            <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-              <span className="text-lg font-bold text-red-600">2</span>
-            </div>
-            <div>
-              <h3 className="font-semibold">Part 2: Individual Long Turn (3-4 minutes)</h3>
-              <p className="text-sm text-muted-foreground">
-                Speak about a topic on a task card for 1-2 minutes after 1 minute preparation
-              </p>
-            </div>
-          </div>
-
-          <div className="flex gap-4 p-4 rounded-lg border">
-            <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-              <span className="text-lg font-bold text-red-600">3</span>
-            </div>
-            <div>
-              <h3 className="font-semibold">Part 3: Two-way Discussion (4-5 minutes)</h3>
-              <p className="text-sm text-muted-foreground">
-                Discuss more abstract ideas and issues related to Part 2 topic
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Tests Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {speakingTests.map((test) => (
-          <Card key={test.id} className="group hover:shadow-lg transition-all">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-lg">{test.title}</CardTitle>
-                <Badge
-                  variant={
-                    test.difficulty === "easy"
-                      ? "secondary"
-                      : test.difficulty === "medium"
-                        ? "default"
-                        : "destructive"
-                  }
-                >
-                  {test.difficulty}
-                </Badge>
-              </div>
-              <CardDescription>{test.description}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                <span className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {test.duration} min
+              <div className="flex items-center gap-8 text-xs font-bold text-muted-foreground">
+                <DifficultyDots difficulty={test.difficulty} />
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4" />
+                  {test.duration} mins
                 </span>
-                <span className="flex items-center gap-1">
-                  <MessageSquare className="w-4 h-4" />
+                <span className="flex items-center gap-1.5">
+                  <MessageSquare className="h-4 w-4" />
                   {test.parts} parts
                 </span>
               </div>
-              <Link href={`/test/new?module=speaking&testId=${test.id}`}>
-                <Button className="w-full">
-                  <Play className="mr-2 h-4 w-4" />
-                  Start Test
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+            </div>
+            <Link
+              href={`/dashboard/speaking/${test.id}`}
+              className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-black text-xs tracking-widest hover:opacity-90 transition-all uppercase"
+            >
+              Start Test
+            </Link>
+          </div>
         ))}
       </div>
     </div>

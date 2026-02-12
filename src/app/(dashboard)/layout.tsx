@@ -1,4 +1,5 @@
 import { Sidebar } from '@/components/layout/sidebar'
+import { DashboardMain } from '@/components/layout/dashboard-main'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function DashboardLayout({
@@ -10,13 +11,11 @@ export default async function DashboardLayout({
   const { data: { user } } = await supabase.auth.getUser()
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex h-screen overflow-hidden">
       <Sidebar user={user} />
-      <main className="pl-64 transition-all duration-300">
-        <div className="container mx-auto p-6">
-          {children}
-        </div>
-      </main>
+      <DashboardMain>
+        {children}
+      </DashboardMain>
     </div>
   )
 }

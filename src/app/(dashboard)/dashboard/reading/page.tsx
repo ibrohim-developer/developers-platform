@@ -1,18 +1,8 @@
-"use cache";
-
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { BookOpen, Clock, HelpCircle, FileText, Play } from "lucide-react";
-import { createServiceClient } from "@/lib/supabase/service";
-import { cacheLife, cacheTag } from "next/cache";
+import { Clock, HelpCircle } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { DifficultyDots } from "@/components/test/common/difficulty-dots";
+import { TestFilters } from "@/components/test/common/test-filters";
 
 interface ReadingTest {
   id: string;
@@ -22,15 +12,13 @@ interface ReadingTest {
   duration: number;
   questions: number;
   passages: number;
+  part: number;
+  type: string;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 async function getReadingTests(): Promise<ReadingTest[]> {
-  "use cache";
-  cacheLife("minutes");
-  cacheTag("reading-tests");
-
-  const supabase = createServiceClient();
+  const supabase = await createClient();
 
   const { data: passages } = await supabase
     .from("reading_passages")
@@ -38,6 +26,7 @@ async function getReadingTests(): Promise<ReadingTest[]> {
       `
       id,
       test_id,
+      passage_number,
       tests!inner (
         id,
         title,
@@ -75,9 +64,11 @@ async function getReadingTests(): Promise<ReadingTest[]> {
         title: test.title,
         description: test.description ?? "",
         difficulty: test.difficulty_level ?? "medium",
-        duration: 60,
+        duration: 20,
         questions: 0,
         passages: 0,
+        part: passage.passage_number || 1,
+        type: "academic",
       });
     }
     const testData = testMap.get(test.id);
@@ -88,110 +79,100 @@ async function getReadingTests(): Promise<ReadingTest[]> {
   return Array.from(testMap.values());
 }
 
-export default async function ReadingTestsPage() {
-  cacheLife("minutes");
-  cacheTag("reading-page");
+const readingFilters = [
+  {
+    placeholder: "All Levels",
+    options: [
+      { value: "all", label: "All Levels" },
+      { value: "easy", label: "Easy" },
+      { value: "medium", label: "Medium" },
+      { value: "hard", label: "Hard" },
+    ],
+  },
+  {
+    placeholder: "All Types",
+    options: [
+      { value: "all", label: "All Types" },
+      { value: "academic", label: "Academic" },
+      { value: "general", label: "General" },
+    ],
+  },
+  {
+    placeholder: "All Parts",
+    options: [
+      { value: "all", label: "All Parts" },
+      { value: "1", label: "Part 1" },
+      { value: "2", label: "Part 2" },
+      { value: "3", label: "Part 3" },
+    ],
+  },
+];
 
+export default async function ReadingTestsPage() {
   const readingTests = await getReadingTests();
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-            <BookOpen className="w-6 h-6 text-green-600 dark:text-green-400" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">Reading Tests</h1>
-            <p className="text-muted-foreground">
-              Improve your reading comprehension and speed
-            </p>
-          </div>
+    <div className="space-y-8 pb-12">
+      <TestFilters filters={readingFilters} />
+
+      <div className="flex items-end justify-between">
+        <div>
+          <h2 className="text-3xl font-black mb-1">Reading Challenge</h2>
+          <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
+            {readingTests.length} Available Tests
+          </p>
         </div>
+        <Link
+          href="/dashboard/history"
+          className="flex items-center gap-2 text-xs font-bold px-4 py-2 border border-border rounded-lg hover:bg-card transition-colors"
+        >
+          <Clock className="h-3.5 w-3.5" />
+          Completed Tests
+        </Link>
       </div>
 
-      {/* Test Info */}
-      <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
-        <CardContent>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="flex items-center gap-3">
-              <Clock className="w-5 h-5 text-green-600" />
-              <div>
-                <p className="font-medium">Duration</p>
-                <p className="text-sm text-muted-foreground">60 minutes</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <HelpCircle className="w-5 h-5 text-green-600" />
-              <div>
-                <p className="font-medium">Questions</p>
-                <p className="text-sm text-muted-foreground">
-                  40 questions total
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <FileText className="w-5 h-5 text-green-600" />
-              <div>
-                <p className="font-medium">Passages</p>
-                <p className="text-sm text-muted-foreground">
-                  3 reading passages
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Tests Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {readingTests.length > 0 ? (
-          readingTests.map((test) => (
-            <Card
+          readingTests.map((test, index) => (
+            <div
               key={test.id}
-              className="group hover:shadow-lg transition-all"
+              className="bg-card border border-border p-6 rounded-xl flex items-center justify-between"
             >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-lg">{test.title}</CardTitle>
-                  <Badge
-                    variant={
-                      test.difficulty === "easy"
-                        ? "secondary"
-                        : test.difficulty === "medium"
-                          ? "default"
-                          : "destructive"
-                    }
-                  >
-                    {test.difficulty}
-                  </Badge>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-lg font-black">
+                    Day {index + 1}: {test.title}
+                  </h3>
                 </div>
-                <CardDescription>{test.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    {test.duration} min
+                <p className="text-[11px] text-muted-foreground font-bold uppercase mb-4">
+                  Part {test.part} -{" "}
+                  {test.type.charAt(0).toUpperCase() + test.type.slice(1)}
+                </p>
+                <div className="flex items-center gap-8 text-xs font-bold text-muted-foreground">
+                  <DifficultyDots difficulty={test.difficulty} />
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="h-4 w-4" />
+                    {test.duration} mins
                   </span>
-                  <span className="flex items-center gap-1">
-                    <FileText className="w-4 h-4" />
-                    {test.passages} passages
+                  <span className="flex items-center gap-1.5">
+                    <HelpCircle className="h-4 w-4" />
+                    {test.questions} questions
                   </span>
                 </div>
-                <Link href={`/dashboard/reading/${test.id}`}>
-                  <Button className="w-full">
-                    <Play className="mr-2 h-4 w-4" />
-                    Start Test
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+              </div>
+              <Link
+                href={`/dashboard/reading/${test.id}`}
+                className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-black text-xs tracking-widest hover:opacity-90 transition-all uppercase"
+              >
+                Start Test
+              </Link>
+            </div>
           ))
         ) : (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            <p>No reading tests available yet.</p>
+          <div className="bg-card border border-border rounded-xl p-12 text-center">
+            <p className="text-muted-foreground">
+              No reading tests available yet.
+            </p>
           </div>
         )}
       </div>
