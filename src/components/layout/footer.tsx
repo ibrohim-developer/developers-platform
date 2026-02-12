@@ -1,57 +1,53 @@
 import Link from 'next/link'
-import { BookOpen } from 'lucide-react'
 
 export function Footer() {
   return (
-    <footer className="border-t bg-muted/30">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="font-bold text-xl">IELTS Mock</span>
-            </Link>
-            <p className="text-sm text-muted-foreground">
-              Practice IELTS tests online with real exam conditions and instant feedback.
+    <footer className="bg-white pt-24 pb-12 border-t border-black">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-16 mb-24">
+          <div className="col-span-2 md:col-span-1">
+            <div className="text-3xl font-black tracking-tighter text-black mb-8">
+              Nimadur
+            </div>
+            <p className="text-neutral-500 text-base leading-snug font-normal">
+              Industrial precision in English language assessment.
             </p>
           </div>
 
-          {/* Tests */}
-          <div className="space-y-4">
-            <h3 className="font-semibold">Practice Tests</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/listening" className="hover:text-foreground">Listening</Link></li>
-              <li><Link href="/reading" className="hover:text-foreground">Reading</Link></li>
-              <li><Link href="/writing" className="hover:text-foreground">Writing</Link></li>
+          <div>
+            <h4 className="font-black mb-8 text-sm uppercase tracking-[0.3em]">Platform</h4>
+            <ul className="space-y-4 text-neutral-400 text-sm font-bold uppercase tracking-widest">
+              <li><Link className="hover:text-primary transition-colors" href="/dashboard">Mock Exams</Link></li>
+              <li><Link className="hover:text-primary transition-colors" href="/writing">AI Writing</Link></li>
+              <li><Link className="hover:text-primary transition-colors" href="/dashboard/speaking">Speaking</Link></li>
             </ul>
           </div>
 
-          {/* Resources */}
-          <div className="space-y-4">
-            <h3 className="font-semibold">Resources</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="#" className="hover:text-foreground">Band Score Guide</Link></li>
-              <li><Link href="#" className="hover:text-foreground">Tips & Strategies</Link></li>
-              <li><Link href="#" className="hover:text-foreground">FAQ</Link></li>
+          <div>
+            <h4 className="font-black mb-8 text-sm uppercase tracking-[0.3em]">Resources</h4>
+            <ul className="space-y-4 text-neutral-400 text-sm font-bold uppercase tracking-widest">
+              <li><Link className="hover:text-primary transition-colors" href="#">Documentation</Link></li>
+              <li><Link className="hover:text-primary transition-colors" href="#">Logistics</Link></li>
+              <li><Link className="hover:text-primary transition-colors" href="#">Help Desk</Link></li>
             </ul>
           </div>
 
-          {/* Account */}
-          <div className="space-y-4">
-            <h3 className="font-semibold">Account</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/sign-in" className="hover:text-foreground">Sign In</Link></li>
-              <li><Link href="/sign-up" className="hover:text-foreground">Create Account</Link></li>
-              <li><Link href="/dashboard" className="hover:text-foreground">Dashboard</Link></li>
+          <div>
+            <h4 className="font-black mb-8 text-sm uppercase tracking-[0.3em]">Legal</h4>
+            <ul className="space-y-4 text-neutral-400 text-sm font-bold uppercase tracking-widest">
+              <li><Link className="hover:text-primary transition-colors" href="#">Privacy</Link></li>
+              <li><Link className="hover:text-primary transition-colors" href="#">Terms</Link></li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} IELTS Mock. All rights reserved.</p>
+        <div className="flex flex-col md:flex-row justify-between items-center pt-12 border-t border-black text-black text-xs font-black uppercase tracking-[0.4em]">
+          <p>&copy; {new Date().getFullYear()} ielts.zone International</p>
+          <div className="flex gap-10 mt-6 md:mt-0">
+            <Link className="hover:text-primary transition-colors" href="#">Twitter</Link>
+            <Link className="hover:text-primary transition-colors" href="#">LinkedIn</Link>
+            <Link className="hover:text-primary transition-colors" href="#">Instagram</Link>
+          </div>
         </div>
       </div>
     </footer>

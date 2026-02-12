@@ -83,7 +83,7 @@ export default async function HistoryPage() {
                       </Badge>
                     </div>
                     {attempt.status === 'completed' && (
-                      <Link href={`/results/${attempt.id}`}>
+                      <Link href={`/dashboard/results/${attempt.id}`}>
                         <Button variant="ghost" size="icon">
                           <ExternalLink className="h-4 w-4" />
                         </Button>

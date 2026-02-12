@@ -1,3 +1,5 @@
+"use cache";
+
 import Link from "next/link";
 import {
   Card,
@@ -10,15 +12,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Headphones, Clock, HelpCircle, Play } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-
-// Revalidate every 5 minutes
-export const revalidate = 300
+import { cacheLife, cacheTag } from "next/cache";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export default async function ListeningTestsPage() {
+async function getListeningTests() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("listening-tests");
+
   const supabase = await createClient();
 
-  // Optimized: Fetch all data in one query
   const { data: sections } = await supabase
     .from("listening_sections")
     .select(`
@@ -34,23 +37,19 @@ export default async function ListeningTestsPage() {
     `)
     .eq("tests.is_published", true);
 
-  // Get all section IDs for question counting
   const sectionIds = (sections ?? []).map((s: any) => s.id);
 
-  // Count questions per section in one query
   const { data: questionCounts } = await supabase
     .from("questions")
     .select("section_id")
     .eq("module_type", "listening")
     .in("section_id", sectionIds);
 
-  // Build question count map
   const questionCountMap: Record<string, number> = {};
   (questionCounts ?? []).forEach((q: any) => {
     questionCountMap[q.section_id] = (questionCountMap[q.section_id] || 0) + 1;
   });
 
-  // Group by test and calculate totals
   const testMap = new Map<string, any>();
   (sections ?? []).forEach((section: any) => {
     const test = section.tests;
@@ -70,7 +69,15 @@ export default async function ListeningTestsPage() {
     testData.questions += questionCountMap[section.id] || 0;
   });
 
-  const listeningTests = Array.from(testMap.values());
+  return Array.from(testMap.values());
+}
+
+export default async function ListeningTestsPage() {
+  cacheLife("minutes");
+  cacheTag("listening-page");
+
+  const listeningTests = await getListeningTests();
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -152,7 +159,7 @@ export default async function ListeningTestsPage() {
                   {test.questions} questions
                 </span>
               </div>
-              <Link href={`/listening?testId=${test.id}`}>
+              <Link href={`/dashboard/listening/${test.id}`}>
                 <Button className="w-full">
                   <Play className="mr-2 h-4 w-4" />
                   Start Test

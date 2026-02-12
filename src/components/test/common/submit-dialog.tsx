@@ -18,6 +18,7 @@ interface SubmitDialogProps {
   answeredCount: number
   totalQuestions: number
   isSubmitting?: boolean
+  timeUp?: boolean
 }
 
 export function SubmitDialog({
@@ -27,24 +28,29 @@ export function SubmitDialog({
   answeredCount,
   totalQuestions,
   isSubmitting = false,
+  timeUp = false,
 }: SubmitDialogProps) {
   const unanswered = totalQuestions - answeredCount
   const allAnswered = unanswered === 0
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+    <Dialog open={open} onOpenChange={timeUp ? undefined : onOpenChange}>
+      <DialogContent onPointerDownOutside={timeUp ? (e) => e.preventDefault() : undefined} onEscapeKeyDown={timeUp ? (e) => e.preventDefault() : undefined}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {allAnswered ? (
+            {timeUp ? (
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+            ) : allAnswered ? (
               <CheckCircle className="h-5 w-5 text-green-500" />
             ) : (
               <AlertTriangle className="h-5 w-5 text-amber-500" />
             )}
-            Submit Test
+            {timeUp ? "Time's Up!" : 'Submit Test'}
           </DialogTitle>
           <DialogDescription>
-            {allAnswered ? (
+            {timeUp ? (
+              'Your time has expired. Your test is being submitted automatically.'
+            ) : allAnswered ? (
               'You have answered all questions. Are you ready to submit your test?'
             ) : (
               <>
@@ -71,9 +77,11 @@ export function SubmitDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
-            Continue Test
-          </Button>
+          {!timeUp && (
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+              Continue Test
+            </Button>
+          )}
           <Button onClick={onConfirm} disabled={isSubmitting}>
             {isSubmitting ? 'Submitting...' : 'Submit Test'}
           </Button>
