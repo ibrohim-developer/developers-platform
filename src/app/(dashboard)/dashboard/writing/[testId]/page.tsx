@@ -18,6 +18,7 @@ import { ReloadWarningDialog } from "@/components/test/common/reload-warning-dia
 import { WritingEditor } from "@/components/test/writing/writing-editor";
 import { useTestStore } from "@/stores/test-store";
 import { WritingFeedback } from "@/components/test/writing/writing-feedback";
+import { TEST_CONFIG } from "@/lib/constants/test-config";
 import { useWritingTest } from "@/hooks/use-writing-test";
 import { useNavigationProtection } from "@/hooks/use-navigation-protection";
 import { useFullscreen } from "@/hooks/use-fullscreen";
