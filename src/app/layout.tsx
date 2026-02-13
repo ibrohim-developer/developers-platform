@@ -27,10 +27,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <GoogleAnalytics />
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <GoogleAnalytics />
         <Suspense fallback={null}>
           <ThemeProvider
             attribute="class"
