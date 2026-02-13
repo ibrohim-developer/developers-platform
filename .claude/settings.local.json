@@ -18,10 +18,14 @@
       "Bash(pnpm add:*)",
       "Bash(npx next:*)",
       "Bash(wc:*)",
-      "Bash(xargs -I {} bash -c \"echo ''=== {} ==='' && head -30 {}\")"
+      "Bash(xargs -I {} bash -c \"echo ''=== {} ==='' && head -30 {}\")",
+      "WebFetch(domain:github.com)"
     ],
     "additionalDirectories": [
-      "c:\\web\\developers-platform"
+      "c:\\web\\developers-platform",
+      "c:\\web\\developers-platform\\src\\app\\(dashboard)\\dashboard\\writing\\[testId]",
+      "c:\\web\\developers-platform\\src\\app\\(dashboard)\\dashboard\\reading\\[testId]",
+      "c:\\web\\developers-platform\\src\\app\\(dashboard)\\dashboard\\listening\\[testId]"
     ]
   }
 }
