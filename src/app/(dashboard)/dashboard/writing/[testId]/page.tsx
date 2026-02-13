@@ -203,26 +203,26 @@ function WritingTestContent({ testId }: { testId: string }) {
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
       {/* Top Header Bar */}
-      <header className="shrink-0 bg-white border-b border-gray-200 h-12 flex items-center px-4 justify-between">
-        <div className="flex items-center gap-3">
+      <header className="shrink-0 bg-white border-b border-gray-200 h-16 flex items-center px-6 justify-between">
+        <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            size="sm"
+            size="default"
             onClick={() =>
               isReviewMode
                 ? router.push(`/dashboard/results/${reviewAttemptId}`)
                 : router.push("/dashboard/writing")
             }
-            className="flex items-center gap-1 text-gray-700 hover:text-gray-900 text-sm px-2"
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 text-base px-3"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-5 w-5" />
             <span>Back</span>
           </Button>
-          <div className="bg-red-600 text-white px-3 py-0.5 text-sm font-bold rounded">
+          <div className="bg-red-600 text-white px-4 py-1 text-base font-bold rounded">
             IELTS
           </div>
           {!isReviewMode && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-base text-muted-foreground">
               {tasks.map((task, i) => {
                 const isComplete = taskCompletions.find(
                   (completion) => completion.id === task.id,
@@ -244,19 +244,19 @@ function WritingTestContent({ testId }: { testId: string }) {
         {!isReviewMode && (
           <TestTimer
             onTimeUp={handleTimeUp}
-            className="bg-transparent text-gray-800 px-2 py-1 text-base"
+            className="bg-transparent text-gray-800 px-3 py-1.5 text-lg font-semibold"
           />
         )}
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={toggleFullscreen}
-            className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors"
+            className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
           >
             {isFullscreen ? (
-              <Minimize2 className="h-5 w-5" />
+              <Minimize2 className="h-6 w-6" />
             ) : (
-              <Maximize2 className="h-5 w-5" />
+              <Maximize2 className="h-6 w-6" />
             )}
           </button>
         </div>
@@ -415,12 +415,13 @@ function WritingTestContent({ testId }: { testId: string }) {
 
       {/* Bottom Bar */}
       {!isReviewMode && (
-        <div className="shrink-0 bg-white border-t border-gray-200 h-10 flex items-center px-4 justify-end">
+        <div className="shrink-0 bg-white border-t border-gray-200 h-14 flex items-center px-6 justify-end">
           <Button
             variant="default"
-            size="sm"
+            size="default"
             onClick={() => setShowSubmitDialog(true)}
             disabled={isSubmitting}
+            className="text-base px-6"
           >
             {isSubmitting ? (
               <>

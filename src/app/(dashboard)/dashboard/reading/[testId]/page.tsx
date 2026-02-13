@@ -277,25 +277,25 @@ function ReadingTestContent({ testId }: { testId: string }) {
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
       {/* Top Header Bar */}
-      <header className="shrink-0 bg-white border-b border-gray-200 h-12 flex items-center px-4 justify-between">
-        <div className="flex items-center gap-3">
+      <header className="shrink-0 bg-white border-b border-gray-200 h-16 flex items-center px-6 justify-between">
+        <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            size="sm"
+            size="default"
             onClick={() =>
               isReviewMode
                 ? router.push(`/dashboard/results/${reviewAttemptId}`)
                 : router.push("/dashboard/reading")
             }
-            className="flex items-center gap-1 text-gray-700 hover:text-gray-900 text-sm px-2"
+            className="flex items-center gap-2 text-gray-700 text-base px-3"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-5 w-5" />
             <span>Back</span>
           </Button>
-          <div className="bg-red-600 text-white px-3 py-0.5 text-sm font-bold rounded">
+          <div className="bg-red-600 text-white px-4 py-1 text-base font-bold rounded">
             IELTS
           </div>
-          <span className="text-gray-500 text-sm">
+          <span className="text-gray-500 text-base">
             ID: {attemptId?.slice(0, 5) || "-----"}
           </span>
         </div>
@@ -303,27 +303,21 @@ function ReadingTestContent({ testId }: { testId: string }) {
         {!isReviewMode && (
           <TestTimer
             onTimeUp={handleTimeUp}
-            className="bg-transparent text-gray-800 px-2 py-1 text-base"
+            className="bg-transparent text-gray-800 px-3 py-1.5 text-lg font-semibold"
           />
         )}
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={toggleFullscreen}
-            className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors"
+            className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
           >
             {isFullscreen ? (
-              <Minimize2 className="h-5 w-5" />
+              <Minimize2 className="h-6 w-6" />
             ) : (
-              <Maximize2 className="h-5 w-5" />
+              <Maximize2 className="h-6 w-6" />
             )}
           </button>
-          {/* <button className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors">
-            <Menu className="h-5 w-5" />
-          </button>
-          <button className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors">
-            <PenSquare className="h-5 w-5" />
-          </button> */}
         </div>
       </header>
 
@@ -393,9 +387,9 @@ function ReadingTestContent({ testId }: { testId: string }) {
       </div>
 
       {/* Bottom Navigation Bar */}
-      <div className="shrink-0 bg-white border-t border-gray-200 h-10 flex items-center px-4 justify-between">
-        <div className="flex items-center gap-1">
-          <span className="text-sm font-bold text-gray-700 mr-2">
+      <div className="shrink-0 bg-white border-t border-gray-200 h-14 flex items-center px-6 justify-between">
+        <div className="flex items-center gap-1.5">
+          <span className="text-base font-bold text-gray-700 mr-3">
             Part {activePassageIndex + 1}
           </span>
           {currentPassage.questions.map((q, idx) => {
@@ -406,7 +400,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
               <button
                 key={q.id}
                 onClick={() => goToQuestion(qNum)}
-                className={`w-7 h-7 text-xs font-medium rounded-sm border transition-colors ${
+                className={`w-9 h-9 text-sm font-medium rounded-sm border transition-colors ${
                   isActive
                     ? "border-blue-500 bg-white text-blue-600 font-bold"
                     : isAnswered
@@ -420,13 +414,13 @@ function ReadingTestContent({ testId }: { testId: string }) {
           })}
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           {!isReviewMode && (
             <Button
               variant="default"
-              size="sm"
+              size="default"
               onClick={() => setShowSubmitDialog(true)}
-              className="ml-2"
+              className="ml-3 text-base px-6"
             >
               Submit
             </Button>

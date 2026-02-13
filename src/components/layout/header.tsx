@@ -41,7 +41,7 @@ export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: 
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
                 <Link
-                  href="/dashboard"
+                  href="/dashboard/reading"
                   className="bg-primary text-white px-6 py-3 font-black hover:bg-primary/90 transition-all uppercase text-[11px] tracking-widest rounded-lg"
                 >
                   Dashboard
@@ -89,7 +89,7 @@ export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: 
                       </div>
                     </div>
                     <Link
-                      href="/dashboard"
+                      href="/dashboard/reading"
                       className="bg-primary text-white px-6 py-3 font-black hover:bg-primary/90 transition-all uppercase text-[11px] tracking-widest rounded-lg text-center"
                     >
                       Dashboard
