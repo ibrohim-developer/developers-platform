@@ -30,12 +30,6 @@ import {
   ArrowLeft,
   Maximize2,
   Minimize2,
-  Bell,
-  Menu,
-  PenSquare,
-  ChevronLeft,
-  ChevronRight,
-  Check,
 } from "lucide-react";
 
 interface Question {
@@ -85,7 +79,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
   const isReviewMode = searchParams.get("review") === "true";
   const reviewAttemptId = searchParams.get("attemptId");
 
-  const { resumeTimer } = useTestStore();
+  const { resumeTimer, timeRemaining } = useTestStore();
   const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   const {
@@ -132,8 +126,6 @@ function ListeningTestContent({ testId }: { testId: string }) {
     questionGroups,
     activeQuestionNumber,
     goToQuestion,
-    goToPrevQuestion,
-    goToNextQuestion,
   } = useQuestionNavigation(sectionPassages, activeSectionId);
 
   const currentSection =
@@ -307,19 +299,22 @@ function ListeningTestContent({ testId }: { testId: string }) {
 
   return (
     <div className="h-screen bg-white flex flex-col overflow-hidden">
+      {/* Top Header Bar */}
       <header className="shrink-0 bg-white border-b border-gray-200 h-12 flex items-center px-4 justify-between">
         <div className="flex items-center gap-3">
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() =>
               isReviewMode
                 ? router.push(`/dashboard/results/${reviewAttemptId}`)
                 : router.push("/dashboard/listening")
             }
-            className="flex items-center gap-1 text-gray-700 hover:text-gray-900 text-sm"
+            className="flex items-center gap-1 text-gray-700 hover:text-gray-900 text-sm px-2"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Back</span>
-          </button>
+          </Button>
           <div className="bg-red-600 text-white px-3 py-0.5 text-sm font-bold rounded">
             IELTS
           </div>
@@ -328,14 +323,12 @@ function ListeningTestContent({ testId }: { testId: string }) {
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
-          {!isReviewMode && (
-            <TestTimer
-              onTimeUp={handleTimeUp}
-              className="bg-transparent text-gray-800 px-2 py-1 text-base"
-            />
-          )}
-        </div>
+        {!isReviewMode && (
+          <TestTimer
+            onTimeUp={handleTimeUp}
+            className="bg-transparent text-gray-800 px-2 py-1 text-base"
+          />
+        )}
 
         <div className="flex items-center gap-2">
           <button
@@ -348,18 +341,22 @@ function ListeningTestContent({ testId }: { testId: string }) {
               <Maximize2 className="h-5 w-5" />
             )}
           </button>
-          <button className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors">
-            <Bell className="h-5 w-5" />
-          </button>
-          <button className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors">
-            <Menu className="h-5 w-5" />
-          </button>
-          <button className="p-1.5 text-gray-500 hover:text-gray-700 transition-colors">
-            <PenSquare className="h-5 w-5" />
-          </button>
         </div>
       </header>
 
+      {/* Timer Progress Bar */}
+      {!isReviewMode && (
+        <div className="shrink-0 h-1 bg-gray-200">
+          <div
+            className="h-full bg-red-500 transition-all duration-1000 ease-linear"
+            style={{
+              width: `${(timeRemaining / TEST_CONFIG.listening.totalTime) * 100}%`,
+            }}
+          />
+        </div>
+      )}
+
+      {/* Part instruction sub-header */}
       <div className="shrink-0 bg-gray-100 border-b border-gray-200 px-6 py-2.5">
         <p className="font-bold text-sm text-gray-900">
           Part {activePassageIndex + 1}
@@ -434,25 +431,15 @@ function ListeningTestContent({ testId }: { testId: string }) {
         </div>
 
         <div className="flex items-center gap-1">
-          <button
-            onClick={goToPrevQuestion}
-            className="w-8 h-8 flex items-center justify-center bg-gray-700 text-white rounded-sm hover:bg-gray-600 transition-colors"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-          <button
-            onClick={goToNextQuestion}
-            className="w-8 h-8 flex items-center justify-center bg-gray-700 text-white rounded-sm hover:bg-gray-600 transition-colors"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
           {!isReviewMode && (
-            <button
+            <Button
+              variant="default"
+              size="sm"
               onClick={() => setShowSubmitDialog(true)}
-              className="w-8 h-8 flex items-center justify-center bg-white border border-gray-300 text-gray-600 rounded-sm hover:bg-gray-50 transition-colors ml-2"
+              className="ml-2"
             >
-              <Check className="h-4 w-4" />
-            </button>
+              Submit
+            </Button>
           )}
         </div>
       </div>

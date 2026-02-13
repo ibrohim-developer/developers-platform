@@ -49,6 +49,14 @@ const speakingFilters = [
       { value: "3", label: "Part 3" },
     ],
   },
+  {
+    placeholder: "All Status",
+    options: [
+      { value: "all", label: "All Status" },
+      { value: "new", label: "New" },
+      { value: "completed", label: "Completed" },
+    ],
+  },
 ];
 
 export default function SpeakingTestsPage() {

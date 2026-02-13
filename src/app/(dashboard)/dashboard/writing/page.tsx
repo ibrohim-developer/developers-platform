@@ -63,6 +63,14 @@ const writingFilters = [
       { value: "task2", label: "Task 2" },
     ],
   },
+  {
+    placeholder: "All Status",
+    options: [
+      { value: "all", label: "All Status" },
+      { value: "new", label: "New" },
+      { value: "completed", label: "Completed" },
+    ],
+  },
 ];
 
 export default async function WritingTestsPage() {
