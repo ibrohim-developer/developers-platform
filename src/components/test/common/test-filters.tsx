@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useCallback, useRef } from "react";
 import { Search } from "lucide-react";
 import {
   Select,
@@ -15,6 +17,7 @@ interface FilterOption {
 }
 
 interface FilterConfig {
+  key: string;
   placeholder: string;
   options: FilterOption[];
 }
@@ -28,6 +31,25 @@ export function TestFilters({
   searchPlaceholder = "Search tests...",
   filters,
 }: TestFiltersProps) {
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const updateParams = useCallback(
+    (key: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value === "all" || value === "") {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+      const qs = params.toString();
+      router.push(qs ? `${pathname}?${qs}` : pathname);
+    },
+    [router, pathname, searchParams],
+  );
+
   return (
     <div className="flex flex-col md:flex-row gap-4 items-center">
       <div className="relative flex-1 w-full">
@@ -36,11 +58,23 @@ export function TestFilters({
           className="w-full bg-card border border-neutral-200 dark:border-neutral-700 rounded-lg py-2.5 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none"
           placeholder={searchPlaceholder}
           type="text"
+          defaultValue={searchParams.get("q") ?? ""}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            debounceRef.current = setTimeout(() => {
+              updateParams("q", value);
+            }, 400);
+          }}
         />
       </div>
       <div className="flex gap-3 w-full md:w-auto">
-        {filters.map((filter, i) => (
-          <Select key={i} defaultValue="all">
+        {filters.map((filter) => (
+          <Select
+            key={filter.key}
+            value={searchParams.get(filter.key) ?? "all"}
+            onValueChange={(value) => updateParams(filter.key, value)}
+          >
             <SelectTrigger className="w-full md:w-40 text-xs font-bold border-neutral-200 dark:border-neutral-700">
               <SelectValue placeholder={filter.placeholder} />
             </SelectTrigger>

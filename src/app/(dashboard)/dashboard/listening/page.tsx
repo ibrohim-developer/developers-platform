@@ -1,70 +1,90 @@
 import Link from "next/link";
 import { Clock, HelpCircle, Headphones } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { DifficultyDots } from "@/components/test/common/difficulty-dots";
 import { TestFilters } from "@/components/test/common/test-filters";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-async function getListeningTests() {
-  const supabase = await createClient();
-
-  const { data: sections } = await supabase
-    .from("listening_sections")
-    .select(`
-      id,
-      test_id,
-      section_number,
-      tests!inner (
-        id,
-        title,
-        description,
-        difficulty_level,
-        is_published
-      )
-    `)
-    .eq("tests.is_published", true);
-
-  const sectionIds = (sections ?? []).map((s: any) => s.id);
-
-  if (sectionIds.length === 0) {
-    return [];
-  }
-
-  const { data: questionCounts } = await supabase
-    .from("questions")
-    .select("section_id")
-    .eq("module_type", "listening")
-    .in("section_id", sectionIds);
-
-  const questionCountMap: Record<string, number> = {};
-  (questionCounts ?? []).forEach((q: any) => {
-    questionCountMap[q.section_id] = (questionCountMap[q.section_id] || 0) + 1;
-  });
-
-  const testMap = new Map<string, any>();
-  (sections ?? []).forEach((section: any) => {
-    const test = section.tests;
-    if (!testMap.has(test.id)) {
-      testMap.set(test.id, {
-        id: test.id,
-        title: test.title,
-        description: test.description ?? "",
-        difficulty: test.difficulty_level ?? "medium",
-        duration: 30,
-        questions: 0,
-        sections: 0,
-      });
-    }
-    const testData = testMap.get(test.id);
-    testData.sections += 1;
-    testData.questions += questionCountMap[section.id] || 0;
-  });
-
-  return Array.from(testMap.values());
+interface ListeningTest {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: string;
+  duration: number;
+  questions: number;
+  sections: number;
 }
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const getListeningTests = unstable_cache(
+  async (): Promise<ListeningTest[]> => {
+    const supabase = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
+
+    const [{ data: sections }, { data: questionCounts }] = await Promise.all([
+      supabase
+        .from("listening_sections")
+        .select(
+          `
+          id,
+          test_id,
+          section_number,
+          tests!inner (
+            id,
+            title,
+            description,
+            difficulty_level,
+            is_published
+          )
+        `,
+        )
+        .eq("tests.is_published", true),
+      supabase
+        .from("questions")
+        .select("section_id")
+        .eq("module_type", "listening"),
+    ]);
+
+    if (!sections || sections.length === 0) {
+      return [];
+    }
+
+    const questionCountMap: Record<string, number> = {};
+    (questionCounts ?? []).forEach((q: any) => {
+      questionCountMap[q.section_id] =
+        (questionCountMap[q.section_id] || 0) + 1;
+    });
+
+    const testMap = new Map<string, any>();
+    sections.forEach((section: any) => {
+      const test = section.tests;
+      if (!testMap.has(test.id)) {
+        testMap.set(test.id, {
+          id: test.id,
+          title: test.title,
+          description: test.description ?? "",
+          difficulty: test.difficulty_level ?? "medium",
+          duration: 30,
+          questions: 0,
+          sections: 0,
+        });
+      }
+      const testData = testMap.get(test.id);
+      testData.sections += 1;
+      testData.questions += questionCountMap[section.id] || 0;
+    });
+
+    return Array.from(testMap.values());
+  },
+  ["listening-tests"],
+  { revalidate: 300 },
+);
 
 const listeningFilters = [
   {
+    key: "difficulty",
     placeholder: "All Levels",
     options: [
       { value: "all", label: "All Levels" },
@@ -74,6 +94,7 @@ const listeningFilters = [
     ],
   },
   {
+    key: "sections",
     placeholder: "All Sections",
     options: [
       { value: "all", label: "All Sections" },
@@ -84,6 +105,7 @@ const listeningFilters = [
     ],
   },
   {
+    key: "status",
     placeholder: "All Status",
     options: [
       { value: "all", label: "All Status" },
@@ -93,8 +115,26 @@ const listeningFilters = [
   },
 ];
 
-export default async function ListeningTestsPage() {
-  const listeningTests = await getListeningTests();
+export default async function ListeningTestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | undefined }>;
+}) {
+  const params = await searchParams;
+  const allTests = await getListeningTests();
+
+  const listeningTests = allTests.filter((test) => {
+    if (params.q && !test.title.toLowerCase().includes(params.q.toLowerCase())) {
+      return false;
+    }
+    if (params.difficulty && params.difficulty !== "all" && test.difficulty !== params.difficulty) {
+      return false;
+    }
+    if (params.sections && params.sections !== "all" && test.sections !== Number(params.sections)) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-8 pb-12">
@@ -132,7 +172,7 @@ export default async function ListeningTestsPage() {
                 <p className="text-[11px] text-muted-foreground font-bold uppercase mb-4">
                   {test.sections} Sections
                 </p>
-                <div className="flex items-center gap-8 text-xs font-bold text-muted-foreground">
+                <div className="flex items-center gap-6 text-xs font-bold text-muted-foreground">
                   <DifficultyDots difficulty={test.difficulty} />
                   <span className="flex items-center gap-1.5">
                     <Clock className="h-4 w-4" />
@@ -141,10 +181,6 @@ export default async function ListeningTestsPage() {
                   <span className="flex items-center gap-1.5">
                     <HelpCircle className="h-4 w-4" />
                     {test.questions} questions
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Headphones className="h-4 w-4" />
-                    Audio
                   </span>
                 </div>
               </div>

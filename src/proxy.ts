@@ -29,11 +29,18 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user ?? null
+
+  // Public dashboard routes (accessible without auth for SEO)
+  const publicPaths = ['/dashboard/reading', '/dashboard/listening', '/dashboard/writing']
+  const isPublic = publicPaths.some(path =>
+    request.nextUrl.pathname === path
+  )
 
   // Protected routes
   const protectedPaths = ['/dashboard', '/test', '/results', '/profile']
-  const isProtected = protectedPaths.some(path =>
+  const isProtected = !isPublic && protectedPaths.some(path =>
     request.nextUrl.pathname.startsWith(path)
   )
 

@@ -119,6 +119,37 @@ export type Database = {
         }
         Relationships: []
       }
+      speaking_topics: {
+        Row: {
+          id: string
+          test_id: string
+          part_number: number
+          topic: string
+          questions: Json | null
+          preparation_time_seconds: number
+          speaking_time_seconds: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          test_id: string
+          part_number: number
+          topic: string
+          questions?: Json | null
+          preparation_time_seconds?: number
+          speaking_time_seconds?: number
+          created_at?: string
+        }
+        Update: {
+          test_id?: string
+          part_number?: number
+          topic?: string
+          questions?: Json | null
+          preparation_time_seconds?: number
+          speaking_time_seconds?: number
+        }
+        Relationships: []
+      }
       writing_tasks: {
         Row: {
           id: string

@@ -1,5 +1,6 @@
 import { Sidebar } from '@/components/layout/sidebar'
 import { DashboardMain } from '@/components/layout/dashboard-main'
+import { ThemeProvider } from '@/components/theme-provider'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function DashboardLayout({
@@ -11,11 +12,18 @@ export default async function DashboardLayout({
   const { data: { user } } = await supabase.auth.getUser()
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar user={user} />
-      <DashboardMain>
-        {children}
-      </DashboardMain>
-    </div>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar user={user} />
+        <DashboardMain>
+          {children}
+        </DashboardMain>
+      </div>
+    </ThemeProvider>
   )
 }

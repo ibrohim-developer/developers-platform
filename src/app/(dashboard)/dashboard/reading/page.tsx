@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Clock, HelpCircle } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { DifficultyDots } from "@/components/test/common/difficulty-dots";
 import { TestFilters } from "@/components/test/common/test-filters";
 
@@ -17,70 +18,77 @@ interface ReadingTest {
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-async function getReadingTests(): Promise<ReadingTest[]> {
-  const supabase = await createClient();
+const getReadingTests = unstable_cache(
+  async (): Promise<ReadingTest[]> => {
+    const supabase = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    );
 
-  const { data: passages } = await supabase
-    .from("reading_passages")
-    .select(
-      `
-      id,
-      test_id,
-      passage_number,
-      tests!inner (
-        id,
-        title,
-        description,
-        difficulty_level,
-        is_published
-      )
-    `,
-    )
-    .eq("tests.is_published", true);
+    const [{ data: passages }, { data: questionCounts }] = await Promise.all([
+      supabase
+        .from("reading_passages")
+        .select(
+          `
+          id,
+          test_id,
+          passage_number,
+          tests!inner (
+            id,
+            title,
+            description,
+            difficulty_level,
+            is_published
+          )
+        `,
+        )
+        .eq("tests.is_published", true),
+      supabase
+        .from("questions")
+        .select("section_id")
+        .eq("module_type", "reading"),
+    ]);
 
-  const passageIds = (passages ?? []).map((p: any) => p.id);
-
-  if (passageIds.length === 0) {
-    return [];
-  }
-
-  const { data: questionCounts } = await supabase
-    .from("questions")
-    .select("section_id")
-    .eq("module_type", "reading")
-    .in("section_id", passageIds);
-
-  const questionCountMap: Record<string, number> = {};
-  (questionCounts ?? []).forEach((q: any) => {
-    questionCountMap[q.section_id] = (questionCountMap[q.section_id] || 0) + 1;
-  });
-
-  const testMap = new Map<string, any>();
-  (passages ?? []).forEach((passage: any) => {
-    const test = passage.tests;
-    if (!testMap.has(test.id)) {
-      testMap.set(test.id, {
-        id: test.id,
-        title: test.title,
-        description: test.description ?? "",
-        difficulty: test.difficulty_level ?? "medium",
-        duration: 20,
-        questions: 0,
-        passages: 0,
-        part: passage.passage_number || 1,
-        type: "academic",
-      });
+    if (!passages || passages.length === 0) {
+      return [];
     }
-    const testData = testMap.get(test.id);
-    testData.passages += 1;
-    testData.questions += questionCountMap[passage.id] || 0;
-  });
 
-  return Array.from(testMap.values());
-}
+    const questionCountMap: Record<string, number> = {};
+    (questionCounts ?? []).forEach((q: any) => {
+      questionCountMap[q.section_id] =
+        (questionCountMap[q.section_id] || 0) + 1;
+    });
+
+    const testMap = new Map<string, any>();
+    passages.forEach((passage: any) => {
+      const test = passage.tests;
+      if (!testMap.has(test.id)) {
+        testMap.set(test.id, {
+          id: test.id,
+          title: test.title,
+          description: test.description ?? "",
+          difficulty: test.difficulty_level ?? "medium",
+          duration: 20,
+          questions: 0,
+          passages: 0,
+          part: passage.passage_number || 1,
+          type: "academic",
+        });
+      }
+      const testData = testMap.get(test.id);
+      testData.passages += 1;
+      testData.questions += questionCountMap[passage.id] || 0;
+    });
+
+    return Array.from(testMap.values());
+  },
+  ["reading-tests"],
+  { revalidate: 300 },
+);
 
 const readingFilters = [
   {
+    key: "difficulty",
     placeholder: "All Levels",
     options: [
       { value: "all", label: "All Levels" },
@@ -90,6 +98,7 @@ const readingFilters = [
     ],
   },
   {
+    key: "type",
     placeholder: "All Types",
     options: [
       { value: "all", label: "All Types" },
@@ -98,6 +107,7 @@ const readingFilters = [
     ],
   },
   {
+    key: "part",
     placeholder: "All Parts",
     options: [
       { value: "all", label: "All Parts" },
@@ -107,6 +117,7 @@ const readingFilters = [
     ],
   },
   {
+    key: "status",
     placeholder: "All Status",
     options: [
       { value: "all", label: "All Status" },
@@ -116,8 +127,29 @@ const readingFilters = [
   },
 ];
 
-export default async function ReadingTestsPage() {
-  const readingTests = await getReadingTests();
+export default async function ReadingTestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | undefined }>;
+}) {
+  const params = await searchParams;
+  const allTests = await getReadingTests();
+
+  const readingTests = allTests.filter((test) => {
+    if (params.q && !test.title.toLowerCase().includes(params.q.toLowerCase())) {
+      return false;
+    }
+    if (params.difficulty && params.difficulty !== "all" && test.difficulty !== params.difficulty) {
+      return false;
+    }
+    if (params.type && params.type !== "all" && test.type !== params.type) {
+      return false;
+    }
+    if (params.part && params.part !== "all" && test.part !== Number(params.part)) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div className="space-y-8 pb-12">
@@ -156,7 +188,7 @@ export default async function ReadingTestsPage() {
                   Part {test.part} -{" "}
                   {test.type.charAt(0).toUpperCase() + test.type.slice(1)}
                 </p>
-                <div className="flex items-center gap-8 text-xs font-bold text-muted-foreground">
+                <div className="flex items-center gap-6 text-xs font-bold text-muted-foreground">
                   <DifficultyDots difficulty={test.difficulty} />
                   <span className="flex items-center gap-1.5">
                     <Clock className="h-4 w-4" />

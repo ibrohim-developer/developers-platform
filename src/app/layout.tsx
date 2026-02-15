@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
+import { QueryProvider } from "@/components/query-provider";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import "./globals.css";
 
@@ -32,14 +32,9 @@ export default function RootLayout({
       >
         <GoogleAnalytics />
         <Suspense fallback={null}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
+          <QueryProvider>
             {children}
-          </ThemeProvider>
+          </QueryProvider>
         </Suspense>
       </body>
     </html>
