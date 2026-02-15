@@ -206,7 +206,7 @@ function WritingTestContent({ testId }: { testId: string }) {
       <header className="shrink-0 bg-white border-b border-gray-200 h-16 flex items-center px-6 justify-between">
         <div className="flex items-center gap-4">
           <Button
-            variant="ghost"
+            variant="default"
             size="default"
             onClick={() =>
               isReviewMode
