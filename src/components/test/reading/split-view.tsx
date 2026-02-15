@@ -44,7 +44,7 @@ export function SplitView({
     <div className="flex flex-col h-full">
       {/* Panels */}
       <div
-        className="flex flex-1 min-h-0 bg-white"
+        className={cn("flex flex-1 min-h-0 bg-white", isDragging && "select-none")}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
@@ -60,12 +60,14 @@ export function SplitView({
         {/* Resizer */}
         <div
           className={cn(
-            "w-2 bg-gray-200 cursor-col-resize hover:bg-gray-300 transition-colors flex items-center justify-center",
+            "flex flex-col w-2 bg-gray-200 cursor-col-resize hover:bg-gray-300 transition-colors flex items-center justify-center",
             isDragging && "bg-gray-300",
           )}
           onMouseDown={handleMouseDown}
         >
-          <GripVertical className="h-5 w-5 text-gray-400" />
+          <GripVertical className="h-5 w-3 text-gray-400" />
+          <GripVertical className="h-5 w-3 text-gray-400 -mt-2.5" />
+
         </div>
 
         {/* Right Panel - Questions */}

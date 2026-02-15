@@ -38,6 +38,7 @@ import {
   PenSquare,
   ChevronLeft,
   ChevronRight,
+  Check,
 } from "lucide-react";
 
 interface Question {
@@ -194,35 +195,35 @@ function ReadingTestContent({ testId }: { testId: string }) {
   if (!hasStarted) {
     return (
       <div className="min-h-screen bg-muted/30 flex items-center justify-center">
-        <Card className="max-w-2xl w-full mx-4">
-          <CardHeader>
-            <CardTitle className="text-2xl">IELTS Reading Test</CardTitle>
-            <CardDescription>
+        <Card className="max-w-3xl w-full mx-4">
+          <CardHeader className="px-8 pt-5 pb-4">
+            <CardTitle className="text-3xl">IELTS Reading Test</CardTitle>
+            <CardDescription className="text-base mt-1">
               Please read the instructions carefully before starting
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Clock className="h-4 w-4 text-primary" />
+          <CardContent className="space-y-8">
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Clock className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium">Time Limit</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="font-medium text-lg">Time Limit</p>
+                  <p className="text-base text-muted-foreground">
                     You have {TEST_CONFIG.reading.totalTime / 60} minutes to
                     complete this test
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <BookOpen className="h-4 w-4 text-primary" />
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <BookOpen className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium">Reading Passages</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="font-medium text-lg">Reading Passages</p>
+                  <p className="text-base text-muted-foreground">
                     This test contains {passages.length} passage
                     {passages.length > 1 ? "s" : ""} with {totalQuestions}{" "}
                     questions total
@@ -230,13 +231,13 @@ function ReadingTestContent({ testId }: { testId: string }) {
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Send className="h-4 w-4 text-primary" />
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Send className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium">Instructions</p>
-                  <ul className="text-sm text-muted-foreground space-y-1 mt-1 list-disc list-inside">
+                  <p className="font-medium text-lg">Instructions</p>
+                  <ul className="text-base text-muted-foreground space-y-1.5 mt-1 list-disc list-inside">
                     <li>
                       Read each passage carefully before answering questions
                     </li>
@@ -253,13 +254,15 @@ function ReadingTestContent({ testId }: { testId: string }) {
             <div className="flex gap-3 pt-4">
               <Button
                 variant="outline"
-                className="flex-1"
+                size="lg"
+                className="flex-1 text-base"
                 onClick={() => router.push("/dashboard/reading")}
               >
                 Cancel
               </Button>
               <Button
-                className="flex-1"
+                className="flex-1 text-base"
+                size="lg"
                 onClick={() => {
                   setHasStarted(true);
                   resumeTimer();
@@ -280,22 +283,22 @@ function ReadingTestContent({ testId }: { testId: string }) {
       <header className="shrink-0 bg-white border-b border-gray-200 h-16 flex items-center px-6 justify-between">
         <div className="flex items-center gap-4">
           <Button
-            variant="ghost"
+            variant="outline"
             size="default"
             onClick={() =>
               isReviewMode
                 ? router.push(`/dashboard/results/${reviewAttemptId}`)
                 : router.push("/dashboard/reading")
             }
-            className="flex items-center gap-2 text-gray-700 text-base px-3"
+            className="flex items-center gap-2 text-base px-3"
           >
             <ArrowLeft className="h-5 w-5" />
             <span>Back</span>
           </Button>
-          <div className="bg-red-600 text-white px-4 py-1 text-base font-bold rounded">
+          <div className="bg-red-600 text-white px-4 py-[3.5px] text-lg font-bold rounded">
             IELTS
           </div>
-          <span className="text-gray-500 text-base">
+          <span className="text-gray-500 text-lg">
             ID: {attemptId?.slice(0, 5) || "-----"}
           </span>
         </div>
@@ -335,10 +338,10 @@ function ReadingTestContent({ testId }: { testId: string }) {
 
       {/* Part instruction sub-header */}
       <div className="shrink-0 bg-gray-100 border-b border-gray-200 px-6 py-2.5">
-        <p className="font-bold text-sm text-gray-900">
+        <p className="font-bold text-lg text-gray-900">
           Part {activePassageIndex + 1}
         </p>
-        <p className="text-sm text-gray-700">
+        <p className="text-gray-700">
           Read the text and answer questions {firstQuestionNum}-
           {lastQuestionNum}.
         </p>
@@ -400,10 +403,8 @@ function ReadingTestContent({ testId }: { testId: string }) {
               <button
                 key={q.id}
                 onClick={() => goToQuestion(qNum)}
-                className={`w-9 h-9 text-sm font-medium rounded-sm border transition-colors ${
-                  isActive
-                    ? "border-blue-500 bg-white text-blue-600 font-bold"
-                    : isAnswered
+                className={`cursor-pointer w-9 h-9 text-sm font-medium rounded-sm border transition-colors ${
+                     isAnswered
                       ? "border-gray-300 bg-gray-100 text-gray-700"
                       : "border-gray-300 bg-white text-gray-600"
                 }`}
@@ -416,14 +417,12 @@ function ReadingTestContent({ testId }: { testId: string }) {
 
         <div className="flex items-center gap-2">
           {!isReviewMode && (
-            <Button
-              variant="default"
-              size="default"
+            <button
               onClick={() => setShowSubmitDialog(true)}
-              className="ml-3 text-base px-6"
+              className="cursor-pointer ml-3 w-10 h-10 bg-gray-800 hover:bg-gray-900 text-white rounded flex items-center justify-center transition-colors"
             >
-              Submit
-            </Button>
+              <Check className="h-5 w-5" />
+            </button>
           )}
         </div>
       </div>

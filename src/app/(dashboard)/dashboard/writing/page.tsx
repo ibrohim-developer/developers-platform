@@ -148,7 +148,7 @@ export default async function WritingTestsPage({
             >
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-lg font-black">
+                  <h3 className="text-xl font-bold">
                     Day {index + 1}: {test.title}
                   </h3>
                 </div>
