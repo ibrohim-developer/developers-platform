@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TestTimer } from "@/components/test/common/test-timer";
 import { SubmitDialog } from "@/components/test/common/submit-dialog";
 import { ReloadWarningDialog } from "@/components/test/common/reload-warning-dialog";
+import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { WritingEditor } from "@/components/test/writing/writing-editor";
 import { useTestStore } from "@/stores/test-store";
 import { WritingFeedback } from "@/components/test/writing/writing-feedback";
@@ -22,6 +23,7 @@ import { TEST_CONFIG } from "@/lib/constants/test-config";
 import { useWritingTest } from "@/hooks/use-writing-test";
 import { useNavigationProtection } from "@/hooks/use-navigation-protection";
 import { useFullscreen } from "@/hooks/use-fullscreen";
+import { useTestOptions } from "@/hooks/use-test-options";
 import {
   Send,
   Loader2,
@@ -88,6 +90,7 @@ function WritingTestContent({ testId }: { testId: string }) {
   } = useWritingTest(testId, isReviewMode, reviewAttemptId);
 
   const [showReloadWarning, setShowReloadWarning] = useState(false);
+  const testOptions = useTestOptions();
 
   useNavigationProtection({
     enabled: hasStarted && !isReviewMode,
@@ -202,10 +205,15 @@ function WritingTestContent({ testId }: { testId: string }) {
     );
   }
 
+  const { theme, rootStyle } = testOptions;
+
   return (
-    <div className="h-screen bg-white flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden" style={rootStyle}>
       {/* Top Header Bar */}
-      <header className="shrink-0 bg-white border-b border-gray-200 h-16 flex items-center px-6 justify-between">
+      <header
+        className="shrink-0 h-16 flex items-center px-6 justify-between"
+        style={{ backgroundColor: theme.bg, borderBottom: `1px solid ${theme.border}` }}
+      >
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
@@ -215,7 +223,7 @@ function WritingTestContent({ testId }: { testId: string }) {
                 ? router.push(`/dashboard/results/${reviewAttemptId}`)
                 : router.push("/dashboard/writing")
             }
-            className="flex items-center gap-2  text-base px-3"
+            className="flex items-center gap-2 text-base px-3"
           >
             <ArrowLeft className="h-5 w-5" />
             <span>Back</span>
@@ -224,7 +232,7 @@ function WritingTestContent({ testId }: { testId: string }) {
             IELTS
           </div>
           {!isReviewMode && (
-            <div className="flex items-center gap-2 text-base text-muted-foreground">
+            <div className="flex items-center gap-2 text-base" style={{ color: theme.textMuted }}>
               {tasks.map((task, i) => {
                 const isComplete = taskCompletions.find(
                   (completion) => completion.id === task.id,
@@ -246,14 +254,14 @@ function WritingTestContent({ testId }: { testId: string }) {
         {!isReviewMode && (
           <TestTimer
             onTimeUp={handleTimeUp}
-            className="bg-transparent text-gray-800 px-3 py-1.5 text-lg font-semibold"
+            className="bg-transparent px-3 py-1.5 text-lg font-semibold"
           />
         )}
 
         <div className="flex items-center gap-3">
           <button
             onClick={toggleFullscreen}
-            className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+            className="p-2 transition-opacity opacity-70 hover:opacity-100"
           >
             {isFullscreen ? (
               <Minimize2 className="h-6 w-6" />
@@ -261,12 +269,13 @@ function WritingTestContent({ testId }: { testId: string }) {
               <Maximize2 className="h-6 w-6" />
             )}
           </button>
+          <TestOptionsMenu {...testOptions} />
         </div>
       </header>
 
       {/* Timer Progress Bar */}
       {!isReviewMode && (
-        <div className="shrink-0 h-1 bg-gray-200">
+        <div className="shrink-0 h-1" style={{ backgroundColor: theme.border }}>
           <div
             className="h-full bg-red-500 transition-all duration-1000 ease-linear"
             style={{
@@ -417,7 +426,10 @@ function WritingTestContent({ testId }: { testId: string }) {
 
       {/* Bottom Bar */}
       {!isReviewMode && (
-        <div className="shrink-0 bg-white border-t border-gray-200 h-14 flex items-center px-6 justify-end">
+        <div
+          className="shrink-0 h-14 flex items-center px-6 justify-end"
+          style={{ backgroundColor: theme.bg, borderTop: `1px solid ${theme.border}` }}
+        >
           <Button
             variant="default"
             size="default"

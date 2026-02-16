@@ -13,6 +13,7 @@ import {
 import { TestTimer } from "@/components/test/common/test-timer";
 import { SubmitDialog } from "@/components/test/common/submit-dialog";
 import { ReloadWarningDialog } from "@/components/test/common/reload-warning-dialog";
+import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { AudioPlayer } from "@/components/test/listening/audio-player";
 import { MultipleChoice } from "@/components/test/questions/multiple-choice";
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
@@ -22,6 +23,7 @@ import { useListeningTest } from "@/hooks/use-listening-test";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { useNavigationProtection } from "@/hooks/use-navigation-protection";
 import { useQuestionNavigation } from "@/hooks/use-question-navigation";
+import { useTestOptions } from "@/hooks/use-test-options";
 import {
   Send,
   Loader2,
@@ -132,6 +134,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
     sections.find((section) => section.id === activeSectionId) ?? null;
 
   const [showReloadWarning, setShowReloadWarning] = useState(false);
+  const testOptions = useTestOptions();
 
   useNavigationProtection({
     enabled: hasStarted && !isReviewMode,
@@ -267,7 +270,9 @@ function ListeningTestContent({ testId }: { testId: string }) {
                       Listen carefully: audio plays once and cannot be paused.
                     </li>
                     <li>Answer while listening or after audio finishes.</li>
-                    <li>The timer starts when you click &quot;Begin Test&quot;.</li>
+                    <li>
+                      The timer starts when you click &quot;Begin Test&quot;.
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -299,10 +304,18 @@ function ListeningTestContent({ testId }: { testId: string }) {
     );
   }
 
+  const { theme, rootStyle } = testOptions;
+
   return (
-    <div className="h-screen bg-white flex flex-col overflow-hidden">
+    <div className="h-screen flex flex-col overflow-hidden" style={rootStyle}>
       {/* Top Header Bar */}
-      <header className="shrink-0 bg-white border-b border-gray-200 h-16 flex items-center px-6 justify-between">
+      <header
+        className="shrink-0 h-16 flex items-center px-6 justify-between"
+        style={{
+          backgroundColor: theme.bg,
+          borderBottom: `1px solid ${theme.border}`,
+        }}
+      >
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
@@ -320,7 +333,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
           <div className="bg-red-600 text-white px-4 py-[3.5px] text-lg font-bold rounded">
             IELTS
           </div>
-          <span className="text-gray-500 text-lg">
+          <span className="text-lg" style={{ color: theme.textMuted }}>
             ID: {attemptId?.slice(0, 5) || "-----"}
           </span>
         </div>
@@ -328,14 +341,14 @@ function ListeningTestContent({ testId }: { testId: string }) {
         {!isReviewMode && (
           <TestTimer
             onTimeUp={handleTimeUp}
-            className="bg-transparent text-gray-800 px-3 py-1.5 text-lg font-semibold"
+            className="bg-transparent px-3 py-1.5 text-lg font-semibold"
           />
         )}
 
         <div className="flex items-center gap-3">
           <button
             onClick={toggleFullscreen}
-            className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+            className="p-2 transition-opacity opacity-70 hover:opacity-100"
           >
             {isFullscreen ? (
               <Minimize2 className="h-6 w-6" />
@@ -343,12 +356,13 @@ function ListeningTestContent({ testId }: { testId: string }) {
               <Maximize2 className="h-6 w-6" />
             )}
           </button>
+          <TestOptionsMenu {...testOptions} />
         </div>
       </header>
 
       {/* Timer Progress Bar */}
       {!isReviewMode && (
-        <div className="shrink-0 h-1 bg-gray-200">
+        <div className="shrink-0 h-1" style={{ backgroundColor: theme.border }}>
           <div
             className="h-full bg-red-500 transition-all duration-1000 ease-linear"
             style={{
@@ -359,11 +373,15 @@ function ListeningTestContent({ testId }: { testId: string }) {
       )}
 
       {/* Part instruction sub-header */}
-      <div className="shrink-0 bg-gray-100 border-b border-gray-200 px-6 py-2.5">
-        <p className="font-bold text-lg text-gray-900">
-          Part {activePassageIndex + 1}
-        </p>
-        <p className="text-gray-700">
+      <div
+        className="shrink-0 px-6 py-2.5"
+        style={{
+          backgroundColor: theme.bgAlt,
+          borderBottom: `1px solid ${theme.border}`,
+        }}
+      >
+        <p className="font-bold text-lg">Part {activePassageIndex + 1}</p>
+        <p style={{ color: theme.textMuted }}>
           Listen and answer questions {firstQuestionNum}-{lastQuestionNum}.
         </p>
       </div>
@@ -371,16 +389,21 @@ function ListeningTestContent({ testId }: { testId: string }) {
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-4xl mx-auto p-6 space-y-6">
           {!isReviewMode && (
-            <AudioPlayer audioUrl={currentSection.audioUrl} examMode />
+            <div className="hidden">
+              <AudioPlayer audioUrl={currentSection.audioUrl} examMode />
+            </div>
           )}
 
           {questionGroups.map((group, groupIndex) => (
             <div key={groupIndex}>
               <div className="mb-4">
-                <h3 className="font-bold text-base text-gray-900 mb-1">
+                <h3 className="font-bold text-base mb-1">
                   Questions {group.startNum}-{group.endNum}
                 </h3>
-                <p className="text-sm text-gray-700 leading-relaxed">
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{ color: theme.textMuted }}
+                >
                   {getTypeInstruction(group.type)}
                 </p>
               </div>
@@ -397,16 +420,25 @@ function ListeningTestContent({ testId }: { testId: string }) {
               </div>
 
               {groupIndex < questionGroups.length - 1 && (
-                <hr className="my-6 border-gray-200" />
+                <hr className="my-6" style={{ borderColor: theme.border }} />
               )}
             </div>
           ))}
         </div>
       </div>
 
-      <div className="shrink-0 bg-white border-t border-gray-200 h-14 flex items-center px-6 justify-between">
+      <div
+        className="shrink-0 h-14 flex items-center px-6 justify-between"
+        style={{
+          backgroundColor: theme.bg,
+          borderTop: `1px solid ${theme.border}`,
+        }}
+      >
         <div className="flex items-center gap-1.5">
-          <span className="text-base font-bold text-gray-700 mr-3">
+          <span
+            className="text-base font-bold mr-3"
+            style={{ color: theme.textMuted }}
+          >
             Part {activePassageIndex + 1}
           </span>
           {currentPassage.questions.map((q, idx) => {
@@ -418,12 +450,13 @@ function ListeningTestContent({ testId }: { testId: string }) {
               <button
                 key={q.id}
                 onClick={() => goToQuestion(qNum)}
-                className={`w-9 h-9 text-sm font-medium rounded-sm border transition-colors ${isActive
-                  ? "border-blue-500 bg-white text-blue-600 font-bold"
-                  : isAnswered
-                    ? "border-gray-300 bg-gray-100 text-gray-700"
-                    : "border-gray-300 bg-white text-gray-600"
-                  }`}
+                className="w-9 h-9 text-sm font-medium rounded-sm transition-colors"
+                style={{
+                  border: `1px solid ${theme.border}`,
+                  backgroundColor: isAnswered ? theme.bgAlt : theme.bg,
+                  color: theme.text,
+                  opacity: isAnswered ? 1 : 0.7,
+                }}
               >
                 {qNum}
               </button>

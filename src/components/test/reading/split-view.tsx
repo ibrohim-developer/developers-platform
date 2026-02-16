@@ -44,14 +44,14 @@ export function SplitView({
     <div className="flex flex-col h-full">
       {/* Panels */}
       <div
-        className={cn("flex flex-1 min-h-0 bg-white", isDragging && "select-none")}
+        className={cn("flex flex-1 min-h-0 ", isDragging && "select-none")}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
         {/* Left Panel - Passage */}
         <div
-          className={cn("overflow-y-auto border-r border-gray-200 bg-white")}
+          className={cn("overflow-y-auto border-r border-gray-200")}
           style={{ width: `${ratio}%` }}
         >
           {leftPanel}
@@ -67,7 +67,6 @@ export function SplitView({
         >
           <GripVertical className="h-5 w-3 text-gray-400" />
           <GripVertical className="h-5 w-3 text-gray-400 -mt-2.5" />
-
         </div>
 
         {/* Right Panel - Questions */}
