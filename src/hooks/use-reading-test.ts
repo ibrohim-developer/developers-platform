@@ -20,6 +20,7 @@ interface Passage {
   title: string;
   content: string;
   wordCount: number | null;
+  timeLimit: number;
   questions: Question[];
 }
 
@@ -49,6 +50,7 @@ export function useReadingTest(
     new Set(),
   );
   const [activePassageId, setActivePassageId] = useState("");
+  const [totalTime, setTotalTime] = useState(TEST_CONFIG.reading.totalTime);
 
   const answeredCount = Object.values(answers).filter(
     (a) => a.answer.trim() !== "",
@@ -120,11 +122,16 @@ export function useReadingTest(
       const data = await res.json();
       setPassages(data.passages);
       setActivePassageId(data.passages[0]?.id ?? "");
+
+      // Use time limit from backend, fallback to config if not available
+      const time = data.totalTimeLimit || TEST_CONFIG.reading.totalTime;
+      setTotalTime(time);
+
       initTest(
         data.attemptId,
         testId,
         "reading",
-        TEST_CONFIG.reading.totalTime,
+        time,
         false,
       );
     } catch (err) {
@@ -152,7 +159,7 @@ export function useReadingTest(
         answersPayload[qId] = ans.answer;
       }
 
-      const timeSpentSeconds = TEST_CONFIG.reading.totalTime - timeRemaining;
+      const timeSpentSeconds = totalTime - timeRemaining;
 
       const res = await fetch("/api/reading/submit", {
         method: "POST",
@@ -206,6 +213,7 @@ export function useReadingTest(
     attemptId,
     answers,
     answeredCount,
+    totalTime,
     handleAnswer,
     handleSubmit,
     handleTimeUp,

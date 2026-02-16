@@ -20,6 +20,7 @@ interface Section {
   audioUrl: string;
   audioDurationSeconds: number;
   transcript: string;
+  timeLimit: number;
   questions: Question[];
 }
 
@@ -56,6 +57,7 @@ export function useListeningTest(
     new Set(),
   );
   const [activeSectionId, setActiveSectionId] = useState("");
+  const [totalTime, setTotalTime] = useState(TEST_CONFIG.listening.totalTime);
 
   const answeredCount = Object.values(answers).filter(
     (a) => a.answer.trim() !== "",
@@ -130,11 +132,16 @@ export function useListeningTest(
       const data = await res.json();
       setSections(data.sections);
       setActiveSectionId(data.sections[0]?.id ?? "");
+
+      // Use time limit from backend, fallback to config if not available
+      const time = data.totalTimeLimit || TEST_CONFIG.listening.totalTime;
+      setTotalTime(time);
+
       initTest(
         data.attemptId,
         testId,
         "listening",
-        TEST_CONFIG.listening.totalTime,
+        time,
         false,
       );
     } catch (err) {
@@ -162,7 +169,7 @@ export function useListeningTest(
         answersPayload[qId] = ans.answer;
       }
 
-      const timeSpentSeconds = TEST_CONFIG.listening.totalTime - timeRemaining;
+      const timeSpentSeconds = totalTime - timeRemaining;
 
       const res = await fetch("/api/listening/submit", {
         method: "POST",
@@ -216,6 +223,7 @@ export function useListeningTest(
     attemptId,
     answers,
     answeredCount,
+    totalTime,
     handleAnswer,
     handleSubmit,
     handleTimeUp,

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
   // Fetch writing tasks for this test
   const { data: tasks, error: tasksError } = await supabase
     .from("writing_tasks")
-    .select("id, task_number, task_type, prompt, image_url, min_words")
+    .select("id, task_number, task_type, prompt, image_url, min_words, time_limit")
     .eq("test_id", testId)
     .order("task_number");
 
@@ -55,8 +55,12 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Calculate total time limit for the test
+  const totalTimeLimit = tasks.reduce((sum: number, t: any) => sum + (t.time_limit || 0), 0);
+
   return NextResponse.json({
     attemptId: (attempt as any).id,
+    totalTimeLimit, // Total time in seconds for all tasks
     tasks: tasks.map((t: any) => ({
       id: t.id,
       taskNumber: t.task_number,
@@ -64,6 +68,7 @@ export async function POST(request: NextRequest) {
       prompt: t.prompt,
       imageUrl: t.image_url,
       minWords: t.min_words,
+      timeLimit: t.time_limit,
     })),
   });
 }

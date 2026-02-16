@@ -12,6 +12,7 @@ export interface WritingTask {
   prompt: string;
   imageUrl: string | null;
   minWords: number;
+  timeLimit: number;
 }
 
 export interface ReviewSubmission {
@@ -34,6 +35,7 @@ interface WritingReviewResponse {
 
 interface WritingStartResponse {
   attemptId: string;
+  totalTimeLimit: number;
   tasks: WritingTask[];
 }
 
@@ -129,14 +131,8 @@ export function useWritingTest(
       setTasks(data.tasks);
       setActiveTaskId(data.tasks[0]?.id ?? "");
 
-      let time = TEST_CONFIG.writing.totalTime;
-      if (data.tasks.length === 1) {
-        const task = data.tasks[0];
-        time =
-          task.taskType === "report"
-            ? TEST_CONFIG.writing.task1.recommendedTime
-            : TEST_CONFIG.writing.task2.recommendedTime;
-      }
+      // Use time limit from backend, fallback to config if not available
+      const time = data.totalTimeLimit || TEST_CONFIG.writing.totalTime;
 
       setTotalTime(time);
       initTest(data.attemptId, testId, "writing", time, false);

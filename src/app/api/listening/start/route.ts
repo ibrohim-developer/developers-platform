@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
   // Fetch listening sections for this test
   const { data: sections, error: sectionsError } = await supabase
     .from("listening_sections")
-    .select("id, section_number, audio_url, audio_duration_seconds, transcript")
+    .select("id, section_number, audio_url, audio_duration_seconds, transcript, time_limit")
     .eq("test_id", testId)
     .order("section_number");
 
@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
     audioUrl: section.audio_url,
     audioDurationSeconds: section.audio_duration_seconds,
     transcript: section.transcript,
+    timeLimit: section.time_limit,
     questions: (questions ?? [])
       .filter((q: any) => q.section_id === section.id)
       .map((q: any) => ({
@@ -89,8 +90,12 @@ export async function POST(request: NextRequest) {
       })),
   }));
 
+  // Calculate total time limit for the test
+  const totalTimeLimit = sections.reduce((sum: number, s: any) => sum + (s.time_limit || 0), 0);
+
   return NextResponse.json({
     attemptId: (attempt as any).id,
+    totalTimeLimit, // Total time in seconds for all sections
     sections: sectionsWithQuestions,
   });
 }

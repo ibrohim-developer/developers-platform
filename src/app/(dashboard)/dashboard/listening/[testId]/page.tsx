@@ -18,7 +18,6 @@ import { AudioPlayer } from "@/components/test/listening/audio-player";
 import { MultipleChoice } from "@/components/test/questions/multiple-choice";
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
 import { useTestStore } from "@/stores/test-store";
-import { TEST_CONFIG } from "@/lib/constants/test-config";
 import { useListeningTest } from "@/hooks/use-listening-test";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { useNavigationProtection } from "@/hooks/use-navigation-protection";
@@ -100,6 +99,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
     attemptId,
     answers,
     answeredCount,
+    totalTime,
     handleAnswer,
     handleSubmit,
     handleTimeUp,
@@ -238,7 +238,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
                 <div>
                   <p className="font-medium text-lg">Time Limit</p>
                   <p className="text-base text-muted-foreground">
-                    You have {TEST_CONFIG.reading.totalTime / 60} minutes to
+                    You have {totalTime / 60} minutes to
                     complete this test
                   </p>
                 </div>
@@ -366,7 +366,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
           <div
             className="h-full bg-red-500 transition-all duration-1000 ease-linear"
             style={{
-              width: `${(timeRemaining / TEST_CONFIG.listening.totalTime) * 100}%`,
+              width: `${(timeRemaining / totalTime) * 100}%`,
             }}
           />
         </div>

@@ -14,13 +14,12 @@ import { TestTimer } from "@/components/test/common/test-timer";
 import { SubmitDialog } from "@/components/test/common/submit-dialog";
 import { ReloadWarningDialog } from "@/components/test/common/reload-warning-dialog";
 import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
-import { SplitView } from "@/components/test/reading/split-view";
+import { SplitView } from "@/components/test/common/split-view";
 import { PassageDisplay } from "@/components/test/reading/passage-display";
 import { MultipleChoice } from "@/components/test/questions/multiple-choice";
 import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
 import { useTestStore } from "@/stores/test-store";
-import { TEST_CONFIG } from "@/lib/constants/test-config";
 import { getTypeInstruction } from "@/lib/constants/reading-instructions";
 import { useReadingTest } from "@/hooks/use-reading-test";
 import { useFullscreen } from "@/hooks/use-fullscreen";
@@ -95,6 +94,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
     attemptId,
     answers,
     answeredCount,
+    totalTime,
     handleAnswer,
     handleSubmit,
     handleTimeUp,
@@ -209,7 +209,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
                 <div>
                   <p className="font-medium text-lg">Time Limit</p>
                   <p className="text-base text-muted-foreground">
-                    You have {TEST_CONFIG.reading.totalTime / 60} minutes to
+                    You have {totalTime / 60} minutes to
                     complete this test
                   </p>
                 </div>
@@ -337,7 +337,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
           <div
             className="h-full bg-red-500 transition-all duration-1000 ease-linear"
             style={{
-              width: `${(timeRemaining / TEST_CONFIG.reading.totalTime) * 100}%`,
+              width: `${(timeRemaining / totalTime) * 100}%`,
             }}
           />
         </div>

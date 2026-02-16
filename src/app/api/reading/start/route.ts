@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
   // Fetch reading passages for this test
   const { data: passages, error: passagesError } = await supabase
     .from("reading_passages")
-    .select("id, passage_number, title, content, word_count")
+    .select("id, passage_number, title, content, word_count, time_limit")
     .eq("test_id", testId)
     .order("passage_number");
 
@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
     title: passage.title,
     content: passage.content,
     wordCount: passage.word_count,
+    timeLimit: passage.time_limit,
     questions: (questions ?? [])
       .filter((q: any) => q.section_id === passage.id)
       .map((q: any) => ({
@@ -89,8 +90,12 @@ export async function POST(request: NextRequest) {
       })),
   }));
 
+  // Calculate total time limit for the test
+  const totalTimeLimit = passages.reduce((sum: number, p: any) => sum + (p.time_limit || 0), 0);
+
   return NextResponse.json({
     attemptId: (attempt as any).id,
+    totalTimeLimit, // Total time in seconds for all passages
     passages: passagesWithQuestions,
   });
 }

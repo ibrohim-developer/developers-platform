@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SplitView } from "@/components/test/common/split-view";
 import { TestTimer } from "@/components/test/common/test-timer";
 import { SubmitDialog } from "@/components/test/common/submit-dialog";
 import { ReloadWarningDialog } from "@/components/test/common/reload-warning-dialog";
@@ -19,7 +20,6 @@ import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { WritingEditor } from "@/components/test/writing/writing-editor";
 import { useTestStore } from "@/stores/test-store";
 import { WritingFeedback } from "@/components/test/writing/writing-feedback";
-import { TEST_CONFIG } from "@/lib/constants/test-config";
 import { useWritingTest } from "@/hooks/use-writing-test";
 import { useNavigationProtection } from "@/hooks/use-navigation-protection";
 import { useFullscreen } from "@/hooks/use-fullscreen";
@@ -279,90 +279,95 @@ function WritingTestContent({ testId }: { testId: string }) {
           <div
             className="h-full bg-red-500 transition-all duration-1000 ease-linear"
             style={{
-              width: `${(timeRemaining / TEST_CONFIG.writing.totalTime) * 100}%`,
+              width: `${(timeRemaining / totalTime) * 100}%`,
             }}
           />
         </div>
       )}
 
-      <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="container mx-auto px-4 py-6">
-          <Tabs value={activeTaskId} onValueChange={setActiveTaskId}>
-            {tasks.length > 1 && (
-              <TabsList
-                className="grid w-full max-w-md"
-                style={{ gridTemplateColumns: `repeat(${tasks.length}, 1fr)` }}
-              >
-                {tasks.map((task) => {
-                  const isComplete = taskCompletions.find(
-                    (completion) => completion.id === task.id,
-                  )?.complete;
+      {/* Task tabs + Split View */}
+      <Tabs value={activeTaskId} onValueChange={setActiveTaskId} className="flex flex-col flex-1 min-h-0">
+        {tasks.length > 1 && (
+          <div
+            className="shrink-0 px-6 py-2.5"
+            style={{
+              backgroundColor: theme.bgAlt,
+              borderBottom: `1px solid ${theme.border}`,
+            }}
+          >
+            <TabsList
+              className="grid w-full max-w-md"
+              style={{ gridTemplateColumns: `repeat(${tasks.length}, 1fr)` }}
+            >
+              {tasks.map((task) => {
+                const isComplete = taskCompletions.find(
+                  (completion) => completion.id === task.id,
+                )?.complete;
 
-                  return (
-                    <TabsTrigger
-                      key={task.id}
-                      value={task.id}
-                      className="flex items-center gap-2"
-                    >
-                      <FileText className="h-4 w-4" />
-                      Task {task.taskNumber}
-                      {isComplete && <span className="text-green-500">\u2713</span>}
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
-            )}
+                return (
+                  <TabsTrigger
+                    key={task.id}
+                    value={task.id}
+                    className="flex items-center gap-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Task {task.taskNumber}
+                    {isComplete && <span className="text-green-500">{"\u2713"}</span>}
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </div>
+        )}
 
-            {tasks.map((task) => {
-              const submission = getSubmissionForTask(task.id);
-              const recommendedTime = task.taskNumber === 1 ? 20 : 40;
+        {tasks.map((task) => {
+          const submission = getSubmissionForTask(task.id);
+          const recommendedTime = task.taskNumber === 1 ? 20 : 40;
 
-              return (
-                <TabsContent key={task.id} value={task.id} className="mt-6">
-                  <div className="grid lg:grid-cols-2 gap-6">
-                    <Card>
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <CardTitle>
-                            Task {task.taskNumber} -{" "}
-                            {task.taskType === "report"
-                              ? "Report Writing"
-                              : "Essay Writing"}
-                          </CardTitle>
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Clock className="h-4 w-4" />~{recommendedTime} min
-                          </div>
+          return (
+            <TabsContent key={task.id} value={task.id} className="flex-1 min-h-0 mt-0 flex flex-col">
+              <div className="flex-1 min-h-0">
+                <SplitView
+                  leftPanel={
+                    <div className="p-6" style={{ backgroundColor: theme.bg }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <h2 className="text-lg font-bold">
+                          Task {task.taskNumber} -{" "}
+                          {task.taskType === "report"
+                            ? "Report Writing"
+                            : "Essay Writing"}
+                        </h2>
+                        <div className="flex items-center gap-1 text-sm" style={{ color: theme.textMuted }}>
+                          <Clock className="h-4 w-4" />~{recommendedTime} min
                         </div>
-                        <CardDescription>
-                          You should spend about {recommendedTime} minutes on this
-                          task.
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        {task.imageUrl && (
-                          <div className="relative aspect-video rounded-lg overflow-hidden mb-4 border">
-                            <Image
-                              src={task.imageUrl}
-                              alt={`Task ${task.taskNumber} image`}
-                              fill
-                              className="object-contain"
-                            />
-                          </div>
-                        )}
-                        <div className="prose dark:prose-invert max-w-none">
-                          <p className="whitespace-pre-line">{task.prompt}</p>
+                      </div>
+                      <p className="text-sm mb-4" style={{ color: theme.textMuted }}>
+                        You should spend about {recommendedTime} minutes on this task.
+                      </p>
+                      {task.imageUrl && (
+                        <div className="relative aspect-video rounded-lg overflow-hidden mb-4 border">
+                          <Image
+                            src={task.imageUrl}
+                            alt={`Task ${task.taskNumber} image`}
+                            fill
+                            className="object-contain"
+                          />
                         </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="flex flex-col">
-                      <CardHeader>
-                        <CardTitle>Your Response</CardTitle>
-                        <CardDescription>
-                          Write at least {task.minWords} words
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="flex-1">
+                      )}
+                      <div className="prose dark:prose-invert max-w-none">
+                        <p className="whitespace-pre-line">{task.prompt}</p>
+                      </div>
+                    </div>
+                  }
+                  rightPanel={
+                    <div className="p-6 h-full flex flex-col" style={{ backgroundColor: theme.bg }}>
+                      <div className="flex items-center justify-between mb-1">
+                        <h2 className="text-lg font-bold">Your Response</h2>
+                      </div>
+                      <p className="text-sm mb-4" style={{ color: theme.textMuted }}>
+                        Write at least {task.minWords} words
+                      </p>
+                      <div className="flex-1 min-h-0">
                         <WritingEditor
                           value={contents[task.id] || ""}
                           onChange={(value) => setContent(task.id, value)}
@@ -370,59 +375,59 @@ function WritingTestContent({ testId }: { testId: string }) {
                           placeholder={`Write your Task ${task.taskNumber} response here...`}
                           disabled={isReviewMode}
                         />
-                      </CardContent>
-                    </Card>
-                  </div>
+                      </div>
+                    </div>
+                  }
+                />
+              </div>
 
-                  {isReviewMode &&
-                    submission &&
-                    submission.overallBandScore !== null && (
-                      <Card className="mt-6">
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Sparkles className="h-5 w-5 text-purple-500" />
-                            AI Evaluation - Task {task.taskNumber}
-                          </CardTitle>
-                          <CardDescription>
-                            Overall Band Score: {submission.overallBandScore}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            <ScoreCard
-                              label="Task Achievement"
-                              score={submission.taskAchievementScore}
-                            />
-                            <ScoreCard
-                              label="Coherence & Cohesion"
-                              score={submission.coherenceScore}
-                            />
-                            <ScoreCard
-                              label="Lexical Resource"
-                              score={submission.lexicalScore}
-                            />
-                            <ScoreCard
-                              label="Grammar"
-                              score={submission.grammarScore}
-                            />
-                          </div>
-                          {submission.feedback && (
-                            <div>
-                              <h4 className="text-sm font-medium mb-2">
-                                Detailed Feedback
-                              </h4>
-                              <WritingFeedback feedback={submission.feedback} />
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    )}
-                </TabsContent>
-              );
-            })}
-          </Tabs>
-        </div>
-      </div>
+              {isReviewMode &&
+                submission &&
+                submission.overallBandScore !== null && (
+                  <div className="shrink-0 overflow-y-auto max-h-[40%] border-t" style={{ borderColor: theme.border }}>
+                    <div className="p-6" style={{ backgroundColor: theme.bg }}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Sparkles className="h-5 w-5 text-purple-500" />
+                        <h3 className="text-lg font-bold">
+                          AI Evaluation - Task {task.taskNumber}
+                        </h3>
+                      </div>
+                      <p className="text-sm mb-4" style={{ color: theme.textMuted }}>
+                        Overall Band Score: {submission.overallBandScore}
+                      </p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <ScoreCard
+                          label="Task Achievement"
+                          score={submission.taskAchievementScore}
+                        />
+                        <ScoreCard
+                          label="Coherence & Cohesion"
+                          score={submission.coherenceScore}
+                        />
+                        <ScoreCard
+                          label="Lexical Resource"
+                          score={submission.lexicalScore}
+                        />
+                        <ScoreCard
+                          label="Grammar"
+                          score={submission.grammarScore}
+                        />
+                      </div>
+                      {submission.feedback && (
+                        <div>
+                          <h4 className="text-sm font-medium mb-2">
+                            Detailed Feedback
+                          </h4>
+                          <WritingFeedback feedback={submission.feedback} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+            </TabsContent>
+          );
+        })}
+      </Tabs>
 
       {/* Bottom Bar */}
       {!isReviewMode && (
@@ -498,4 +503,3 @@ function ScoreCard({ label, score }: { label: string; score: number | null }) {
     </div>
   );
 }
-

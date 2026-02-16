@@ -63,6 +63,7 @@ export function useTestOptions() {
     backgroundColor: theme.bg,
     color: theme.text,
     zoom: scale,
+    height: `calc(100vh / ${scale})`,
   } as React.CSSProperties;
 
   return {
