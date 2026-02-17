@@ -19,6 +19,7 @@ import { PassageDisplay } from "@/components/test/reading/passage-display";
 import { MultipleChoice } from "@/components/test/questions/multiple-choice";
 import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
+import { MatchingSelect } from "@/components/test/questions/matching-select";
 import { useTestStore } from "@/stores/test-store";
 import { getTypeInstruction } from "@/lib/constants/reading-instructions";
 import { useReadingTest } from "@/hooks/use-reading-test";
@@ -143,7 +144,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
     };
 
     switch (question.type) {
-      case "multiple_choice":
+      case "mcq_single":
         return (
           <MultipleChoice
             key={question.id}
@@ -151,11 +152,30 @@ function ReadingTestContent({ testId }: { testId: string }) {
             options={question.options ?? []}
           />
         );
-      case "true_false_not_given":
+      case "tfng":
         return <TrueFalseNotGiven key={question.id} {...commonProps} />;
-      case "fill_in_blank":
-      case "sentence_completion":
+      case "gap_fill":
+      case "short_answer":
+      case "summary_completion":
         return <FillInBlank key={question.id} {...commonProps} />;
+      case "matching_headings":
+        return (
+          <MatchingSelect
+            key={question.id}
+            {...commonProps}
+            options={question.options ?? []}
+            placeholder="Select a heading"
+          />
+        );
+      case "matching_info":
+        return (
+          <MatchingSelect
+            key={question.id}
+            {...commonProps}
+            options={question.options ?? []}
+            placeholder="Select a paragraph"
+          />
+        );
       default:
         return null;
     }
@@ -209,8 +229,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
                 <div>
                   <p className="font-medium text-lg">Time Limit</p>
                   <p className="text-base text-muted-foreground">
-                    You have {totalTime / 60} minutes to
-                    complete this test
+                    You have {totalTime / 60} minutes to complete this test
                   </p>
                 </div>
               </div>

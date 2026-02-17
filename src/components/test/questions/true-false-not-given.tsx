@@ -1,28 +1,28 @@
-'use client'
+"use client";
 
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Label } from '@/components/ui/label'
-import { cn } from '@/lib/utils'
-import { CheckCircle, XCircle } from 'lucide-react'
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { CheckCircle, XCircle } from "lucide-react";
 
 interface TrueFalseNotGivenProps {
-  questionId: string
-  questionNumber: number
-  questionText: string
-  value: string
-  onChange: (value: string) => void
-  disabled?: boolean
-  reviewMode?: boolean
-  correctAnswer?: string
-  isCorrect?: boolean
-  isUnanswered?: boolean
+  questionId: string;
+  questionNumber: number;
+  questionText: string;
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  reviewMode?: boolean;
+  correctAnswer?: string;
+  isCorrect?: boolean;
+  isUnanswered?: boolean;
 }
 
 const options = [
-  { value: 'TRUE', label: 'TRUE' },
-  { value: 'FALSE', label: 'FALSE' },
-  { value: 'NOT_GIVEN', label: 'NOT GIVEN' },
-]
+  { value: "TRUE", label: "TRUE" },
+  { value: "FALSE", label: "FALSE" },
+  { value: "NOT_GIVEN", label: "NOT GIVEN" },
+];
 
 export function TrueFalseNotGiven({
   questionId,
@@ -37,18 +37,22 @@ export function TrueFalseNotGiven({
   isUnanswered,
 }: TrueFalseNotGivenProps) {
   const getQuestionBadge = () => {
-    if (!reviewMode) return null
+    if (!reviewMode) return null;
 
     if (isUnanswered) {
-      return <span className="ml-2 text-xs px-2 py-1 rounded bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400">Unanswered</span>
+      return (
+        <span className="ml-2 text-xs px-2 py-1 rounded bg-red-100 dark:bg-red-950/30 text-red-600 dark:text-red-400">
+          Unanswered
+        </span>
+      );
     }
 
     if (isCorrect) {
-      return <CheckCircle className="ml-2 h-5 w-5 text-green-600 inline" />
+      return <CheckCircle className="ml-2 h-5 w-5 text-green-600 inline" />;
     } else {
-      return <XCircle className="ml-2 h-5 w-5 text-red-600 inline" />
+      return <XCircle className="ml-2 h-5 w-5 text-red-600 inline" />;
     }
-  }
+  };
 
   return (
     <div id={`question-${questionId}`} className="space-y-3">
@@ -69,15 +73,15 @@ export function TrueFalseNotGiven({
         className="ml-8 space-y-2"
       >
         {options.map((option) => {
-          const isUserAnswer = value === option.value
+          const isUserAnswer = value === option.value;
           return (
             <div
               key={option.value}
               className={cn(
-                'flex items-center gap-2',
-                !disabled && 'cursor-pointer',
-                reviewMode && isUserAnswer && isCorrect && 'text-green-600',
-                reviewMode && isUserAnswer && !isCorrect && 'text-red-600',
+                "flex items-center gap-2",
+                !disabled && "cursor-pointer",
+                reviewMode && isUserAnswer && isCorrect && "text-green-600",
+                reviewMode && isUserAnswer && !isCorrect && "text-red-600",
               )}
               onClick={() => !disabled && onChange(option.value)}
             >
@@ -88,14 +92,17 @@ export function TrueFalseNotGiven({
               />
               <Label
                 htmlFor={`${questionId}-${option.value}`}
-                className={cn("text-sm font-normal text-gray-700", !disabled && "cursor-pointer")}
+                className={cn(
+                  "text-sm font-normal text-gray-700",
+                  !disabled && "cursor-pointer",
+                )}
               >
                 {option.label}
               </Label>
             </div>
-          )
+          );
         })}
       </RadioGroup>
     </div>
-  )
+  );
 }
