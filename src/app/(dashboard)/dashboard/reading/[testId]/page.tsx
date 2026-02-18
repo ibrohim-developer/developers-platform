@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useCallback, Suspense } from "react";
+import { use, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { TestTimer } from "@/components/test/common/test-timer";
 import { SubmitDialog } from "@/components/test/common/submit-dialog";
-import { ReloadWarningDialog } from "@/components/test/common/reload-warning-dialog";
 import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { SplitView } from "@/components/test/common/split-view";
 import { PassageDisplay } from "@/components/test/reading/passage-display";
@@ -24,7 +23,6 @@ import { useTestStore } from "@/stores/test-store";
 import { getTypeInstruction } from "@/lib/constants/reading-instructions";
 import { useReadingTest } from "@/hooks/use-reading-test";
 import { useFullscreen } from "@/hooks/use-fullscreen";
-import { useNavigationProtection } from "@/hooks/use-navigation-protection";
 import { useQuestionNavigation } from "@/hooks/use-question-navigation";
 import { useTestOptions } from "@/hooks/use-test-options";
 import {
@@ -92,6 +90,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
     reviewData,
     unansweredQuestions,
     activePassageId,
+    setActivePassageId,
     attemptId,
     answers,
     answeredCount,
@@ -115,13 +114,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
     goToNextQuestion,
   } = useQuestionNavigation(passages, activePassageId);
 
-  const [showReloadWarning, setShowReloadWarning] = useState(false);
   const testOptions = useTestOptions();
-
-  useNavigationProtection({
-    enabled: hasStarted && !isReviewMode,
-    onShowWarning: useCallback(() => setShowReloadWarning(true), []),
-  });
 
   const renderQuestion = (question: Question, index: number) => {
     const globalIndex = questionOffset + index;
@@ -296,6 +289,8 @@ function ReadingTestContent({ testId }: { testId: string }) {
 
   const { theme, rootStyle } = testOptions;
 
+  console.log('qq', questionGroups, passages)
+
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={rootStyle}>
       {/* Top Header Bar */}
@@ -384,6 +379,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
             <PassageDisplay
               title={currentPassage.title}
               content={currentPassage.content}
+              highlight={theme.highlight}
             />
           }
           rightPanel={
@@ -430,51 +426,91 @@ function ReadingTestContent({ testId }: { testId: string }) {
 
       {/* Bottom Navigation Bar */}
       <div
-        className="shrink-0 h-14 flex items-center px-6 justify-between"
+        className="shrink-0 h-14 flex items-center px-4 gap-0"
         style={{
           backgroundColor: theme.bg,
           borderTop: `1px solid ${theme.border}`,
         }}
       >
-        <div className="flex items-center gap-1.5">
-          <span
-            className="text-base font-bold mr-3"
-            style={{ color: theme.textMuted }}
-          >
-            Part {activePassageIndex + 1}
-          </span>
-          {currentPassage.questions.map((q, idx) => {
-            const qNum = questionOffset + idx + 1;
-            const isAnswered = !!answers[q.id]?.answer?.trim();
-            const isActive = activeQuestionNumber === qNum;
+        <div className="flex items-center flex-1 min-w-0 overflow-x-auto">
+          {passages.map((passage, passageIdx) => {
+            const passageOffset = passages
+              .slice(0, passageIdx)
+              .reduce((acc, p) => acc + p.questions.length, 0);
+            const isActivePart = passage.id === activePassageId;
+            const passageAnswered = passage.questions.filter(
+              (q) => !!answers[q.id]?.answer?.trim(),
+            ).length;
+
             return (
-              <button
-                key={q.id}
-                onClick={() => goToQuestion(qNum)}
-                className="cursor-pointer w-9 h-9 text-sm font-medium rounded-sm transition-colors"
-                style={{
-                  border: `1px solid ${theme.border}`,
-                  backgroundColor: isAnswered ? theme.bgAlt : theme.bg,
-                  color: theme.text,
-                  opacity: isAnswered ? 1 : 0.7,
-                }}
-              >
-                {qNum}
-              </button>
+              <div key={passage.id} className="flex items-center shrink-0">
+                {passageIdx > 0 && (
+                  <div
+                    className="w-px h-6 mx-3"
+                    style={{ backgroundColor: theme.border }}
+                  />
+                )}
+
+                {isActivePart ? (
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="text-sm font-bold mr-1 whitespace-nowrap"
+                      style={{ color: theme.text }}
+                    >
+                      Part {passageIdx + 1}
+                    </span>
+                    {passage.questions.map((q, idx) => {
+                      const qNum = passageOffset + idx + 1;
+                      const isAnswered = !!answers[q.id]?.answer?.trim();
+                      const isActiveQ = activeQuestionNumber === qNum;
+                      return (
+                        <button
+                          key={q.id}
+                          onClick={() => goToQuestion(qNum)}
+                          className="cursor-pointer w-8 h-8 text-xs font-medium rounded-sm transition-colors"
+                          style={{
+                            border: `1px solid ${isActiveQ ? theme.text : theme.border}`,
+                            backgroundColor: isAnswered
+                              ? theme.bgAlt
+                              : theme.bg,
+                            color: theme.text,
+                            opacity: isAnswered || isActiveQ ? 1 : 0.6,
+                          }}
+                        >
+                          {qNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setActivePassageId(passage.id)}
+                    className="flex items-center gap-2 px-2 py-1 rounded transition-opacity hover:opacity-80 whitespace-nowrap"
+                  >
+                    <span
+                      className="text-sm font-bold"
+                      style={{ color: theme.text }}
+                    >
+                      Part {passageIdx + 1}
+                    </span>
+                    <span className="text-sm" style={{ color: theme.textMuted }}>
+                      {passageAnswered} of {passage.questions.length}
+                    </span>
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
 
-        <div className="flex items-center gap-2">
-          {!isReviewMode && (
-            <button
-              onClick={() => setShowSubmitDialog(true)}
-              className="cursor-pointer ml-3 w-10 h-10 bg-gray-800 hover:bg-gray-900 text-white rounded flex items-center justify-center transition-colors"
-            >
-              <Check className="h-5 w-5" />
-            </button>
-          )}
-        </div>
+        {!isReviewMode && (
+          <button
+            onClick={() => setShowSubmitDialog(true)}
+            className="cursor-pointer shrink-0 ml-3 w-10 h-10 bg-gray-800 hover:bg-gray-900 text-white rounded flex items-center justify-center transition-colors"
+          >
+            <Check className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       <SubmitDialog
@@ -487,14 +523,6 @@ function ReadingTestContent({ testId }: { testId: string }) {
         timeUp={isTimeUp}
       />
 
-      <ReloadWarningDialog
-        open={showReloadWarning}
-        onOpenChange={setShowReloadWarning}
-        onConfirm={() => {
-          setShowReloadWarning(false);
-          window.history.go(-2);
-        }}
-      />
     </div>
   );
 }

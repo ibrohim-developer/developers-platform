@@ -45,7 +45,7 @@ export function useWritingTest(
   reviewAttemptId: string | null,
 ) {
   const router = useRouter();
-  const { attemptId, initTest, resetTest, timeRemaining } = useTestStore();
+  const { attemptId, initTest, timeRemaining } = useTestStore();
 
   const [tasks, setTasks] = useState<WritingTask[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -182,12 +182,11 @@ export function useWritingTest(
       }
 
       const result = await res.json();
-      resetTest();
       router.push(`/dashboard/results/${result.attemptId}`);
     } catch {
       setIsSubmitting(false);
     }
-  }, [attemptId, tasks, contents, totalTime, timeRemaining, resetTest, router]);
+  }, [attemptId, tasks, contents, totalTime, timeRemaining, router]);
 
   const handleTimeUp = useCallback(() => {
     setIsTimeUp(true);

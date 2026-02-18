@@ -60,7 +60,7 @@ export function TrueFalseNotGiven({
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gray-200 text-xs font-bold text-gray-700">
           {questionNumber}
         </span>
-        <p className="text-sm leading-relaxed text-gray-800">
+        <p className="text-sm leading-relaxed">
           {questionText}
           {getQuestionBadge()}
         </p>
@@ -88,12 +88,12 @@ export function TrueFalseNotGiven({
               <RadioGroupItem
                 value={option.value}
                 id={`${questionId}-${option.value}`}
-                className="border-gray-400 text-gray-700 data-[state=checked]:border-gray-700 data-[state=checked]:text-gray-700"
+                className="border-gray-400 data-[state=checked]:border-gray-700"
               />
               <Label
                 htmlFor={`${questionId}-${option.value}`}
                 className={cn(
-                  "text-sm font-normal text-gray-700",
+                  "text-sm font-normal",
                   !disabled && "cursor-pointer",
                 )}
               >

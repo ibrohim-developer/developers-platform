@@ -9,6 +9,9 @@ import {
   ArrowLeft,
   Sparkles,
   Heart,
+  Eye,
+  List,
+  RotateCcw,
 } from "lucide-react";
 import { WritingFeedback } from "@/components/test/writing/writing-feedback";
 import { AnswerToggle } from "./answer-toggle";
@@ -150,9 +153,10 @@ function ResultsContent({
 }) {
   const rawScore = attempt.raw_score || 0;
   const totalQuestions = answerResults.length || 40;
+  const scorePercent = totalQuestions > 0 ? Math.round((rawScore / totalQuestions) * 100) : 0;
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto mt-8">
       {/* Back link */}
       <Link
         href="/dashboard"
@@ -162,66 +166,100 @@ function ResultsContent({
         Back to Dashboard
       </Link>
 
-      {/* Title + Score Hero */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+      {/* Title */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
         <div>
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-100">
+            <div className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center">
               <CheckCircle className="text-white h-7 w-7" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight uppercase leading-none">
+            <h1 className="text-5xl font-bold tracking-tight uppercase leading-none">
               Test Results
             </h1>
           </div>
-          <p className="text-lg font-extrabold text-muted-foreground mt-2 uppercase">
+          <p className="text-xl font-bold text-muted-foreground mt-2 uppercase">
             {testTitle}
           </p>
         </div>
       </div>
 
-      {/* Score + Insight Card */}
-      <div className="border-2 border-border rounded-xl p-8 md:p-10 shadow-sm mb-10 flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="flex flex-col md:flex-row items-center gap-12 md:gap-16">
-          <div className="text-center md:text-left md:border-r-2 border-border md:pr-16">
-            <p className="text-sm font-extrabold text-muted-foreground uppercase tracking-widest mb-2">
+      {/* Score + Progress Bar Card */}
+      <div className="border-1 border-border rounded-xl p-12 mb-12">
+        <div className="max-w-2xl mx-auto flex flex-col items-center text-center">
+          <div className="mb-8">
+            <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-2">
               Your Score
             </p>
-            <p className="text-6xl md:text-7xl font-black text-primary">
+            <p className="text-8xl font-bold text-primary">
               {rawScore}/{totalQuestions}
             </p>
           </div>
-        </div>
-        <div className="flex-1 bg-muted p-6 rounded-xl border border-border">
-          <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-3">
-            Performance Insight
-          </p>
-          <p className="text-xl md:text-2xl font-black leading-tight">
-            Great job! You have completed the test. Review your answers below to
-            understand your mistakes and improve your performance.
-          </p>
+          <div className="w-full">
+            <div className="relative pt-6 pb-2">
+              <div
+                className="absolute top-0 flex flex-col items-center -translate-x-1/2"
+                style={{ left: `${scorePercent}%` }}
+              >
+                <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-primary" />
+              </div>
+              <div className="w-full h-4 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full"
+                  style={{ width: `${scorePercent}%` }}
+                />
+              </div>
+              <div className="flex justify-between items-center mt-3">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Beginner</span>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Intermediate</span>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Advanced</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Detailed Review Table */}
       {answerResults.length > 0 && (
-        <div className="border-2 border-border rounded-xl overflow-hidden mb-10 shadow-sm">
+        <div id="review" className="border-1 border-border rounded-xl overflow-hidden mb-12">
           <AnswerToggle answerResults={answerResults} />
         </div>
       )}
 
+      {/* Action Buttons */}
+      <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
+        <Link href={`/dashboard/results/${attempt.id}#review`}>
+          <Button variant="outline" className="gap-2 px-8 py-3 rounded-xl font-bold text-sm uppercase tracking-widest">
+            <Eye className="h-4 w-4" />
+            Review Test
+          </Button>
+        </Link>
+        <Link href="/dashboard/reading">
+          <Button variant="outline" className="gap-2 px-8 py-3 rounded-xl font-bold text-sm uppercase tracking-widest">
+            <List className="h-4 w-4" />
+            View All Tests
+          </Button>
+        </Link>
+        <Link href={`/dashboard/test/${attempt.test_id}`}>
+          <Button className="gap-2 px-8 py-3 rounded-xl font-bold text-sm uppercase tracking-widest">
+            <RotateCcw className="h-4 w-4" />
+            Try Again
+          </Button>
+        </Link>
+      </div>
+
       {/* Feedback Section */}
-      <section className="border-2 border-border rounded-xl p-8 mb-16 shadow-sm">
-        <h3 className="text-2xl font-black uppercase mb-6 tracking-tight">
+      <section className="border-1 border-border rounded-xl p-8 mb-16">
+        <h3 className="text-2xl font-bold uppercase mb-6 tracking-tight">
           Your Feedback
         </h3>
         <div className="space-y-6">
           <textarea
-            className="w-full rounded-xl border-2 border-border focus:border-foreground focus:ring-0 text-lg p-6 font-medium placeholder:text-muted-foreground/40 transition-all bg-background"
+            className="w-full rounded-xl border-1 border-border focus:border-foreground focus:ring-0 text-lg p-6 font-medium placeholder:text-muted-foreground/40 transition-all bg-background"
             placeholder="Share your thoughts or report an issue with this test..."
             rows={6}
           />
           <div className="flex justify-end">
-            <Button className="px-10 py-6 rounded-xl font-black text-sm tracking-widest uppercase shadow-xl">
+            <Button className="px-10 py-6 rounded-xl font-bold text-sm tracking-widest uppercase">
               Submit Feedback
             </Button>
           </div>
@@ -230,12 +268,12 @@ function ResultsContent({
 
       {/* Donate CTA */}
       <div className="flex flex-col items-center justify-center gap-6 pb-20 pt-4 text-center">
-        <p className="text-xl font-extrabold text-muted-foreground uppercase tracking-tight">
+        <p className="text-xl font-bold text-muted-foreground uppercase tracking-tight">
           Support our mission to keep IELTS practice free for everyone.
         </p>
         <Button
           size="lg"
-          className="flex items-center gap-3 px-12 py-6 rounded-xl font-black text-sm tracking-widest uppercase shadow-2xl"
+          className="flex items-center gap-3 px-12 py-6 rounded-xl font-bold text-sm tracking-widest uppercase"
         >
           <Heart className="h-5 w-5" />
           Donate to Support
@@ -253,6 +291,7 @@ function WritingResultsContent({
 }: {
   attempt: {
     id: string;
+    test_id: string;
     module_type: string;
     status: string;
     raw_score: number | null;
@@ -326,26 +365,26 @@ function WritingResultsContent({
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-purple-500 rounded-full flex items-center justify-center shadow-lg shadow-purple-100">
+            <div className="w-14 h-14 bg-purple-500 rounded-full flex items-center justify-center">
               <PenTool className="text-white h-7 w-7" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight uppercase leading-none">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight uppercase leading-none">
               Test Results
             </h1>
           </div>
-          <p className="text-lg font-extrabold text-muted-foreground mt-2 uppercase">
+          <p className="text-lg font-bold text-muted-foreground mt-2 uppercase">
             {testTitle}
           </p>
         </div>
       </div>
 
       {/* Score + Insight */}
-      <div className="border-2 border-border rounded-xl p-8 md:p-10 shadow-sm mb-10 flex flex-col md:flex-row items-center justify-between gap-8">
+      <div className="border-1 border-border rounded-xl p-8 md:p-10 mb-10 flex flex-col md:flex-row items-center justify-between gap-8">
         <div className="text-center md:text-left md:border-r-2 border-border md:pr-16">
-          <p className="text-sm font-extrabold text-muted-foreground uppercase tracking-widest mb-2">
+          <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-2">
             Band Score
           </p>
-          <p className="text-6xl md:text-7xl font-black text-primary">
+          <p className="text-6xl md:text-7xl font-bold text-primary">
             {bandScore}
           </p>
           <p className="text-sm font-bold text-muted-foreground mt-1">
@@ -353,20 +392,42 @@ function WritingResultsContent({
           </p>
         </div>
         <div className="flex-1 bg-muted p-6 rounded-xl border border-border">
-          <p className="text-xs font-black text-muted-foreground uppercase tracking-widest mb-3">
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
             Performance Insight
           </p>
-          <p className="text-xl md:text-2xl font-black leading-tight">
+          <p className="text-xl md:text-2xl font-bold leading-tight">
             Review your writing evaluation below. Focus on the feedback to
             improve your performance.
           </p>
         </div>
       </div>
 
+      {/* Action Buttons */}
+      <div className="flex flex-wrap gap-4 mb-10">
+        <Link href={`/dashboard/results/${attempt.id}#review`}>
+          <Button variant="outline" className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
+            <Eye className="h-4 w-4" />
+            Review Test
+          </Button>
+        </Link>
+        <Link href="/dashboard/tests">
+          <Button variant="outline" className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
+            <List className="h-4 w-4" />
+            View All Tests
+          </Button>
+        </Link>
+        <Link href={`/dashboard/test/${attempt.test_id}`}>
+          <Button className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
+            <RotateCcw className="h-4 w-4" />
+            Try Again
+          </Button>
+        </Link>
+      </div>
+
       {/* AI Evaluation Summary */}
-      <div className="border-2 border-border rounded-xl overflow-hidden mb-10 shadow-sm">
+      <div className="border-1 border-border rounded-xl overflow-hidden mb-10">
         <div className="p-8 border-b border-border">
-          <h3 className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
+          <h3 className="text-2xl font-bold uppercase tracking-tight flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-purple-500" />
             AI Evaluation Summary
           </h3>
@@ -439,10 +500,10 @@ function WritingResultsContent({
         return (
           <div
             key={task.id}
-            className="border-2 border-border rounded-xl overflow-hidden mb-10 shadow-sm"
+            className="border-1 border-border rounded-xl overflow-hidden mb-10"
           >
             <div className="p-8 border-b border-border">
-              <h3 className="text-2xl font-black uppercase tracking-tight">
+              <h3 className="text-2xl font-bold uppercase tracking-tight">
                 Task {task.task_number} -{" "}
                 {task.task_type === "report"
                   ? "Report Writing"
@@ -501,7 +562,7 @@ function WritingResultsContent({
               )}
 
               <div>
-                <h4 className="text-sm font-black uppercase tracking-wider text-muted-foreground mb-2">
+                <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-2">
                   Your Essay
                 </h4>
                 <div className="p-4 rounded-lg bg-muted/50 border text-sm whitespace-pre-line max-h-60 overflow-y-auto">
@@ -511,7 +572,7 @@ function WritingResultsContent({
 
               {submission.feedback && (
                 <div>
-                  <h4 className="text-sm font-black uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
+                  <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1">
                     <Sparkles className="h-4 w-4 text-purple-500" />
                     AI Feedback
                   </h4>
@@ -533,18 +594,18 @@ function WritingResultsContent({
       })}
 
       {/* Feedback Section */}
-      <section className="border-2 border-border rounded-xl p-8 mb-16 shadow-sm">
-        <h3 className="text-2xl font-black uppercase mb-6 tracking-tight">
+      <section className="border-1 border-border rounded-xl p-8 mb-16">
+        <h3 className="text-2xl font-bold uppercase mb-6 tracking-tight">
           Your Feedback
         </h3>
         <div className="space-y-6">
           <textarea
-            className="w-full rounded-xl border-2 border-border focus:border-foreground focus:ring-0 text-lg p-6 font-medium placeholder:text-muted-foreground/40 transition-all bg-background"
+            className="w-full rounded-xl 1 border-border focus:border-foreground focus:ring-0 text-lg p-6 font-medium placeholder:text-muted-foreground/40 transition-all bg-background"
             placeholder="Share your thoughts or report an issue with this test..."
             rows={6}
           />
           <div className="flex justify-end">
-            <Button className="px-10 py-6 rounded-xl font-black text-sm tracking-widest uppercase shadow-xl">
+            <Button className="px-10 py-6 rounded-xl font-bold text-sm tracking-widest uppercase">
               Submit Feedback
             </Button>
           </div>
@@ -553,12 +614,12 @@ function WritingResultsContent({
 
       {/* Donate CTA */}
       <div className="flex flex-col items-center justify-center gap-6 pb-20 pt-4 text-center">
-        <p className="text-xl font-extrabold text-muted-foreground uppercase tracking-tight">
+        <p className="text-xl font-bold text-muted-foreground uppercase tracking-tight">
           Support our mission to keep IELTS practice free for everyone.
         </p>
         <Button
           size="lg"
-          className="flex items-center gap-3 px-12 py-6 rounded-xl font-black text-sm tracking-widest uppercase shadow-2xl"
+          className="flex items-center gap-3 px-12 py-6 rounded-xl font-bold text-sm tracking-widest uppercase"
         >
           <Heart className="h-5 w-5" />
           Donate to Support

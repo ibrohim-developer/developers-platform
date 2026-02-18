@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
-const testRoutePattern = /^\/dashboard\/(reading|listening|writing|speaking)\/[^/]+$/
+const testRoutePattern = /^\/dashboard\/((reading|listening|writing|speaking)\/[^/]+|results\/[^/]+)$/
 
 export function DashboardMain({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()

@@ -143,9 +143,10 @@ function ListeningTestContent({ testId }: { testId: string }) {
 
   const getTypeInstruction = (type: string) => {
     switch (type) {
-      case "multiple_choice":
+      case "mcq_single":
         return "Choose the correct answer.";
-      case "fill_in_blank":
+      case "gap_fill":
+      case "short_answer":
       case "sentence_completion":
         return "Write NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.";
       default:
@@ -174,7 +175,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
     };
 
     switch (question.type) {
-      case "multiple_choice":
+      case "mcq_single":
         return (
           <MultipleChoice
             key={question.id}
@@ -182,7 +183,8 @@ function ListeningTestContent({ testId }: { testId: string }) {
             options={question.options ?? []}
           />
         );
-      case "fill_in_blank":
+      case "gap_fill":
+      case "short_answer":
       case "sentence_completion":
         return <FillInBlank key={question.id} {...commonProps} />;
       default:
@@ -306,6 +308,8 @@ function ListeningTestContent({ testId }: { testId: string }) {
 
   const { theme, rootStyle } = testOptions;
 
+  console.log('q', questionGroups)
+
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={rootStyle}>
       {/* Top Header Bar */}
@@ -393,7 +397,6 @@ function ListeningTestContent({ testId }: { testId: string }) {
               <AudioPlayer audioUrl={currentSection.audioUrl} examMode />
             </div>
           )}
-
           {questionGroups.map((group, groupIndex) => (
             <div key={groupIndex}>
               <div className="mb-4">

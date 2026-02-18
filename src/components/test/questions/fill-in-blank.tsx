@@ -60,7 +60,7 @@ export function FillInBlank({
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gray-200 text-xs font-bold text-gray-700">
             {questionNumber}
           </span>
-          <div className="text-sm leading-relaxed text-gray-800 flex flex-wrap items-center gap-1">
+          <div className="text-sm leading-relaxed flex flex-wrap items-center gap-1">
             {parts.map((part, index) => (
               <span key={index} className="inline-flex items-center gap-1">
                 {part}

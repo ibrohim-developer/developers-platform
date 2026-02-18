@@ -13,9 +13,10 @@ type PopupMode = "highlight" | "remove";
 interface PassageDisplayProps {
   title: string;
   content: string;
+  highlight?: { bg: string; color: string };
 }
 
-export function PassageDisplay({ title, content }: PassageDisplayProps) {
+export function PassageDisplay({ title, content, highlight = { bg: "#fef08a", color: "#111827" } }: PassageDisplayProps) {
   const [popup, setPopup] = useState<PopupPosition | null>(null);
   const [popupMode, setPopupMode] = useState<PopupMode>("highlight");
   const [pendingRange, setPendingRange] = useState<Range | null>(null);
@@ -160,7 +161,8 @@ export function PassageDisplay({ title, content }: PassageDisplayProps) {
     <article className="p-8 space-y-4">
       <style>{`
         .highlight-yellow {
-          background-color: #fef08a !important;
+          background-color: ${highlight.bg} !important;
+          color: ${highlight.color} !important;
           border-radius: 2px;
           padding: 0 1px;
           cursor: pointer;
@@ -171,7 +173,7 @@ export function PassageDisplay({ title, content }: PassageDisplayProps) {
       {subtitle && <p className="text-sm italic opacity-70">{subtitle}</p>}
       <div ref={contentRef} className="space-y-4" onMouseUp={handleMouseUp}>
         {bodyParagraphs.map((paragraph, index) => (
-          <p key={index} className="text-sm leading-relaxed opacity-90">
+          <p key={index} className="text-base leading-relaxed opacity-90">
             {paragraph}
           </p>
         ))}

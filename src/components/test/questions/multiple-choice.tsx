@@ -52,7 +52,7 @@ export function MultipleChoice({
         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gray-200 text-xs font-bold text-gray-700">
           {questionNumber}
         </span>
-        <p className="text-sm leading-relaxed text-gray-800">
+        <p className="text-sm leading-relaxed">
           {questionText}
           {getQuestionBadge()}
         </p>

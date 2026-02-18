@@ -35,7 +35,7 @@ export function useReadingTest(
   reviewAttemptId: string | null,
 ) {
   const router = useRouter();
-  const { attemptId, initTest, answers, setAnswer, resetTest, timeRemaining } =
+  const { attemptId, initTest, answers, setAnswer, timeRemaining } =
     useTestStore();
 
   const [passages, setPassages] = useState<Passage[]>([]);
@@ -176,12 +176,11 @@ export function useReadingTest(
       }
 
       const result = await res.json();
-      resetTest();
       router.push(`/dashboard/results/${result.attemptId}`);
     } catch {
       setIsSubmitting(false);
     }
-  }, [attemptId, answers, timeRemaining, resetTest, router]);
+  }, [attemptId, answers, timeRemaining, router]);
 
   const handleTimeUp = useCallback(() => {
     setIsTimeUp(true);
