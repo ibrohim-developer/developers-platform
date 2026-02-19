@@ -289,8 +289,6 @@ function ReadingTestContent({ testId }: { testId: string }) {
 
   const { theme, rootStyle } = testOptions;
 
-  console.log('qq', questionGroups, passages)
-
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={rootStyle}>
       {/* Top Header Bar */}
@@ -432,7 +430,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
           borderTop: `1px solid ${theme.border}`,
         }}
       >
-        <div className="flex items-center flex-1 min-w-0 overflow-x-auto">
+        <div className="flex items-center justify-between flex-1 min-w-0 overflow-x-auto">
           {passages.map((passage, passageIdx) => {
             const passageOffset = passages
               .slice(0, passageIdx)
@@ -443,7 +441,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
             ).length;
 
             return (
-              <div key={passage.id} className="flex items-center shrink-0">
+              <div key={passage.id} className="flex items-center">
                 {passageIdx > 0 && (
                   <div
                     className="w-px h-6 mx-3"
@@ -493,7 +491,10 @@ function ReadingTestContent({ testId }: { testId: string }) {
                     >
                       Part {passageIdx + 1}
                     </span>
-                    <span className="text-sm" style={{ color: theme.textMuted }}>
+                    <span
+                      className="text-sm"
+                      style={{ color: theme.textMuted }}
+                    >
                       {passageAnswered} of {passage.questions.length}
                     </span>
                   </button>
@@ -522,7 +523,6 @@ function ReadingTestContent({ testId }: { testId: string }) {
         isSubmitting={isSubmitting}
         timeUp={isTimeUp}
       />
-
     </div>
   );
 }
