@@ -30,10 +30,9 @@ export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: 
         <div className="flex justify-between items-center h-20">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl font-black tracking-tighter text-black">
-              Nimadur
+              band<span className="text-primary">.</span>up
             </span>
           </Link>
-
           <div className="hidden md:flex items-center space-x-10 text-xs font-bold uppercase tracking-widest">
             <a className="hover:text-primary transition-colors" href="#features">Features</a>
             <a className="hover:text-primary transition-colors" href="#how-it-works">How it Works</a>

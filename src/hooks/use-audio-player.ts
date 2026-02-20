@@ -16,6 +16,12 @@ export function useAudioPlayer(audioUrl: string, options: UseAudioPlayerOptions 
   const [isLoaded, setIsLoaded] = useState(false)
   const [volume, setVolumeState] = useState(1)
 
+  // Store callbacks in refs to avoid re-creating Audio on every render
+  const onEndedRef = useRef(options.onEnded)
+  const onTimeUpdateRef = useRef(options.onTimeUpdate)
+  onEndedRef.current = options.onEnded
+  onTimeUpdateRef.current = options.onTimeUpdate
+
   useEffect(() => {
     const audio = new Audio(audioUrl)
     audioRef.current = audio
@@ -39,12 +45,12 @@ export function useAudioPlayer(audioUrl: string, options: UseAudioPlayerOptions 
 
     const handleTimeUpdate = () => {
       setCurrentTime(audio.currentTime)
-      options.onTimeUpdate?.(audio.currentTime, audio.duration)
+      onTimeUpdateRef.current?.(audio.currentTime, audio.duration)
     }
 
     const handleEnded = () => {
       setIsPlaying(false)
-      options.onEnded?.()
+      onEndedRef.current?.()
     }
 
     const handlePlay = () => {
@@ -70,7 +76,8 @@ export function useAudioPlayer(audioUrl: string, options: UseAudioPlayerOptions 
       audio.pause()
       audio.src = '' // Clear source to prevent memory leaks
     }
-  }, [audioUrl, options])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audioUrl, options.autoPlay])
 
   const play = useCallback(() => {
     audioRef.current?.play()

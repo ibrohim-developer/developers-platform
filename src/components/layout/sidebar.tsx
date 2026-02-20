@@ -85,7 +85,7 @@ export function Sidebar({ user }: SidebarProps) {
       <div className="p-8">
         <Link href="/dashboard" className="inline-block">
           <span className="text-2xl font-black tracking-tighter text-foreground">
-            ielts<span className="text-primary">.</span>zone
+            band<span className="text-primary">.</span>up
           </span>
         </Link>
       </div>

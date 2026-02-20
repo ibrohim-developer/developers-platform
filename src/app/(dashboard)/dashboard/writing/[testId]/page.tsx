@@ -11,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SplitView } from "@/components/test/common/split-view";
 import { TestTimer } from "@/components/test/common/test-timer";
 import { SubmitDialog } from "@/components/test/common/submit-dialog";
@@ -24,16 +23,17 @@ import { useWritingTest } from "@/hooks/use-writing-test";
 import { useNavigationProtection } from "@/hooks/use-navigation-protection";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { useTestOptions } from "@/hooks/use-test-options";
+import { useSyncTestTheme } from "@/components/force-light-theme";
 import {
   Send,
   Loader2,
   Clock,
   PenTool,
-  FileText,
   ArrowLeft,
   Maximize2,
   Minimize2,
   Sparkles,
+  Check,
 } from "lucide-react";
 
 export default function WritingTestPage({
@@ -91,6 +91,7 @@ function WritingTestContent({ testId }: { testId: string }) {
 
   const [showReloadWarning, setShowReloadWarning] = useState(false);
   const testOptions = useTestOptions();
+  useSyncTestTheme(testOptions.contrast);
 
   useNavigationProtection({
     enabled: hasStarted && !isReviewMode,
@@ -232,22 +233,9 @@ function WritingTestContent({ testId }: { testId: string }) {
             IELTS
           </div>
           {!isReviewMode && (
-            <div className="flex items-center gap-2 text-base" style={{ color: theme.textMuted }}>
-              {tasks.map((task, i) => {
-                const isComplete = taskCompletions.find(
-                  (completion) => completion.id === task.id,
-                )?.complete;
-
-                return (
-                  <span key={task.id}>
-                    {i > 0 && <span className="mx-1">|</span>}
-                    <span className={isComplete ? "text-green-600" : ""}>
-                      Task {task.taskNumber} {isComplete ? "\u2713" : ""}
-                    </span>
-                  </span>
-                );
-              })}
-            </div>
+            <span className="text-base font-medium" style={{ color: theme.textMuted }}>
+              Writing Test
+            </span>
           )}
         </div>
 
@@ -285,174 +273,177 @@ function WritingTestContent({ testId }: { testId: string }) {
         </div>
       )}
 
-      {/* Task tabs + Split View */}
-      <Tabs value={activeTaskId} onValueChange={setActiveTaskId} className="flex flex-col flex-1 min-h-0">
-        {tasks.length > 1 && (
-          <div
-            className="shrink-0 px-6 py-2.5"
-            style={{
-              backgroundColor: theme.bgAlt,
-              borderBottom: `1px solid ${theme.border}`,
-            }}
-          >
-            <TabsList
-              className="grid w-full max-w-md"
-              style={{ gridTemplateColumns: `repeat(${tasks.length}, 1fr)` }}
-            >
-              {tasks.map((task) => {
-                const isComplete = taskCompletions.find(
-                  (completion) => completion.id === task.id,
-                )?.complete;
+      {/* Active Task Content */}
+      {(() => {
+        const task = tasks.find((t) => t.id === activeTaskId) ?? tasks[0];
+        const submission = getSubmissionForTask(task.id);
+        const recommendedTime = task.taskNumber === 1 ? 20 : 40;
 
-                return (
-                  <TabsTrigger
-                    key={task.id}
-                    value={task.id}
-                    className="flex items-center gap-2"
-                  >
-                    <FileText className="h-4 w-4" />
-                    Task {task.taskNumber}
-                    {isComplete && <span className="text-green-500">{"\u2713"}</span>}
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-          </div>
-        )}
-
-        {tasks.map((task) => {
-          const submission = getSubmissionForTask(task.id);
-          const recommendedTime = task.taskNumber === 1 ? 20 : 40;
-
-          return (
-            <TabsContent key={task.id} value={task.id} className="flex-1 min-h-0 mt-0 flex flex-col">
-              <div className="flex-1 min-h-0">
-                <SplitView
-                  leftPanel={
-                    <div className="p-6" style={{ backgroundColor: theme.bg }}>
-                      <div className="flex items-center justify-between mb-2">
-                        <h2 className="text-lg font-bold">
-                          Task {task.taskNumber} -{" "}
-                          {task.taskType === "report"
-                            ? "Report Writing"
-                            : "Essay Writing"}
-                        </h2>
-                        <div className="flex items-center gap-1 text-sm" style={{ color: theme.textMuted }}>
-                          <Clock className="h-4 w-4" />~{recommendedTime} min
-                        </div>
-                      </div>
-                      <p className="text-sm mb-4" style={{ color: theme.textMuted }}>
-                        You should spend about {recommendedTime} minutes on this task.
-                      </p>
-                      {task.imageUrl && (
-                        <div className="relative aspect-video rounded-lg overflow-hidden mb-4 border">
-                          <Image
-                            src={task.imageUrl}
-                            alt={`Task ${task.taskNumber} image`}
-                            fill
-                            className="object-contain"
-                          />
-                        </div>
-                      )}
-                      <div className="prose dark:prose-invert max-w-none">
-                        <p className="whitespace-pre-line">{task.prompt}</p>
+        return (
+          <div className="flex-1 min-h-0 flex flex-col">
+            <div className="flex-1 min-h-0">
+              <SplitView
+                leftPanel={
+                  <div className="p-6" style={{ backgroundColor: theme.bg }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <h2 className="text-lg font-bold">
+                        Task {task.taskNumber} -{" "}
+                        {task.taskType === "report"
+                          ? "Report Writing"
+                          : "Essay Writing"}
+                      </h2>
+                      <div className="flex items-center gap-1 text-sm" style={{ color: theme.textMuted }}>
+                        <Clock className="h-4 w-4" />~{recommendedTime} min
                       </div>
                     </div>
-                  }
-                  rightPanel={
-                    <div className="p-6 h-full flex flex-col" style={{ backgroundColor: theme.bg }}>
-                      <div className="flex items-center justify-between mb-1">
-                        <h2 className="text-lg font-bold">Your Response</h2>
-                      </div>
-                      <p className="text-sm mb-4" style={{ color: theme.textMuted }}>
-                        Write at least {task.minWords} words
-                      </p>
-                      <div className="flex-1 min-h-0">
-                        <WritingEditor
-                          value={contents[task.id] || ""}
-                          onChange={(value) => setContent(task.id, value)}
-                          minWords={task.minWords}
-                          placeholder={`Write your Task ${task.taskNumber} response here...`}
-                          disabled={isReviewMode}
+                    <p className="text-sm mb-4" style={{ color: theme.textMuted }}>
+                      You should spend about {recommendedTime} minutes on this task.
+                    </p>
+                    {task.imageUrl && (
+                      <div className="relative aspect-video rounded-lg overflow-hidden mb-4 border">
+                        <Image
+                          src={task.imageUrl}
+                          alt={`Task ${task.taskNumber} image`}
+                          fill
+                          className="object-contain"
                         />
                       </div>
-                    </div>
-                  }
-                />
-              </div>
-
-              {isReviewMode &&
-                submission &&
-                submission.overallBandScore !== null && (
-                  <div className="shrink-0 overflow-y-auto max-h-[40%] border-t" style={{ borderColor: theme.border }}>
-                    <div className="p-6" style={{ backgroundColor: theme.bg }}>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Sparkles className="h-5 w-5 text-purple-500" />
-                        <h3 className="text-lg font-bold">
-                          AI Evaluation - Task {task.taskNumber}
-                        </h3>
-                      </div>
-                      <p className="text-sm mb-4" style={{ color: theme.textMuted }}>
-                        Overall Band Score: {submission.overallBandScore}
-                      </p>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        <ScoreCard
-                          label="Task Achievement"
-                          score={submission.taskAchievementScore}
-                        />
-                        <ScoreCard
-                          label="Coherence & Cohesion"
-                          score={submission.coherenceScore}
-                        />
-                        <ScoreCard
-                          label="Lexical Resource"
-                          score={submission.lexicalScore}
-                        />
-                        <ScoreCard
-                          label="Grammar"
-                          score={submission.grammarScore}
-                        />
-                      </div>
-                      {submission.feedback && (
-                        <div>
-                          <h4 className="text-sm font-medium mb-2">
-                            Detailed Feedback
-                          </h4>
-                          <WritingFeedback feedback={submission.feedback} />
-                        </div>
-                      )}
+                    )}
+                    <div className="prose dark:prose-invert max-w-none">
+                      <p className="whitespace-pre-line">{task.prompt}</p>
                     </div>
                   </div>
-                )}
-            </TabsContent>
-          );
-        })}
-      </Tabs>
+                }
+                rightPanel={
+                  <div className="p-6 h-full flex flex-col" style={{ backgroundColor: theme.bg }}>
+                    <div className="flex items-center justify-between mb-1">
+                      <h2 className="text-lg font-bold">Your Response</h2>
+                    </div>
+                    <p className="text-sm mb-4" style={{ color: theme.textMuted }}>
+                      Write at least {task.minWords} words
+                    </p>
+                    <div className="flex-1 min-h-0">
+                      <WritingEditor
+                        value={contents[task.id] || ""}
+                        onChange={(value) => setContent(task.id, value)}
+                        minWords={task.minWords}
+                        placeholder={`Write your Task ${task.taskNumber} response here...`}
+                        disabled={isReviewMode}
+                      />
+                    </div>
+                  </div>
+                }
+              />
+            </div>
 
-      {/* Bottom Bar */}
-      {!isReviewMode && (
-        <div
-          className="shrink-0 h-14 flex items-center px-6 justify-end"
-          style={{ backgroundColor: theme.bg, borderTop: `1px solid ${theme.border}` }}
-        >
-          <Button
-            variant="default"
-            size="default"
+            {isReviewMode &&
+              submission &&
+              submission.overallBandScore !== null && (
+                <div className="shrink-0 overflow-y-auto max-h-[40%] border-t" style={{ borderColor: theme.border }}>
+                  <div className="p-6" style={{ backgroundColor: theme.bg }}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Sparkles className="h-5 w-5 text-purple-500" />
+                      <h3 className="text-lg font-bold">
+                        AI Evaluation - Task {task.taskNumber}
+                      </h3>
+                    </div>
+                    <p className="text-sm mb-4" style={{ color: theme.textMuted }}>
+                      Overall Band Score: {submission.overallBandScore}
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                      <ScoreCard
+                        label="Task Achievement"
+                        score={submission.taskAchievementScore}
+                      />
+                      <ScoreCard
+                        label="Coherence & Cohesion"
+                        score={submission.coherenceScore}
+                      />
+                      <ScoreCard
+                        label="Lexical Resource"
+                        score={submission.lexicalScore}
+                      />
+                      <ScoreCard
+                        label="Grammar"
+                        score={submission.grammarScore}
+                      />
+                    </div>
+                    {submission.feedback && (
+                      <div>
+                        <h4 className="text-sm font-medium mb-2">
+                          Detailed Feedback
+                        </h4>
+                        <WritingFeedback feedback={submission.feedback} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+          </div>
+        );
+      })()}
+
+      {/* Bottom Navigation Bar */}
+      <div
+        className="shrink-0 h-14 flex items-center px-4 gap-0"
+        style={{
+          backgroundColor: theme.bg,
+          borderTop: `1px solid ${theme.border}`,
+        }}
+      >
+        <div className="flex items-center flex-1 min-w-0">
+          {tasks.map((task, taskIdx) => {
+            const isActiveTask = task.id === activeTaskId;
+            const isComplete = taskCompletions.find(
+              (completion) => completion.id === task.id,
+            )?.complete;
+
+            return (
+              <div key={task.id} className="flex items-center">
+                {taskIdx > 0 && (
+                  <div
+                    className="w-px h-6 mx-3"
+                    style={{ backgroundColor: theme.border }}
+                  />
+                )}
+
+                <button
+                  onClick={() => setActiveTaskId(task.id)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded transition-opacity hover:opacity-80 whitespace-nowrap"
+                  style={{
+                    backgroundColor: isActiveTask ? theme.bgAlt : "transparent",
+                    border: isActiveTask ? `1px solid ${theme.border}` : "1px solid transparent",
+                  }}
+                >
+                  <span
+                    className="text-sm font-bold"
+                    style={{ color: theme.text }}
+                  >
+                    Task {task.taskNumber}
+                  </span>
+                  {isComplete && (
+                    <Check className="h-4 w-4 text-green-500" />
+                  )}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {!isReviewMode && (
+          <button
             onClick={() => setShowSubmitDialog(true)}
             disabled={isSubmitting}
-            className="text-base px-6"
+            className="cursor-pointer shrink-0 ml-3 w-10 h-10 bg-gray-800 hover:bg-gray-900 text-white rounded flex items-center justify-center transition-colors disabled:opacity-50"
           >
             {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Evaluating...
-              </>
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              "Submit"
+              <Check className="h-5 w-5" />
             )}
-          </Button>
-        </div>
-      )}
+          </button>
+        )}
+      </div>
 
       {!isReviewMode && (
         <>

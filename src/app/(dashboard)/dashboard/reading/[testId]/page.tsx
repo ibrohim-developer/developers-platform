@@ -25,6 +25,7 @@ import { useReadingTest } from "@/hooks/use-reading-test";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { useQuestionNavigation } from "@/hooks/use-question-navigation";
 import { useTestOptions } from "@/hooks/use-test-options";
+import { useSyncTestTheme } from "@/components/force-light-theme";
 import {
   Send,
   Loader2,
@@ -115,6 +116,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
   } = useQuestionNavigation(passages, activePassageId);
 
   const testOptions = useTestOptions();
+  useSyncTestTheme(testOptions.contrast);
 
   const renderQuestion = (question: Question, index: number) => {
     const globalIndex = questionOffset + index;

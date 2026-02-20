@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useTheme } from "next-themes";
 
 export type ContrastMode = "black-on-white" | "white-on-black" | "yellow-on-black";
 export type TextSizeMode = "regular" | "large" | "extra-large";
@@ -22,9 +23,12 @@ export const textSizeScale: Record<TextSizeMode, string> = {
 };
 
 export function useTestOptions() {
+  const { theme: dashboardTheme } = useTheme();
+  const initialContrast: ContrastMode = dashboardTheme === "dark" ? "white-on-black" : "black-on-white";
+
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [optionsView, setOptionsView] = useState<OptionsView>("main");
-  const [contrast, setContrast] = useState<ContrastMode>("black-on-white");
+  const [contrast, setContrast] = useState<ContrastMode>(initialContrast);
   const [textSize, setTextSize] = useState<TextSizeMode>("regular");
   const optionsRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);

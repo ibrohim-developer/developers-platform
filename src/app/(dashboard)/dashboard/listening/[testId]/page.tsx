@@ -10,27 +10,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { TestTimer } from "@/components/test/common/test-timer";
 import { SubmitDialog } from "@/components/test/common/submit-dialog";
 import { ReloadWarningDialog } from "@/components/test/common/reload-warning-dialog";
 import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { AudioPlayer } from "@/components/test/listening/audio-player";
 import { MultipleChoice } from "@/components/test/questions/multiple-choice";
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
-import { useTestStore } from "@/stores/test-store";
 import { useListeningTest } from "@/hooks/use-listening-test";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { useNavigationProtection } from "@/hooks/use-navigation-protection";
 import { useQuestionNavigation } from "@/hooks/use-question-navigation";
 import { useTestOptions } from "@/hooks/use-test-options";
+import { useSyncTestTheme } from "@/components/force-light-theme";
 import {
   Send,
   Loader2,
-  Clock,
   Headphones,
   ArrowLeft,
   Maximize2,
   Minimize2,
+  Check,
 } from "lucide-react";
 
 interface Question {
@@ -80,7 +79,6 @@ function ListeningTestContent({ testId }: { testId: string }) {
   const isReviewMode = searchParams.get("review") === "true";
   const reviewAttemptId = searchParams.get("attemptId");
 
-  const { resumeTimer, timeRemaining } = useTestStore();
   const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   const {
@@ -96,13 +94,12 @@ function ListeningTestContent({ testId }: { testId: string }) {
     reviewData,
     unansweredQuestions,
     activeSectionId,
+    setActiveSectionId,
     attemptId,
     answers,
     answeredCount,
-    totalTime,
     handleAnswer,
     handleSubmit,
-    handleTimeUp,
   } = useListeningTest(testId, isReviewMode, reviewAttemptId);
 
   const sectionPassages = useMemo(
@@ -135,6 +132,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
 
   const [showReloadWarning, setShowReloadWarning] = useState(false);
   const testOptions = useTestOptions();
+  useSyncTestTheme(testOptions.contrast);
 
   useNavigationProtection({
     enabled: hasStarted && !isReviewMode,
@@ -235,19 +233,6 @@ function ListeningTestContent({ testId }: { testId: string }) {
             <div className="space-y-6">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Clock className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium text-lg">Time Limit</p>
-                  <p className="text-base text-muted-foreground">
-                    You have {totalTime / 60} minutes to
-                    complete this test
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                   <Headphones className="h-5 w-5 text-primary" />
                 </div>
                 <div>
@@ -272,9 +257,6 @@ function ListeningTestContent({ testId }: { testId: string }) {
                       Listen carefully: audio plays once and cannot be paused.
                     </li>
                     <li>Answer while listening or after audio finishes.</li>
-                    <li>
-                      The timer starts when you click &quot;Begin Test&quot;.
-                    </li>
                   </ul>
                 </div>
               </div>
@@ -294,7 +276,6 @@ function ListeningTestContent({ testId }: { testId: string }) {
                 size="lg"
                 onClick={() => {
                   setHasStarted(true);
-                  resumeTimer();
                 }}
               >
                 Begin Test
@@ -307,8 +288,6 @@ function ListeningTestContent({ testId }: { testId: string }) {
   }
 
   const { theme, rootStyle } = testOptions;
-
-  console.log('q', questionGroups)
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={rootStyle}>
@@ -342,13 +321,6 @@ function ListeningTestContent({ testId }: { testId: string }) {
           </span>
         </div>
 
-        {!isReviewMode && (
-          <TestTimer
-            onTimeUp={handleTimeUp}
-            className="bg-transparent px-3 py-1.5 text-lg font-semibold"
-          />
-        )}
-
         <div className="flex items-center gap-3">
           <button
             onClick={toggleFullscreen}
@@ -363,18 +335,6 @@ function ListeningTestContent({ testId }: { testId: string }) {
           <TestOptionsMenu {...testOptions} />
         </div>
       </header>
-
-      {/* Timer Progress Bar */}
-      {!isReviewMode && (
-        <div className="shrink-0 h-1" style={{ backgroundColor: theme.border }}>
-          <div
-            className="h-full bg-red-500 transition-all duration-1000 ease-linear"
-            style={{
-              width: `${(timeRemaining / totalTime) * 100}%`,
-            }}
-          />
-        </div>
-      )}
 
       {/* Part instruction sub-header */}
       <div
@@ -393,9 +353,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
       <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="max-w-4xl mx-auto p-6 space-y-6">
           {!isReviewMode && (
-            <div className="hidden">
-              <AudioPlayer audioUrl={currentSection.audioUrl} examMode />
-            </div>
+            <AudioPlayer audioUrl={currentSection.audioUrl} examMode />
           )}
           {questionGroups.map((group, groupIndex) => (
             <div key={groupIndex}>
@@ -431,54 +389,94 @@ function ListeningTestContent({ testId }: { testId: string }) {
       </div>
 
       <div
-        className="shrink-0 h-14 flex items-center px-6 justify-between"
+        className="shrink-0 h-14 flex items-center px-4 gap-0"
         style={{
           backgroundColor: theme.bg,
           borderTop: `1px solid ${theme.border}`,
         }}
       >
-        <div className="flex items-center gap-1.5">
-          <span
-            className="text-base font-bold mr-3"
-            style={{ color: theme.textMuted }}
-          >
-            Part {activePassageIndex + 1}
-          </span>
-          {currentPassage.questions.map((q, idx) => {
-            const qNum = questionOffset + idx + 1;
-            const isAnswered = !!answers[q.id]?.answer?.trim();
-            const isActive = activeQuestionNumber === qNum;
+        <div className="flex items-center justify-between flex-1 min-w-0 overflow-x-auto">
+          {sectionPassages.map((passage, passageIdx) => {
+            const passageOffset = sectionPassages
+              .slice(0, passageIdx)
+              .reduce((acc, p) => acc + p.questions.length, 0);
+            const isActivePart = passage.id === activeSectionId;
+            const passageAnswered = passage.questions.filter(
+              (q) => !!answers[q.id]?.answer?.trim(),
+            ).length;
 
             return (
-              <button
-                key={q.id}
-                onClick={() => goToQuestion(qNum)}
-                className="w-9 h-9 text-sm font-medium rounded-sm transition-colors"
-                style={{
-                  border: `1px solid ${theme.border}`,
-                  backgroundColor: isAnswered ? theme.bgAlt : theme.bg,
-                  color: theme.text,
-                  opacity: isAnswered ? 1 : 0.7,
-                }}
-              >
-                {qNum}
-              </button>
+              <div key={passage.id} className="flex items-center">
+                {passageIdx > 0 && (
+                  <div
+                    className="w-px h-6 mx-3"
+                    style={{ backgroundColor: theme.border }}
+                  />
+                )}
+
+                {isActivePart ? (
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="text-sm font-bold mr-1 whitespace-nowrap"
+                      style={{ color: theme.text }}
+                    >
+                      Part {passageIdx + 1}
+                    </span>
+                    {passage.questions.map((q, idx) => {
+                      const qNum = passageOffset + idx + 1;
+                      const isAnswered = !!answers[q.id]?.answer?.trim();
+                      const isActiveQ = activeQuestionNumber === qNum;
+                      return (
+                        <button
+                          key={q.id}
+                          onClick={() => goToQuestion(qNum)}
+                          className="cursor-pointer w-8 h-8 text-xs font-medium rounded-sm transition-colors"
+                          style={{
+                            border: `1px solid ${isActiveQ ? theme.text : theme.border}`,
+                            backgroundColor: isAnswered
+                              ? theme.bgAlt
+                              : theme.bg,
+                            color: theme.text,
+                            opacity: isAnswered || isActiveQ ? 1 : 0.6,
+                          }}
+                        >
+                          {qNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setActiveSectionId(passage.id)}
+                    className="flex items-center gap-2 px-2 py-1 rounded transition-opacity hover:opacity-80 whitespace-nowrap"
+                  >
+                    <span
+                      className="text-sm font-bold"
+                      style={{ color: theme.text }}
+                    >
+                      Part {passageIdx + 1}
+                    </span>
+                    <span
+                      className="text-sm"
+                      style={{ color: theme.textMuted }}
+                    >
+                      {passageAnswered} of {passage.questions.length}
+                    </span>
+                  </button>
+                )}
+              </div>
             );
           })}
         </div>
 
-        <div className="flex items-center gap-2">
-          {!isReviewMode && (
-            <Button
-              variant="default"
-              size="default"
-              onClick={() => setShowSubmitDialog(true)}
-              className="ml-3 text-base px-6"
-            >
-              Submit
-            </Button>
-          )}
-        </div>
+        {!isReviewMode && (
+          <button
+            onClick={() => setShowSubmitDialog(true)}
+            className="cursor-pointer shrink-0 ml-3 w-10 h-10 bg-gray-800 hover:bg-gray-900 text-white rounded flex items-center justify-center transition-colors"
+          >
+            <Check className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
       <SubmitDialog

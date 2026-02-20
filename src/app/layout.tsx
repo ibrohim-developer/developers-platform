@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ielts.zone - AI IELTS Mock Exam",
+  title: "band.up - AI IELTS Mock Exam",
   description: "Practice with real exam questions and get instant AI-powered feedback. Target band 5.0 to 8.0+ with precision.",
 };
 

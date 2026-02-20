@@ -1,23 +1,33 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useTheme } from 'next-themes'
+import type { ContrastMode } from '@/hooks/use-test-options'
 
-export function ForceLightTheme() {
+export function useSyncTestTheme(contrast: ContrastMode) {
+  const { theme } = useTheme()
+  const needsDark = contrast === 'white-on-black' || contrast === 'yellow-on-black'
+
   useEffect(() => {
     const html = document.documentElement
-    const wasDark = html.classList.contains('dark')
-    html.classList.remove('dark')
-    html.style.colorScheme = 'light'
+
+    if (needsDark) {
+      html.classList.add('dark')
+      html.style.colorScheme = 'dark'
+    } else {
+      html.classList.remove('dark')
+      html.style.colorScheme = 'light'
+    }
 
     return () => {
-      // Restore dark class when navigating back to dashboard
-      // next-themes will handle re-applying the correct theme
-      if (wasDark) {
+      // Restore dashboard theme when navigating back
+      if (theme === 'dark') {
         html.classList.add('dark')
         html.style.colorScheme = 'dark'
+      } else {
+        html.classList.remove('dark')
+        html.style.colorScheme = 'light'
       }
     }
-  }, [])
-
-  return null
+  }, [needsDark, theme])
 }

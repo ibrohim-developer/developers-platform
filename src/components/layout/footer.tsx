@@ -7,7 +7,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-16 mb-24">
           <div className="col-span-2 md:col-span-1">
             <div className="text-3xl font-black tracking-tighter text-black mb-8">
-              Nimadur
+               band<span className="text-primary">.</span>up
             </div>
             <p className="text-neutral-500 text-base leading-snug font-normal">
               Industrial precision in English language assessment.
@@ -42,7 +42,7 @@ export function Footer() {
         </div>
 
         <div className="flex flex-col md:flex-row justify-between items-center pt-12 border-t border-black text-black text-xs font-black uppercase tracking-[0.4em]">
-          <p>&copy; {new Date().getFullYear()} ielts.zone International</p>
+          <p>&copy; {new Date().getFullYear()} band<span className="text-primary">.</span>up International</p>
           <div className="flex gap-10 mt-6 md:mt-0">
             <Link className="hover:text-primary transition-colors" href="#">Twitter</Link>
             <Link className="hover:text-primary transition-colors" href="#">LinkedIn</Link>
