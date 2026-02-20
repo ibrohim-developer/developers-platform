@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/no-prefetch-link";
 import { Clock, HelpCircle, Headphones } from "lucide-react";
 import { unstable_cache } from "next/cache";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";

@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import Link from '@/components/no-prefetch-link'
 
 export function Footer() {
   return (

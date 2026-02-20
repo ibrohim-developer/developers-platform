@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useState } from 'react'
-import Link from 'next/link'
+import Link from '@/components/no-prefetch-link'
 import { useSearchParams } from 'next/navigation'
 import { signIn, signInWithGoogle } from '@/actions/auth'
 import { Button } from '@/components/ui/button'

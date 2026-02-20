@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from '@/components/no-prefetch-link'
 import Image from 'next/image'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'

@@ -15,7 +15,7 @@ import {
   CheckCircle2,
   Timer
 } from 'lucide-react'
-import Link from 'next/link'
+import Link from '@/components/no-prefetch-link'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function FullMockTestPage() {

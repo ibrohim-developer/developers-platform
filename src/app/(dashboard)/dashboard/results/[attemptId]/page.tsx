@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/no-prefetch-link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { BAND_DESCRIPTORS } from "@/lib/constants/test-config";

@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from '@/components/no-prefetch-link'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
