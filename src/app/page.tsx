@@ -11,19 +11,27 @@ import {
 import { getUser } from '@/actions/auth'
 import { RotatingText } from '@/components/rotating-text'
 import { ForceLightTheme } from '@/components/force-light-theme'
+import { Suspense } from 'react'
 
-export default async function HomePage() {
+async function AuthHeader() {
   const user = await getUser()
+  return (
+    <Header
+      isLoggedIn={!!user}
+      userEmail={user?.email}
+      userAvatar={user?.user_metadata?.avatar_url}
+      userName={user?.user_metadata?.full_name}
+    />
+  )
+}
 
+export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col scroll-smooth">
       <ForceLightTheme />
-      <Header
-        isLoggedIn={!!user}
-        userEmail={user?.email}
-        userAvatar={user?.user_metadata?.avatar_url}
-        userName={user?.user_metadata?.full_name}
-      />
+      <Suspense fallback={<Header />}>
+        <AuthHeader />
+      </Suspense>
 
       <main className="flex-1">
         {/* Hero Section */}

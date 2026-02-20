@@ -59,5 +59,9 @@ export async function GET() {
     testData.questions += questionCountMap[passage.id] || 0;
   });
 
-  return NextResponse.json(Array.from(testMap.values()));
+  return NextResponse.json(Array.from(testMap.values()), {
+    headers: {
+      'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+    },
+  });
 }
