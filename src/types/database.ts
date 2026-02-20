@@ -15,6 +15,8 @@ export type Database = {
           full_name: string | null
           avatar_url: string | null
           target_band_score: number | null
+          telegram_id: number | null
+          phone: string | null
           created_at: string
           updated_at: string
         }
@@ -23,6 +25,8 @@ export type Database = {
           full_name?: string | null
           avatar_url?: string | null
           target_band_score?: number | null
+          telegram_id?: number | null
+          phone?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -31,7 +35,49 @@ export type Database = {
           full_name?: string | null
           avatar_url?: string | null
           target_band_score?: number | null
+          telegram_id?: number | null
+          phone?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      telegram_auth_codes: {
+        Row: {
+          id: string
+          code: string
+          telegram_id: number
+          first_name: string | null
+          last_name: string | null
+          username: string | null
+          phone: string | null
+          photo_url: string | null
+          used: boolean
+          expires_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          telegram_id: number
+          first_name?: string | null
+          last_name?: string | null
+          username?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          used?: boolean
+          expires_at: string
+          created_at?: string
+        }
+        Update: {
+          code?: string
+          telegram_id?: number
+          first_name?: string | null
+          last_name?: string | null
+          username?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          used?: boolean
+          expires_at?: string
         }
         Relationships: []
       }

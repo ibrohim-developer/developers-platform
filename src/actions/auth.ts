@@ -74,6 +74,64 @@ export async function getUser() {
   return user
 }
 
+export async function signInWithTelegramCode(code: string) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/telegram/verify-code`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    }
+  )
+
+  const data = await response.json()
+
+  if (!response.ok || !data.token_hash) {
+    return { error: data.error || 'Failed to verify Telegram code' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.verifyOtp({
+    token_hash: data.token_hash,
+    type: 'magiclink',
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  redirect('/dashboard')
+}
+
+export async function signInWithTelegramWidget(widgetData: Record<string, string | number>) {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/telegram/widget`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(widgetData),
+    }
+  )
+
+  const data = await response.json()
+
+  if (!response.ok || !data.token_hash) {
+    return { error: data.error || 'Failed to verify Telegram login' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.verifyOtp({
+    token_hash: data.token_hash,
+    type: 'magiclink',
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  redirect('/dashboard')
+}
+
 export async function signInWithGoogle() {
   const supabase = await createClient()
 

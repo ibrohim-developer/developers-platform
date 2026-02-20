@@ -10,12 +10,14 @@ import {
 } from 'lucide-react'
 import { getUser } from '@/actions/auth'
 import { RotatingText } from '@/components/rotating-text'
+import { ForceLightTheme } from '@/components/force-light-theme'
 
 export default async function HomePage() {
   const user = await getUser()
 
   return (
     <div className="min-h-screen flex flex-col scroll-smooth">
+      <ForceLightTheme />
       <Header
         isLoggedIn={!!user}
         userEmail={user?.email}

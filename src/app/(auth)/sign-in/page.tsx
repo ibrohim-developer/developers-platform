@@ -9,6 +9,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { BookOpen, Loader2 } from 'lucide-react'
+import { TelegramLoginWidget } from '@/components/auth/telegram-login-widget'
+import { TelegramCodeInput } from '@/components/auth/telegram-code-input'
+
+const TELEGRAM_BOT_NAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || 'YourBotName'
 
 function SignInForm() {
   const [error, setError] = useState<string | null>(null)
@@ -78,6 +82,10 @@ function SignInForm() {
           </svg>
           Continue with Google
         </Button>
+
+        <TelegramLoginWidget botName={TELEGRAM_BOT_NAME} />
+
+        <TelegramCodeInput botName={TELEGRAM_BOT_NAME} />
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
