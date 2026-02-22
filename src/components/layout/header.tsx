@@ -52,7 +52,7 @@ export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: 
               </div>
             ) : (
               <Link
-                href="/sign-up"
+                href="/dashboard/reading"
                 className="bg-primary text-white px-6 py-3 font-black hover:bg-primary/90 transition-all uppercase text-[11px] tracking-widest rounded-lg"
               >
                 Free Mock Test
@@ -103,7 +103,7 @@ export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: 
                       Sign In
                     </Link>
                     <Link
-                      href="/sign-up"
+                      href="/dashboard/reading"
                       className="bg-primary text-white px-6 py-3 font-black hover:bg-primary/90 transition-all uppercase text-[11px] tracking-widest rounded-lg text-center"
                     >
                       Free Mock Test

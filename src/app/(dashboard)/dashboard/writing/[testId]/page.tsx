@@ -1,7 +1,8 @@
 "use client";
 
-import { use, useState, useCallback, Suspense } from "react";
+import { use, useState, useCallback, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -64,6 +65,13 @@ function WritingTestContent({ testId }: { testId: string }) {
   const searchParams = useSearchParams();
   const isReviewMode = searchParams.get("review") === "true";
   const reviewAttemptId = searchParams.get("attemptId");
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) router.replace("/sign-in");
+    });
+  }, [router]);
 
   const { resumeTimer, timeRemaining } = useTestStore();
   const { isFullscreen, toggleFullscreen } = useFullscreen();

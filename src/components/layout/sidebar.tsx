@@ -8,6 +8,7 @@ import {
   Headphones,
   PenTool,
   Mic,
+  ClipboardList,
   History,
   User,
   LogOut,
@@ -58,10 +59,17 @@ const menuItems = [
     title: 'Speaking',
     href: '/dashboard/speaking',
     icon: Mic,
+    soon: true,
   },
+    {
+    title: 'Full Mock Test',
+    href: '/dashboard/full-mock-test',
+    icon: ClipboardList,
+    soon: true,
+  }
 ]
 
-const testRoutePattern = /^\/dashboard\/((reading|listening|writing|speaking)\/[^/]+|results\/[^/]+)$/
+const testRoutePattern = /^\/dashboard\/((reading|listening|writing|speaking|full-mock-test)\/[^/]+|results\/[^/]+)$/
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
@@ -110,6 +118,16 @@ export function Sidebar({ user }: SidebarProps) {
               >
                 <item.icon className="h-5 w-5 shrink-0" />
                 <span>{item.title}</span>
+                {item.soon && (
+                  <span className={cn(
+                    'ml-auto text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded',
+                    isActive
+                      ? 'bg-primary-foreground/20 text-primary-foreground'
+                      : 'bg-primary/10 text-primary'
+                  )}>
+                    Soon
+                  </span>
+                )}
               </Link>
             </div>
           )
@@ -130,57 +148,63 @@ export function Sidebar({ user }: SidebarProps) {
 
       {/* User Profile */}
       <div className="p-4 border-t border-border">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-3 w-full text-left px-2 py-1 rounded-lg hover:bg-muted transition-colors">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.full_name || 'User'} />
-                <AvatarFallback className="bg-muted text-muted-foreground font-bold">
-                  {userInitials}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-xs font-bold truncate">
-                  {user?.user_metadata?.full_name || 'User'}
-                </span>
-                <span className="text-[10px] text-muted-foreground truncate">
-                  {user?.email}
-                </span>
-              </div>
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/dashboard/profile" className="cursor-pointer">
-                <User className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/dashboard/history" className="cursor-pointer">
-                <History className="mr-2 h-4 w-4" />
-                <span>Test History</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/dashboard/settings" className="cursor-pointer">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <form action={signOut} className="w-full">
-                <button type="submit" className="flex w-full items-center cursor-pointer">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign Out</span>
-                </button>
-              </form>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-3 w-full text-left px-2 py-1 rounded-lg hover:bg-muted transition-colors">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.full_name || 'User'} />
+                  <AvatarFallback className="bg-muted text-muted-foreground font-bold">
+                    {userInitials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col flex-1 min-w-0">
+                  <span className="text-xs font-bold truncate">
+                    {user?.user_metadata?.full_name || 'User'}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground truncate">
+                    {user?.email}
+                  </span>
+                </div>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/profile" className="cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/history" className="cursor-pointer">
+                  <History className="mr-2 h-4 w-4" />
+                  <span>Test History</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/settings" className="cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="cursor-pointer" onClick={() => signOut()}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sign Out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Link
+            href="/sign-in"
+            className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-primary text-primary-foreground rounded-lg font-bold text-sm hover:opacity-90 transition-all"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign In
+          </Link>
+        )}
       </div>
     </aside>
   )

@@ -33,7 +33,7 @@ export async function proxy(request: NextRequest) {
   const user = session?.user ?? null
 
   // Public dashboard routes (accessible without auth for SEO)
-  const publicPaths = ['/dashboard/reading', '/dashboard/listening', '/dashboard/writing']
+  const publicPaths = ['/dashboard/reading', '/dashboard/listening', '/dashboard/writing', '/dashboard/speaking', '/dashboard/full-mock-test']
   const isPublic = publicPaths.some(path =>
     request.nextUrl.pathname === path
   )

@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { DifficultyDots } from "@/components/test/common/difficulty-dots";
 import { TestFilters } from "@/components/test/common/test-filters";
+import { LoginRequiredLink } from "@/components/auth/login-required-link";
 
 interface WritingTest {
   id: string;
@@ -167,12 +168,12 @@ export default async function WritingTestsPage({
                   </span>
                 </div>
               </div>
-              <Link
+              <LoginRequiredLink
                 href={`/dashboard/writing/${test.id}`}
                 className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-black text-xs tracking-widest hover:opacity-90 transition-all uppercase"
               >
                 Start Test
-              </Link>
+              </LoginRequiredLink>
             </div>
           ))
         ) : (

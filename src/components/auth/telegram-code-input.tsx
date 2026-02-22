@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Loader2, MessageCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { Loader2, Send, ChevronDown, ChevronUp } from 'lucide-react'
 
 interface TelegramCodeInputProps {
   botName: string
@@ -63,57 +63,66 @@ export function TelegramCodeInput({ botName }: TelegramCodeInputProps) {
   }
 
   return (
-    <div>
+    <div className="space-y-3">
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+        className="flex items-center gap-2 text-primary font-bold text-sm cursor-pointer hover:underline"
       >
-        <MessageCircle className="h-4 w-4" />
+        <Send className="h-4 w-4" />
         Have a Telegram code?
-        {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+        {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
       </button>
 
-      {isExpanded && (
-        <div className="space-y-3 mt-2">
-          <p className="text-xs text-muted-foreground text-center">
-            Open{' '}
-            <a
-              href={`https://t.me/${botName}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline font-medium"
-            >
-              @{botName}
-            </a>
-            {' '}in Telegram, share your contact, and enter the code below.
-          </p>
+      <div
+        className="grid transition-all duration-300 ease-in-out"
+        style={{ gridTemplateRows: isExpanded ? '1fr' : '0fr' }}
+      >
+        <div className="overflow-hidden">
+          <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl space-y-3 mt-3">
+            <p className="text-[12px] text-gray-500 dark:text-gray-400 leading-relaxed">
+              Open{' '}
+              <a
+                href={`https://t.me/${botName}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary font-semibold hover:underline"
+              >
+                @{botName}
+              </a>
+              {' '}in Telegram, share your contact, and enter the code below.
+            </p>
 
-          {error && (
-            <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-              {error}
-            </div>
-          )}
+            {error && (
+              <div className="p-3 rounded-xl bg-destructive/10 text-destructive text-sm">
+                {error}
+              </div>
+            )}
 
-          <form onSubmit={handleSubmit} className="flex gap-2">
-            <Input
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              placeholder="Enter 6-digit code"
-              maxLength={6}
-              className="text-center font-mono tracking-widest uppercase"
-              disabled={isLoading}
-            />
-            <Button type="submit" disabled={isLoading || code.trim().length !== 6}>
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                'Verify'
-              )}
-            </Button>
-          </form>
+            <form onSubmit={handleSubmit} className="flex gap-2">
+              <Input
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                placeholder="ENTER 6-DIGIT CODE"
+                maxLength={6}
+                className="text-center font-mono tracking-widest uppercase px-4 py-3 h-auto rounded-xl border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm"
+                disabled={isLoading}
+              />
+              <Button
+                type="submit"
+                disabled={isLoading || code.trim().length !== 6}
+                className="px-6 py-3 h-auto rounded-xl font-bold shadow-md shadow-primary/20 active:scale-95 transition-all"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  'Verify'
+                )}
+              </Button>
+            </form>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }

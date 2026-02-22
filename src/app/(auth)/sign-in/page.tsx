@@ -6,9 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import { signIn, signInWithGoogle } from '@/actions/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { BookOpen, Loader2 } from 'lucide-react'
+import { BookOpen, Loader2, Eye, EyeOff } from 'lucide-react'
 import { TelegramLoginWidget } from '@/components/auth/telegram-login-widget'
 import { TelegramCodeInput } from '@/components/auth/telegram-code-input'
 
@@ -17,6 +15,7 @@ const TELEGRAM_BOT_NAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_NAME || 'YourBotN
 function SignInForm() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirect')
 
@@ -37,32 +36,36 @@ function SignInForm() {
   }
 
   return (
-    <Card className="shadow-xl border-0">
-      <CardHeader className="text-center space-y-2">
-        <div className="mx-auto w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-2">
-          <BookOpen className="w-6 h-6 text-primary-foreground" />
+    <div className="bg-card shadow-2xl rounded-[24px] p-8 md:p-10 border border-border w-120">
+      {/* Header */}
+      <div className="flex flex-col items-center mb-8 text-center">
+        <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-primary/20 dark:shadow-none">
+          <BookOpen className="w-7 h-7 text-primary-foreground" />
         </div>
-        <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-        <CardDescription>
-          Sign in to continue your IELTS preparation
-        </CardDescription>
-      </CardHeader>
+        <h1 className="text-3xl font-[800] text-gray-900 dark:text-white tracking-tight leading-tight">
+          Welcome Back
+        </h1>
+        <p className="mt-2 text-gray-500 dark:text-gray-400 font-medium">
+          Sign in to continue your IELTS journey
+        </p>
+      </div>
 
-      <CardContent className="space-y-4">
+      <div className="space-y-6">
+        {/* Error message */}
         {error && (
-          <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+          <div className="p-3 rounded-xl bg-destructive/10 text-destructive text-sm">
             {error}
           </div>
         )}
 
-        <Button
+        {/* Google Sign In */}
+        <button
           type="button"
-          variant="outline"
-          className="w-full"
           disabled={isLoading}
           onClick={() => signInWithGoogle()}
+          className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-primary/10 hover:border-primary/30 dark:border-primary/20 dark:hover:border-primary/40 rounded-xl bg-card transition-colors group disabled:opacity-50"
         >
-          <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+          <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
               fill="#4285F4"
@@ -80,29 +83,31 @@ function SignInForm() {
               fill="#EA4335"
             />
           </svg>
-          Continue with Google
-        </Button>
+          <span className="font-bold text-gray-800 dark:text-gray-100">Continue with Google</span>
+        </button>
 
-        <TelegramLoginWidget botName={TELEGRAM_BOT_NAME} />
+        {/* Telegram */}
+        {/* <TelegramLoginWidget botName={TELEGRAM_BOT_NAME} /> */}
+        {/* <TelegramCodeInput botName={TELEGRAM_BOT_NAME} /> */}
 
-        <TelegramCodeInput botName={TELEGRAM_BOT_NAME} />
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+        {/* Divider */}
+        <div className="relative py-4">
+          <div className="absolute inset-0 flex items-center" aria-hidden="true">
+            <div className="w-full border-t border-gray-200 dark:border-gray-800" />
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              Or continue with email
+          <div className="relative flex justify-center text-xs font-bold uppercase tracking-widest">
+            <span className="bg-card px-4 text-gray-400">
+              Or Login with Email
             </span>
           </div>
         </div>
-      </CardContent>
 
-      <form action={handleSubmit}>
-        <CardContent className="space-y-4 pt-0">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+        {/* Email Form */}
+        <form action={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5 dark:text-gray-400">
+              Email Address
+            </label>
             <Input
               id="email"
               name="email"
@@ -110,32 +115,48 @@ function SignInForm() {
               placeholder="you@example.com"
               required
               disabled={isLoading}
+              className="px-4 py-3 h-auto rounded-xl border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label htmlFor="password" className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                Password
+              </label>
               <Link
                 href="/reset-password"
-                className="text-sm text-primary hover:underline"
+                className="text-[11px] font-bold text-primary hover:underline"
               >
                 Forgot password?
               </Link>
             </div>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="Enter your password"
-              required
-              disabled={isLoading}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                required
+                disabled={isLoading}
+                className="px-4 py-3 pr-11 h-auto rounded-xl border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
-        </CardContent>
 
-        <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-4 h-auto rounded-xl font-bold shadow-xl shadow-primary/20 active:scale-[0.98] transition-all mt-4"
+          >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -145,27 +166,30 @@ function SignInForm() {
               'Sign In'
             )}
           </Button>
+        </form>
 
-          <p className="text-sm text-muted-foreground text-center">
+        {/* Sign up link */}
+        <div className="text-center pt-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
             Don&apos;t have an account?{' '}
-            <Link href="/sign-up" className="text-primary hover:underline font-medium">
+            <Link href="/sign-up" className="text-primary font-bold hover:underline ml-1">
               Sign up
             </Link>
           </p>
-        </CardFooter>
-      </form>
-    </Card>
+        </div>
+      </div>
+    </div>
   )
 }
 
 export default function SignInPage() {
   return (
     <Suspense fallback={
-      <Card className="shadow-xl border-0">
-        <CardContent className="py-8 text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
-        </CardContent>
-      </Card>
+      <div className="bg-card shadow-2xl rounded-[24px] p-8 md:p-10 border border-border">
+        <div className="py-8 text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-gray-400" />
+        </div>
+      </div>
     }>
       <SignInForm />
     </Suspense>
