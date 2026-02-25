@@ -19,25 +19,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "testId is required" }, { status: 400 });
   }
 
-  // Create a new test attempt
-  const { data: attempt, error: attemptError } = await supabase
-    .from("test_attempts")
-    .insert({
-      user_id: user.id,
-      test_id: testId,
-      module_type: "reading",
-      status: "in_progress",
-    } as any)
-    .select("id")
-    .single();
-
-  if (attemptError || !attempt) {
-    return NextResponse.json(
-      { error: "Failed to create test attempt" },
-      { status: 500 }
-    );
-  }
-
   // Fetch reading passages for this test
   const { data: passages, error: passagesError } = await supabase
     .from("reading_passages")
@@ -94,7 +75,6 @@ export async function POST(request: NextRequest) {
   const totalTimeLimit = passages.reduce((sum: number, p: any) => sum + (p.time_limit || 0), 0);
 
   return NextResponse.json({
-    attemptId: (attempt as any).id,
     totalTimeLimit, // Total time in seconds for all passages
     passages: passagesWithQuestions,
   });

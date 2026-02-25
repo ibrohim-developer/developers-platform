@@ -8,16 +8,18 @@ import { History, Headphones, BookOpen, PenTool, ExternalLink } from 'lucide-rea
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function HistoryPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
 
   let attempts: any[] | null = null
 
   if (user) {
     const { data } = await supabase
       .from('test_attempts')
-      .select('*')
+      .select('id, module_type, created_at, band_score, status')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
+      .limit(50)
     attempts = data
   }
 

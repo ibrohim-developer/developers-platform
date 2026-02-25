@@ -9,6 +9,25 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      feature_notifications: {
+        Row: {
+          id: string
+          user_id: string
+          feature: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          feature: string
+          created_at?: string
+        }
+        Update: {
+          user_id?: string
+          feature?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           id: string

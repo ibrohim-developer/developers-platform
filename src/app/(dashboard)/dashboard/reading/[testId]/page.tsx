@@ -1,8 +1,7 @@
 "use client";
 
-import { use, useEffect, Suspense } from "react";
+import { use, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -76,13 +75,6 @@ function ReadingTestContent({ testId }: { testId: string }) {
   const isReviewMode = searchParams.get("review") === "true";
   const reviewAttemptId = searchParams.get("attemptId");
 
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) router.replace("/sign-in");
-    });
-  }, [router]);
-
   const { resumeTimer, timeRemaining } = useTestStore();
   const { isFullscreen, toggleFullscreen } = useFullscreen();
 
@@ -100,7 +92,6 @@ function ReadingTestContent({ testId }: { testId: string }) {
     unansweredQuestions,
     activePassageId,
     setActivePassageId,
-    attemptId,
     answers,
     answeredCount,
     totalTime,
@@ -327,7 +318,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
             IELTS
           </div>
           <span className="text-lg" style={{ color: theme.textMuted }}>
-            ID: {attemptId?.slice(0, 5) || "-----"}
+            ID: {testId?.slice(0, 5) || "-----"}
           </span>
         </div>
 

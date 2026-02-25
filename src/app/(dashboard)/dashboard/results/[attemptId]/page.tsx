@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { WritingFeedback } from "@/components/test/writing/writing-feedback";
 import { AnswerToggle } from "./answer-toggle";
+import { EvaluatingBanner } from "./evaluating-banner";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface ResultsPageProps {
@@ -34,7 +35,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
   const { attemptId } = await params;
   const supabase = await createClient();
 
-  // Fetch attempt
+  // Fetch attempt first (needed to determine module type and test_id)
   const { data: attempt, error } = await supabase
     .from("test_attempts")
     .select("*")
@@ -304,6 +305,7 @@ function WritingResultsContent({
   tasks: any[];
   submissions: any[];
 }) {
+  const isEvaluating = attempt.status === "evaluating";
   const bandScore = attempt.band_score || 0;
 
   const formatTime = (seconds: number) => {
@@ -378,51 +380,57 @@ function WritingResultsContent({
         </div>
       </div>
 
+      {isEvaluating && <EvaluatingBanner />}
+
       {/* Score + Insight */}
-      <div className="border-1 border-border rounded-xl p-8 md:p-10 mb-10 flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="text-center md:text-left md:border-r-2 border-border md:pr-16">
-          <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-2">
-            Band Score
-          </p>
-          <p className="text-6xl md:text-7xl font-bold text-primary">
-            {bandScore}
-          </p>
-          <p className="text-sm font-bold text-muted-foreground mt-1">
-            {BAND_DESCRIPTORS[Math.floor(bandScore)] || "Good user"}
-          </p>
+      {!isEvaluating && (
+        <div className="border-1 border-border rounded-xl p-8 md:p-10 mb-10 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="text-center md:text-left md:border-r-2 border-border md:pr-16">
+            <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-2">
+              Band Score
+            </p>
+            <p className="text-6xl md:text-7xl font-bold text-primary">
+              {bandScore}
+            </p>
+            <p className="text-sm font-bold text-muted-foreground mt-1">
+              {BAND_DESCRIPTORS[Math.floor(bandScore)] || "Good user"}
+            </p>
+          </div>
+          <div className="flex-1 bg-muted p-6 rounded-xl border border-border">
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
+              Performance Insight
+            </p>
+            <p className="text-xl md:text-2xl font-bold leading-tight">
+              Review your writing evaluation below. Focus on the feedback to
+              improve your performance.
+            </p>
+          </div>
         </div>
-        <div className="flex-1 bg-muted p-6 rounded-xl border border-border">
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
-            Performance Insight
-          </p>
-          <p className="text-xl md:text-2xl font-bold leading-tight">
-            Review your writing evaluation below. Focus on the feedback to
-            improve your performance.
-          </p>
-        </div>
-      </div>
+      )}
 
       {/* Action Buttons */}
-      <div className="flex flex-wrap gap-4 mb-10">
-        <Link href={`/dashboard/results/${attempt.id}#review`}>
-          <Button variant="outline" className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
-            <Eye className="h-4 w-4" />
-            Review Test
-          </Button>
-        </Link>
-        <Link href="/dashboard/tests">
-          <Button variant="outline" className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
-            <List className="h-4 w-4" />
-            View All Tests
-          </Button>
-        </Link>
-        <Link href={`/dashboard/test/${attempt.test_id}`}>
-          <Button className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
-            <RotateCcw className="h-4 w-4" />
-            Try Again
-          </Button>
-        </Link>
-      </div>
+      {!isEvaluating && (
+        <div className="flex flex-wrap gap-4 mb-10">
+          <Link href={`/dashboard/results/${attempt.id}#review`}>
+            <Button variant="outline" className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
+              <Eye className="h-4 w-4" />
+              Review Test
+            </Button>
+          </Link>
+          <Link href="/dashboard/tests">
+            <Button variant="outline" className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
+              <List className="h-4 w-4" />
+              View All Tests
+            </Button>
+          </Link>
+          <Link href={`/dashboard/test/${attempt.test_id}`}>
+            <Button className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
+              <RotateCcw className="h-4 w-4" />
+              Try Again
+            </Button>
+          </Link>
+        </div>
+      )}
 
       {/* AI Evaluation Summary */}
       <div className="border-1 border-border rounded-xl overflow-hidden mb-10">

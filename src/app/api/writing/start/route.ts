@@ -5,39 +5,19 @@ import { createClient } from "@/lib/supabase/server";
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [{ data: { session } }, { testId }] = await Promise.all([
+    supabase.auth.getSession(),
+    request.json(),
+  ]);
 
-  if (!user) {
+  if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
-  const { testId } = await request.json();
 
   if (!testId) {
     return NextResponse.json(
       { error: "testId is required" },
       { status: 400 }
-    );
-  }
-
-  // Create a new test attempt
-  const { data: attempt, error: attemptError } = await supabase
-    .from("test_attempts")
-    .insert({
-      user_id: user.id,
-      test_id: testId,
-      module_type: "writing",
-      status: "in_progress",
-    } as any)
-    .select("id")
-    .single();
-
-  if (attemptError || !attempt) {
-    return NextResponse.json(
-      { error: "Failed to create test attempt" },
-      { status: 500 }
     );
   }
 
@@ -59,7 +39,6 @@ export async function POST(request: NextRequest) {
   const totalTimeLimit = tasks.reduce((sum: number, t: any) => sum + (t.time_limit || 0), 0);
 
   return NextResponse.json({
-    attemptId: (attempt as any).id,
     totalTimeLimit, // Total time in seconds for all tasks
     tasks: tasks.map((t: any) => ({
       id: t.id,

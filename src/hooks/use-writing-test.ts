@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTestStore } from "@/stores/test-store";
 import { TEST_CONFIG } from "@/lib/constants/test-config";
@@ -34,7 +34,6 @@ interface WritingReviewResponse {
 }
 
 interface WritingStartResponse {
-  attemptId: string;
   totalTimeLimit: number;
   tasks: WritingTask[];
 }
@@ -45,7 +44,7 @@ export function useWritingTest(
   reviewAttemptId: string | null,
 ) {
   const router = useRouter();
-  const { attemptId, initTest, timeRemaining } = useTestStore();
+  const { initTest, timeRemaining } = useTestStore();
 
   const [tasks, setTasks] = useState<WritingTask[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -135,7 +134,7 @@ export function useWritingTest(
       const time = data.totalTimeLimit || TEST_CONFIG.writing.totalTime;
 
       setTotalTime(time);
-      initTest(data.attemptId, testId, "writing", time, false);
+      initTest(testId, "writing", time, false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start test");
     } finally {
@@ -143,7 +142,11 @@ export function useWritingTest(
     }
   }, [testId, initTest]);
 
+  const didFetch = useRef(false);
   useEffect(() => {
+    if (didFetch.current) return;
+    didFetch.current = true;
+
     if (isReviewMode) {
       loadReviewMode();
     } else {
@@ -156,7 +159,7 @@ export function useWritingTest(
   }, []);
 
   const handleSubmit = useCallback(async () => {
-    if (!attemptId) return;
+    if (!testId) return;
     setIsSubmitting(true);
 
     try {
@@ -171,7 +174,7 @@ export function useWritingTest(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          attemptId,
+          testId,
           submissions,
           timeSpentSeconds,
         }),
@@ -182,11 +185,19 @@ export function useWritingTest(
       }
 
       const result = await res.json();
+
+      // Fire-and-forget: trigger AI evaluation in the background
+      fetch("/api/writing/evaluate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ attemptId: result.attemptId }),
+      });
+
       router.push(`/dashboard/results/${result.attemptId}`);
     } catch {
       setIsSubmitting(false);
     }
-  }, [attemptId, tasks, contents, totalTime, timeRemaining, router]);
+  }, [testId, tasks, contents, totalTime, timeRemaining, router]);
 
   const handleTimeUp = useCallback(() => {
     setIsTimeUp(true);

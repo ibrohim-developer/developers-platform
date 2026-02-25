@@ -1,8 +1,7 @@
 "use client";
 
-import { use, useState, useCallback, useEffect, Suspense, useMemo } from "react";
+import { use, Suspense, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,7 +11,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SubmitDialog } from "@/components/test/common/submit-dialog";
-import { ReloadWarningDialog } from "@/components/test/common/reload-warning-dialog";
 import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { AudioPlayer } from "@/components/test/listening/audio-player";
 import { MultipleChoice } from "@/components/test/questions/multiple-choice";
@@ -80,13 +78,6 @@ function ListeningTestContent({ testId }: { testId: string }) {
   const isReviewMode = searchParams.get("review") === "true";
   const reviewAttemptId = searchParams.get("attemptId");
 
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) router.replace("/sign-in");
-    });
-  }, [router]);
-
   const { isFullscreen, toggleFullscreen } = useFullscreen();
 
   const {
@@ -103,7 +94,6 @@ function ListeningTestContent({ testId }: { testId: string }) {
     unansweredQuestions,
     activeSectionId,
     setActiveSectionId,
-    attemptId,
     answers,
     answeredCount,
     handleAnswer,
@@ -138,13 +128,11 @@ function ListeningTestContent({ testId }: { testId: string }) {
   const currentSection =
     sections.find((section) => section.id === activeSectionId) ?? null;
 
-  const [showReloadWarning, setShowReloadWarning] = useState(false);
   const testOptions = useTestOptions();
   useSyncTestTheme(testOptions.contrast);
 
   useNavigationProtection({
     enabled: hasStarted && !isReviewMode,
-    onShowWarning: useCallback(() => setShowReloadWarning(true), []),
   });
 
   const getTypeInstruction = (type: string) => {
@@ -311,11 +299,13 @@ function ListeningTestContent({ testId }: { testId: string }) {
           <Button
             variant="outline"
             size="default"
-            onClick={() =>
-              isReviewMode
-                ? router.push(`/dashboard/results/${reviewAttemptId}`)
-                : router.push("/dashboard/listening")
-            }
+            onClick={() => {
+              if (isReviewMode) {
+                router.push(`/dashboard/results/${reviewAttemptId}`);
+              } else if (window.confirm("If you leave this page, all your answers will be lost and your test progress will not be saved.")) {
+                router.push("/dashboard/listening");
+              }
+            }}
             className="flex items-center gap-2 text-base px-3"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -325,7 +315,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
             IELTS
           </div>
           <span className="text-lg" style={{ color: theme.textMuted }}>
-            ID: {attemptId?.slice(0, 5) || "-----"}
+            ID: {testId?.slice(0, 5) || "-----"}
           </span>
         </div>
 
@@ -497,14 +487,6 @@ function ListeningTestContent({ testId }: { testId: string }) {
         timeUp={isTimeUp}
       />
 
-      <ReloadWarningDialog
-        open={showReloadWarning}
-        onOpenChange={setShowReloadWarning}
-        onConfirm={() => {
-          setShowReloadWarning(false);
-          window.history.go(-2);
-        }}
-      />
     </div>
   );
 }

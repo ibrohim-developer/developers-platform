@@ -42,7 +42,7 @@ export function useListeningTest(
   reviewAttemptId: string | null,
 ) {
   const router = useRouter();
-  const { attemptId, initTest, answers, setAnswer, timeRemaining } =
+  const { initTest, answers, setAnswer, timeRemaining } =
     useTestStore();
 
   const [sections, setSections] = useState<Section[]>([]);
@@ -138,7 +138,6 @@ export function useListeningTest(
       setTotalTime(time);
 
       initTest(
-        data.attemptId,
         testId,
         "listening",
         time,
@@ -160,7 +159,7 @@ export function useListeningTest(
   }, [isReviewMode, loadReviewMode, startTest]);
 
   const handleSubmit = useCallback(async () => {
-    if (!attemptId) return;
+    if (!testId) return;
     setIsSubmitting(true);
 
     try {
@@ -175,7 +174,7 @@ export function useListeningTest(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          attemptId,
+          testId,
           answers: answersPayload,
           timeSpentSeconds,
         }),
@@ -190,7 +189,7 @@ export function useListeningTest(
     } catch {
       setIsSubmitting(false);
     }
-  }, [attemptId, answers, timeRemaining, router]);
+  }, [testId, answers, timeRemaining, totalTime, router]);
 
   const handleTimeUp = useCallback(() => {
     setIsTimeUp(true);
@@ -219,7 +218,6 @@ export function useListeningTest(
     unansweredQuestions,
     activeSectionId,
     setActiveSectionId,
-    attemptId,
     answers,
     answeredCount,
     totalTime,

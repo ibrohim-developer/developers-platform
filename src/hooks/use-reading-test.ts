@@ -35,7 +35,7 @@ export function useReadingTest(
   reviewAttemptId: string | null,
 ) {
   const router = useRouter();
-  const { attemptId, initTest, answers, setAnswer, timeRemaining } =
+  const { initTest, answers, setAnswer, timeRemaining } =
     useTestStore();
 
   const [passages, setPassages] = useState<Passage[]>([]);
@@ -128,7 +128,6 @@ export function useReadingTest(
       setTotalTime(time);
 
       initTest(
-        data.attemptId,
         testId,
         "reading",
         time,
@@ -150,7 +149,7 @@ export function useReadingTest(
   }, [isReviewMode, loadReviewMode, startTest]);
 
   const handleSubmit = useCallback(async () => {
-    if (!attemptId) return;
+    if (!testId) return;
     setIsSubmitting(true);
 
     try {
@@ -165,7 +164,7 @@ export function useReadingTest(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          attemptId,
+          testId,
           answers: answersPayload,
           timeSpentSeconds,
         }),
@@ -180,7 +179,7 @@ export function useReadingTest(
     } catch {
       setIsSubmitting(false);
     }
-  }, [attemptId, answers, timeRemaining, router]);
+  }, [testId, answers, timeRemaining, totalTime, router]);
 
   const handleTimeUp = useCallback(() => {
     setIsTimeUp(true);
@@ -209,7 +208,6 @@ export function useReadingTest(
     unansweredQuestions,
     activePassageId,
     setActivePassageId,
-    attemptId,
     answers,
     answeredCount,
     totalTime,

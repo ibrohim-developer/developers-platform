@@ -9,10 +9,7 @@ import {
   PenTool,
   Mic,
   ClipboardList,
-  History,
-  User,
   LogOut,
-  Settings,
   Sun,
   Moon
 } from 'lucide-react'
@@ -21,7 +18,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -162,38 +158,36 @@ export function Sidebar({ user }: SidebarProps) {
                   <span className="text-xs font-bold truncate">
                     {user?.user_metadata?.full_name || 'User'}
                   </span>
-                  <span className="text-[10px] text-muted-foreground truncate">
-                    {user?.email}
-                  </span>
                 </div>
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard/profile" className="cursor-pointer">
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard/history" className="cursor-pointer">
-                  <History className="mr-2 h-4 w-4" />
-                  <span>Test History</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings" className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer" onClick={() => signOut()}>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Sign Out</span>
-              </DropdownMenuItem>
+            <DropdownMenuContent align="start" side="top" className="w-64 p-4">
+              <div className="flex flex-col items-center gap-3">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.full_name || 'User'} />
+                  <AvatarFallback className="bg-muted text-muted-foreground font-bold text-lg">
+                    {userInitials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col items-center text-center">
+                  <span className="text-sm font-bold">
+                    {user?.user_metadata?.full_name || 'User'}
+                  </span>
+                  {user?.email && (
+                    <span className="text-xs text-muted-foreground truncate max-w-full">
+                      {user.email}
+                    </span>
+                  )}
+                </div>
+                <DropdownMenuSeparator className="w-full" />
+                <DropdownMenuItem
+                  className="cursor-pointer w-full justify-center group"
+                  onClick={() => signOut()}
+                >
+                  <LogOut className="mr-2 h-4 w-4 text-foreground group-hover:text-white dark:group-hover:text-white" />
+                  <span>Sign Out</span>
+                </DropdownMenuItem>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (

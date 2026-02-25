@@ -10,7 +10,6 @@ interface Answer {
 }
 
 interface TestState {
-  attemptId: string | null
   testId: string | null
   moduleType: 'listening' | 'reading' | 'writing' | null
   currentSection: number
@@ -20,7 +19,7 @@ interface TestState {
   answers: Record<string, Answer>
 
   // Actions
-  initTest: (attemptId: string, testId: string, moduleType: 'listening' | 'reading' | 'writing', totalTime: number, startTimer?: boolean) => void
+  initTest: (testId: string, moduleType: 'listening' | 'reading' | 'writing', totalTime: number, startTimer?: boolean) => void
   setAnswer: (questionId: string, answer: string) => void
   goToQuestion: (section: number, question: number) => void
   tick: () => void
@@ -33,7 +32,6 @@ interface TestState {
 export const useTestStore = create<TestState>()(
   persist(
     (set) => ({
-      attemptId: null,
       testId: null,
       moduleType: null,
       currentSection: 1,
@@ -42,8 +40,7 @@ export const useTestStore = create<TestState>()(
       isTimerRunning: false,
       answers: {},
 
-      initTest: (attemptId, testId, moduleType, totalTime, startTimer = true) => set({
-        attemptId,
+      initTest: (testId, moduleType, totalTime, startTimer = true) => set({
         testId,
         moduleType,
         currentSection: 1,
@@ -79,7 +76,6 @@ export const useTestStore = create<TestState>()(
       setTimeRemaining: (time) => set({ timeRemaining: time }),
 
       resetTest: () => set({
-        attemptId: null,
         testId: null,
         moduleType: null,
         currentSection: 1,
@@ -93,7 +89,6 @@ export const useTestStore = create<TestState>()(
       name: 'ielts-test-storage',
       storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({
-        attemptId: state.attemptId,
         testId: state.testId,
         moduleType: state.moduleType,
         currentSection: state.currentSection,
