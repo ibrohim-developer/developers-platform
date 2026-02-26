@@ -6,8 +6,8 @@ import { createClient } from '@/lib/supabase/server'
 
 async function AuthSidebar() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  return <Sidebar user={user} />
+  const { data: { session } } = await supabase.auth.getSession()
+  return <Sidebar user={session?.user ?? null} />
 }
 
 export default function DashboardLayout({
