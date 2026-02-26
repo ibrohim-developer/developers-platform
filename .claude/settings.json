@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.otaboyev-prep.uz)",
+      "WebFetch(domain:ieltstrainingonline.com)",
+      "WebFetch(domain:practicepteonline.com)"
+    ]
+  }
+}
