@@ -321,6 +321,10 @@ function WritingResultsContent({
     return "text-red-600";
   };
 
+  if (isEvaluating) {
+    return <EvaluatingBanner attemptId={attempt.id} />;
+  }
+
   const scoredSubmissions = submissions.filter(
     (s: any) => s.overall_band_score !== null,
   );
@@ -380,11 +384,8 @@ function WritingResultsContent({
         </div>
       </div>
 
-      {isEvaluating && <EvaluatingBanner />}
-
       {/* Score + Insight */}
-      {!isEvaluating && (
-        <div className="border-1 border-border rounded-xl p-8 md:p-10 mb-10 flex flex-col md:flex-row items-center justify-between gap-8">
+      <div className="border-1 border-border rounded-xl p-8 md:p-10 mb-10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-center md:text-left md:border-r-2 border-border md:pr-16">
             <p className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-2">
               Band Score
@@ -406,31 +407,28 @@ function WritingResultsContent({
             </p>
           </div>
         </div>
-      )}
 
       {/* Action Buttons */}
-      {!isEvaluating && (
-        <div className="flex flex-wrap gap-4 mb-10">
-          <Link href={`/dashboard/results/${attempt.id}#review`}>
-            <Button variant="outline" className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
-              <Eye className="h-4 w-4" />
-              Review Test
-            </Button>
-          </Link>
-          <Link href="/dashboard/tests">
-            <Button variant="outline" className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
-              <List className="h-4 w-4" />
-              View All Tests
-            </Button>
-          </Link>
-          <Link href={`/dashboard/test/${attempt.test_id}`}>
-            <Button className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
-              <RotateCcw className="h-4 w-4" />
-              Try Again
-            </Button>
-          </Link>
-        </div>
-      )}
+      <div className="flex flex-wrap gap-4 mb-10">
+        <Link href={`/dashboard/results/${attempt.id}#review`}>
+          <Button variant="outline" className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
+            <Eye className="h-4 w-4" />
+            Review Test
+          </Button>
+        </Link>
+        <Link href="/dashboard/tests">
+          <Button variant="outline" className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
+            <List className="h-4 w-4" />
+            View All Tests
+          </Button>
+        </Link>
+        <Link href={`/dashboard/test/${attempt.test_id}`}>
+          <Button className="gap-2 px-6 py-5 rounded-xl font-bold text-sm uppercase tracking-widest">
+            <RotateCcw className="h-4 w-4" />
+            Try Again
+          </Button>
+        </Link>
+      </div>
 
       {/* AI Evaluation Summary */}
       <div className="border-1 border-border rounded-xl overflow-hidden mb-10">

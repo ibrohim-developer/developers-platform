@@ -186,13 +186,8 @@ export function useWritingTest(
 
       const result = await res.json();
 
-      // Fire-and-forget: trigger AI evaluation in the background
-      fetch("/api/writing/evaluate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ attemptId: result.attemptId }),
-      });
-
+      // Redirect immediately — EvaluatingBanner will trigger evaluation
+      // and refresh the page once it completes
       router.push(`/dashboard/results/${result.attemptId}`);
     } catch {
       setIsSubmitting(false);
