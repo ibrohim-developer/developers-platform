@@ -182,7 +182,7 @@ export default async function ReadingTestsPage({
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-xl font-bold">
-                    Day {index + 1}: {test.title}
+                     {test.title}
                   </h3>
                 </div>
                 <p className="text-[11px] text-muted-foreground font-bold uppercase mb-4">

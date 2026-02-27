@@ -19,6 +19,7 @@ import { MultipleChoice } from "@/components/test/questions/multiple-choice";
 import { MultipleAnswer } from "@/components/test/questions/multiple-answer";
 import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
+import { ContextFillInBlank } from "@/components/test/questions/context-fill-in-blank";
 import { MatchingSelect } from "@/components/test/questions/matching-select";
 import { useTestStore } from "@/stores/test-store";
 import { getTypeInstruction } from "@/lib/constants/reading-instructions";
@@ -395,38 +396,89 @@ function ReadingTestContent({ testId }: { testId: string }) {
               className="p-6 space-y-6"
               style={{ backgroundColor: theme.bg }}
             >
-              {questionGroups.map((group, groupIndex) => (
-                <div key={groupIndex}>
-                  <div className="mb-4">
-                    <h3 className="font-bold text-base mb-2">
-                      Questions {group.startNum}-{group.endNum}
-                    </h3>
-                    <p
-                      className="text-sm leading-relaxed"
-                      style={{ color: theme.textMuted }}
-                    >
-                      {getTypeInstruction(group.type)}
-                    </p>
+              {questionGroups.map((group, groupIndex) => {
+                const firstMeta = group.questions[0]?.metadata;
+                const contextHtml =
+                  firstMeta?.context as string | undefined;
+                const instructionHtml =
+                  firstMeta?.instruction as string | undefined;
+
+                return (
+                  <div key={groupIndex}>
+                    <div className="mb-4">
+                      <h3 className="font-bold text-base mb-2">
+                        Questions {group.startNum}-{group.endNum}
+                      </h3>
+                      {instructionHtml ? (
+                        <div
+                          className="text-sm leading-relaxed [&_strong]:font-bold"
+                          style={{ color: theme.textMuted }}
+                          dangerouslySetInnerHTML={{
+                            __html: instructionHtml,
+                          }}
+                        />
+                      ) : (
+                        <p
+                          className="text-sm leading-relaxed"
+                          style={{ color: theme.textMuted }}
+                        >
+                          {getTypeInstruction(group.type)}
+                        </p>
+                      )}
+                    </div>
+
+                    {contextHtml ? (
+                      <div className="text-sm leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ml-5 [&_ol]:list-decimal [&_ol]:ml-5 [&_li]:mb-1 [&_p]:mb-1">
+                        <ContextFillInBlank
+                          contextHtml={contextHtml}
+                          questions={group.questions.map((question) => {
+                            const globalIdx =
+                              currentPassage.questions.indexOf(question);
+                            const review = reviewData[question.id];
+                            const value = isReviewMode
+                              ? review?.userAnswer || ""
+                              : answers[question.id]?.answer || "";
+
+                            return {
+                              questionId: question.id,
+                              questionNumber: questionOffset + globalIdx + 1,
+                              value,
+                              onChange: (val: string) =>
+                                handleAnswer(question.id, val),
+                              disabled: isReviewMode,
+                              reviewMode: isReviewMode,
+                              correctAnswer: review?.correctAnswer,
+                              isCorrect: review?.isCorrect,
+                              isUnanswered: unansweredQuestions.has(
+                                question.id,
+                              ),
+                            };
+                          })}
+                        />
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {group.questions.map((question) => {
+                          const globalIdx =
+                            currentPassage.questions.indexOf(question);
+                          return (
+                            <div key={question.id}>
+                              {renderQuestion(question, globalIdx)}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {groupIndex < questionGroups.length - 1 && (
+                      <hr
+                        className="my-6"
+                        style={{ borderColor: theme.border }}
+                      />
+                    )}
                   </div>
-                  <div className="space-y-6">
-                    {group.questions.map((question) => {
-                      const globalIdx =
-                        currentPassage.questions.indexOf(question);
-                      return (
-                        <div key={question.id}>
-                          {renderQuestion(question, globalIdx)}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {groupIndex < questionGroups.length - 1 && (
-                    <hr
-                      className="my-6"
-                      style={{ borderColor: theme.border }}
-                    />
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           }
         />
