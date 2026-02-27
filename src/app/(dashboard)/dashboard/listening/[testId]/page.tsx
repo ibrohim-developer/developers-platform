@@ -14,7 +14,10 @@ import { SubmitDialog } from "@/components/test/common/submit-dialog";
 import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { AudioPlayer } from "@/components/test/listening/audio-player";
 import { MultipleChoice } from "@/components/test/questions/multiple-choice";
+import { MultipleAnswer } from "@/components/test/questions/multiple-answer";
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
+import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
+import { MatchingSelect } from "@/components/test/questions/matching-select";
 import { useListeningTest } from "@/hooks/use-listening-test";
 import { useFullscreen } from "@/hooks/use-fullscreen";
 import { useNavigationProtection } from "@/hooks/use-navigation-protection";
@@ -177,10 +180,39 @@ function ListeningTestContent({ testId }: { testId: string }) {
             options={question.options ?? []}
           />
         );
+      case "mcq_multiple":
+        return (
+          <MultipleAnswer
+            key={question.id}
+            {...commonProps}
+            options={question.options ?? []}
+          />
+        );
+      case "tfng":
+        return <TrueFalseNotGiven key={question.id} {...commonProps} />;
       case "gap_fill":
       case "short_answer":
       case "sentence_completion":
+      case "summary_completion":
         return <FillInBlank key={question.id} {...commonProps} />;
+      case "matching_headings":
+        return (
+          <MatchingSelect
+            key={question.id}
+            {...commonProps}
+            options={question.options ?? []}
+            placeholder="Select a heading"
+          />
+        );
+      case "matching_info":
+        return (
+          <MatchingSelect
+            key={question.id}
+            {...commonProps}
+            options={question.options ?? []}
+            placeholder="Select a paragraph"
+          />
+        );
       default:
         return null;
     }

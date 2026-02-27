@@ -51,6 +51,10 @@ const QUESTION_TYPE_MAP: Record<string, string> = {
   TABLE_COMPLETION: "gap_fill",
   FLOW_CHART_COMPLETION: "gap_fill",
   DIAGRAM_LABEL_COMPLETION: "gap_fill",
+  MULTIPLE_ANSWER: "mcq_multiple",
+  MAP_LABELLING: "gap_fill",
+  PLAN_MAP_DIAGRAM_LABELLING: "gap_fill",
+  FORM_COMPLETION: "gap_fill",
 };
 
 interface ApiQuestion {

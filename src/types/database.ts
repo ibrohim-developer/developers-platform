@@ -255,7 +255,7 @@ export type Database = {
           module_type: 'listening' | 'reading'
           section_id: string
           question_number: number
-          question_type: 'tfng' | 'mcq_single' | 'gap_fill' | 'matching_headings' | 'matching_info' | 'summary_completion' | 'short_answer'
+          question_type: 'tfng' | 'mcq_single' | 'mcq_multiple' | 'gap_fill' | 'matching_headings' | 'matching_info' | 'summary_completion' | 'short_answer'
           question_text: string
           options: Json | null
           correct_answer: string
@@ -269,7 +269,7 @@ export type Database = {
           module_type: 'listening' | 'reading'
           section_id: string
           question_number: number
-          question_type: 'tfng' | 'mcq_single' | 'gap_fill' | 'matching_headings' | 'matching_info' | 'summary_completion' | 'short_answer'
+          question_type: 'tfng' | 'mcq_single' | 'mcq_multiple' | 'gap_fill' | 'matching_headings' | 'matching_info' | 'summary_completion' | 'short_answer'
           question_text: string
           options?: Json | null
           correct_answer: string

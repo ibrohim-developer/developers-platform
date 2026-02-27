@@ -1,6 +1,7 @@
 export const QUESTION_TYPE_INSTRUCTIONS: Record<string, string> = {
   tfng: "Do the following statements agree with the information given in the reading passage? Write TRUE if the statement agrees with the information, FALSE if the statement contradicts the information, or NOT GIVEN if there is no information on this.",
   mcq_single: "Choose the correct letter, A, B, C or D.",
+  mcq_multiple: "Choose TWO correct letters.",
   gap_fill:
     "Complete the sentences below. Choose NO MORE THAN TWO WORDS from the passage for each answer.",
   matching_headings:

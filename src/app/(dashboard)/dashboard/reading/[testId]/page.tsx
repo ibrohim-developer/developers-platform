@@ -16,6 +16,7 @@ import { TestOptionsMenu } from "@/components/test/common/test-options-menu";
 import { SplitView } from "@/components/test/common/split-view";
 import { PassageDisplay } from "@/components/test/reading/passage-display";
 import { MultipleChoice } from "@/components/test/questions/multiple-choice";
+import { MultipleAnswer } from "@/components/test/questions/multiple-answer";
 import { TrueFalseNotGiven } from "@/components/test/questions/true-false-not-given";
 import { FillInBlank } from "@/components/test/questions/fill-in-blank";
 import { MatchingSelect } from "@/components/test/questions/matching-select";
@@ -141,6 +142,14 @@ function ReadingTestContent({ testId }: { testId: string }) {
       case "mcq_single":
         return (
           <MultipleChoice
+            key={question.id}
+            {...commonProps}
+            options={question.options ?? []}
+          />
+        );
+      case "mcq_multiple":
+        return (
+          <MultipleAnswer
             key={question.id}
             {...commonProps}
             options={question.options ?? []}

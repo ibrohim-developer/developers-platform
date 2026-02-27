@@ -46,6 +46,10 @@ export async function POST(request: NextRequest) {
     questions.map((q: any) => [q.id, q.correct_answer])
   );
 
+  // Normalize answer for comparison (handles comma-separated multi-answers)
+  const normalizeAnswer = (answer: string) =>
+    answer.split(',').map((s) => s.trim().toLowerCase()).sort().join(',');
+
   // Score each answer
   let rawScore = 0;
   const scoredAnswers = questionIds.map((questionId) => {
@@ -53,7 +57,7 @@ export async function POST(request: NextRequest) {
     const correctAnswer = correctAnswerMap.get(questionId);
     const isCorrect =
       correctAnswer !== undefined &&
-      userAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+      normalizeAnswer(userAnswer) === normalizeAnswer(correctAnswer);
 
     if (isCorrect) rawScore++;
 
