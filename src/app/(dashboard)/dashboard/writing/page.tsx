@@ -79,6 +79,15 @@ const writingFilters = [
     ],
   },
   {
+    key: "type",
+    placeholder: "All Types",
+    options: [
+      { value: "all", label: "All Types" },
+      { value: "academic", label: "Academic" },
+      { value: "general", label: "General" },
+    ],
+  },
+  {
     key: "task",
     placeholder: "All Tasks",
     options: [
@@ -121,42 +130,43 @@ export default async function WritingTestsPage({
   });
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-6 md:space-y-8 pb-12">
       <TestFilters filters={writingFilters} />
 
-      <div className="flex items-end justify-between">
+      <div className="flex items-start md:items-end justify-between gap-3">
         <div>
-          <h2 className="text-3xl font-black mb-1">Writing Challenge</h2>
+          <h2 className="text-2xl md:text-3xl font-black mb-1">Writing Challenge</h2>
           <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
             {writingTests.length} Available Tests
           </p>
         </div>
         <Link
           href="/dashboard/history"
-          className="flex items-center gap-2 text-xs font-bold px-4 py-2 border border-border rounded-lg hover:bg-card transition-colors"
+          className="flex items-center gap-2 text-xs font-bold px-3 py-2 md:px-4 border border-border rounded-lg hover:bg-card transition-colors shrink-0"
         >
           <Clock className="h-3.5 w-3.5" />
-          Completed Tests
+          <span className="hidden sm:inline">Completed Tests</span>
+          <span className="sm:hidden">History</span>
         </Link>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 md:space-y-4">
         {writingTests.length > 0 ? (
           writingTests.map((test, index) => (
             <div
               key={test.id}
-              className="bg-card border border-border p-6 rounded-xl flex items-center justify-between"
+              className="bg-card border border-border p-4 md:p-6 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4"
             >
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-xl font-bold">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-1 md:mb-2">
+                  <h3 className="text-lg md:text-xl font-bold truncate">
                      {test.title}
                   </h3>
                 </div>
-                <p className="text-[11px] text-muted-foreground font-bold uppercase mb-4">
+                <p className="text-[11px] text-muted-foreground font-bold uppercase mb-3 md:mb-4">
                   {test.tasks} {test.tasks === 1 ? "Task" : "Tasks"}
                 </p>
-                <div className="flex items-center gap-6 text-xs font-bold text-muted-foreground">
+                <div className="flex items-center gap-4 md:gap-6 text-xs font-bold text-muted-foreground">
                   <DifficultyDots difficulty={test.difficulty} />
                   <span className="flex items-center gap-1.5">
                     <Clock className="h-4 w-4" />
@@ -170,14 +180,14 @@ export default async function WritingTestsPage({
               </div>
               <LoginRequiredLink
                 href={`/dashboard/writing/${test.id}`}
-                className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-black text-xs tracking-widest hover:opacity-90 transition-all uppercase"
+                className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-black text-xs tracking-widest hover:opacity-90 transition-all uppercase text-center w-full md:w-auto"
               >
                 Start Test
               </LoginRequiredLink>
             </div>
           ))
         ) : (
-          <div className="bg-card border border-border rounded-xl p-12 text-center">
+          <div className="bg-card border border-border rounded-xl p-8 md:p-12 text-center">
             <p className="text-muted-foreground">
               No writing tests available yet.
             </p>

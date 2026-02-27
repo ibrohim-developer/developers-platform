@@ -12,9 +12,9 @@ export function DashboardMain({ children }: { children: React.ReactNode }) {
   return (
     <main className={cn(
       'flex-1 flex flex-col min-w-0 overflow-y-auto bg-background',
-      !isTestPage && 'pl-64'
+      !isTestPage && 'md:pl-64'
     )}>
-      <div className={cn(!isTestPage && 'p-8')}>
+      <div className={cn(!isTestPage && 'p-4 pb-24 md:p-8 md:pb-8')}>
         {children}
       </div>
     </main>

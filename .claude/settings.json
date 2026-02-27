@@ -3,7 +3,8 @@
     "allow": [
       "WebFetch(domain:api.otaboyev-prep.uz)",
       "WebFetch(domain:ieltstrainingonline.com)",
-      "WebFetch(domain:practicepteonline.com)"
+      "WebFetch(domain:practicepteonline.com)",
+      "Bash(grep -n \"testRoutePattern\" /c/Users/User/web/developers-platform/src/components/layout/*.tsx)"
     ]
   }
 }

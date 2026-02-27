@@ -68,7 +68,7 @@ export function TestFilters({
           }}
         />
       </div>
-      <div className="flex gap-3 w-full md:w-auto">
+      <div className="grid grid-cols-2 md:flex gap-3 w-full md:w-auto">
         {filters.map((filter) => (
           <Select
             key={filter.key}

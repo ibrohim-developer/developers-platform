@@ -43,15 +43,15 @@ export function TestOptionsMenu({
       <button
         ref={menuButtonRef}
         onClick={toggleOptions}
-        className="p-2 transition-opacity opacity-70 hover:opacity-100"
+        className="p-1.5 md:p-2 transition-opacity opacity-70 hover:opacity-100"
       >
-        <Menu className="h-6 w-6" />
+        <Menu className="h-5 w-5 md:h-6 md:w-6" />
       </button>
 
       {optionsOpen && (
         <div
           ref={optionsRef}
-          className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
+          className="absolute right-0 top-full mt-2 w-56 md:w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
         >
           {optionsView === "main" && (
             <>
@@ -67,7 +67,7 @@ export function TestOptionsMenu({
               <div>
                 <button
                   onClick={() => setOptionsView("contrast")}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 md:px-4 py-3 hover:bg-gray-50 transition-colors"
                 >
                   <Contrast className="h-5 w-5 text-gray-700" />
                   <span className="text-gray-900 flex-1 text-left">
@@ -77,7 +77,7 @@ export function TestOptionsMenu({
                 </button>
                 <button
                   onClick={() => setOptionsView("textSize")}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 md:px-4 py-3 hover:bg-gray-50 transition-colors"
                 >
                   <Type className="h-5 w-5 text-gray-700" />
                   <span className="text-gray-900 flex-1 text-left">
@@ -118,7 +118,7 @@ export function TestOptionsMenu({
                   <button
                     key={option.value}
                     onClick={() => setContrast(option.value)}
-                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center justify-between px-3 md:px-4 py-3 hover:bg-gray-50 transition-colors"
                   >
                     <span className="text-gray-900">{option.label}</span>
                     {contrast === option.value && (
@@ -159,7 +159,7 @@ export function TestOptionsMenu({
                   <button
                     key={option.value}
                     onClick={() => setTextSize(option.value)}
-                    className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center justify-between px-3 md:px-4 py-3 hover:bg-gray-50 transition-colors"
                   >
                     <span className="text-gray-900">{option.label}</span>
                     {textSize === option.value && (
