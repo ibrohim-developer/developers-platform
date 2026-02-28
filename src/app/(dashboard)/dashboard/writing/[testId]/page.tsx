@@ -130,35 +130,35 @@ function WritingTestContent({ testId }: { testId: string }) {
 
   if (!hasStarted) {
     return (
-      <div className="min-h-screen bg-muted/30 flex items-center justify-center">
-        <Card className="max-w-3xl w-full mx-4">
-          <CardHeader className="px-8 pt-5 pb-4">
-            <CardTitle className="text-3xl">IELTS Writing Test</CardTitle>
-            <CardDescription className="text-base mt-1">
+      <div className="min-h-screen bg-muted/30 flex items-center justify-center px-4">
+        <Card className="max-w-3xl w-full">
+          <CardHeader className="px-4 md:px-8 pt-5 pb-4">
+            <CardTitle className="text-2xl md:text-3xl">IELTS Writing Test</CardTitle>
+            <CardDescription className="text-sm md:text-base mt-1">
               Please read the instructions carefully before starting
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-8">
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Clock className="h-5 w-5 text-primary" />
+          <CardContent className="space-y-6 md:space-y-8 px-4 md:px-6">
+            <div className="space-y-5 md:space-y-6">
+              <div className="flex items-start gap-3 md:gap-4">
+                <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Clock className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-lg">Time Limit</p>
-                  <p className="text-base text-muted-foreground">
+                  <p className="font-medium text-base md:text-lg">Time Limit</p>
+                  <p className="text-sm md:text-base text-muted-foreground">
                     You have {totalTime / 60} minutes to complete this test
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <PenTool className="h-5 w-5 text-primary" />
+              <div className="flex items-start gap-3 md:gap-4">
+                <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <PenTool className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-lg">Writing Task</p>
-                  <p className="text-base text-muted-foreground">
+                  <p className="font-medium text-base md:text-lg">Writing Task</p>
+                  <p className="text-sm md:text-base text-muted-foreground">
                     {tasks[0]?.taskType === "report"
                       ? "Report Writing - describe charts, graphs, or diagrams"
                       : "Essay Writing - present and support your argument"}
@@ -166,13 +166,13 @@ function WritingTestContent({ testId }: { testId: string }) {
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Send className="h-5 w-5 text-primary" />
+              <div className="flex items-start gap-3 md:gap-4">
+                <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Send className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-lg">Instructions</p>
-                  <ul className="text-base text-muted-foreground space-y-1.5 mt-1 list-disc list-inside">
+                  <p className="font-medium text-base md:text-lg">Instructions</p>
+                  <ul className="text-sm md:text-base text-muted-foreground space-y-1.5 mt-1 list-disc list-inside">
                     <li>Write at least {tasks[0]?.minWords ?? 150} words.</li>
                     <li>Your essay will be evaluated by AI after submission.</li>
                     <li>The timer starts when you click &quot;Begin Test&quot;.</li>
@@ -181,17 +181,17 @@ function WritingTestContent({ testId }: { testId: string }) {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-3 pt-2 md:pt-4">
               <Button
                 variant="outline"
                 size="lg"
-                className="flex-1 text-base"
+                className="flex-1 text-sm md:text-base"
                 onClick={() => router.push("/dashboard/writing")}
               >
                 Cancel
               </Button>
               <Button
-                className="flex-1 text-base"
+                className="flex-1 text-sm md:text-base"
                 size="lg"
                 onClick={() => {
                   setHasStarted(true);
@@ -213,10 +213,10 @@ function WritingTestContent({ testId }: { testId: string }) {
     <div className="h-screen flex flex-col overflow-hidden" style={rootStyle}>
       {/* Top Header Bar */}
       <header
-        className="shrink-0 h-16 flex items-center px-6 justify-between"
+        className="shrink-0 h-12 md:h-16 flex items-center px-2 md:px-6 justify-between"
         style={{ backgroundColor: theme.bg, borderBottom: `1px solid ${theme.border}` }}
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <Button
             variant="outline"
             size="default"
@@ -227,16 +227,16 @@ function WritingTestContent({ testId }: { testId: string }) {
                 router.push("/dashboard/writing");
               }
             }}
-            className="flex items-center gap-2 text-base px-3"
+            className="flex items-center gap-2 text-sm md:text-base px-2 md:px-3"
           >
-            <ArrowLeft className="h-5 w-5" />
-            <span>Back</span>
+            <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
+            <span className="hidden md:inline">Back</span>
           </Button>
-          <div className="bg-red-600 text-white px-4 py-[3.5px] text-lg font-bold rounded">
+          <div className="bg-red-600 text-white px-2 py-0.5 md:px-4 md:py-[3.5px] text-sm md:text-lg font-bold rounded">
             IELTS
           </div>
           {!isReviewMode && (
-            <span className="text-base font-medium" style={{ color: theme.textMuted }}>
+            <span className="hidden md:inline text-base font-medium" style={{ color: theme.textMuted }}>
               Writing Test
             </span>
           )}
@@ -245,14 +245,14 @@ function WritingTestContent({ testId }: { testId: string }) {
         {!isReviewMode && (
           <TestTimer
             onTimeUp={handleTimeUp}
-            className="bg-transparent px-3 py-1.5 text-lg font-semibold"
+            className="bg-transparent px-2 md:px-3 py-1 md:py-1.5 text-sm md:text-lg font-semibold"
           />
         )}
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 md:gap-3">
           <button
             onClick={toggleFullscreen}
-            className="p-2 transition-opacity opacity-70 hover:opacity-100"
+            className="hidden md:block p-2 transition-opacity opacity-70 hover:opacity-100"
           >
             {isFullscreen ? (
               <Minimize2 className="h-6 w-6" />
@@ -281,28 +281,28 @@ function WritingTestContent({ testId }: { testId: string }) {
         <div className="flex-1 min-h-0">
           <SplitView
             leftPanel={
-              <div className="p-6" style={{ backgroundColor: theme.bg }}>
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-lg font-bold">
+              <div className="p-3 md:p-6" style={{ backgroundColor: theme.bg }}>
+                <div className="flex items-center justify-between mb-1 md:mb-2">
+                  <h2 className="text-base md:text-lg font-bold">
                     Task {activeTask.taskNumber} -{" "}
                     {activeTask.taskType === "report"
                       ? "Report Writing"
                       : "Essay Writing"}
                   </h2>
-                  <div className="flex items-center gap-1 text-sm" style={{ color: theme.textMuted }}>
-                    <Clock className="h-4 w-4" />~{recommendedTime} min
+                  <div className="flex items-center gap-1 text-xs md:text-sm" style={{ color: theme.textMuted }}>
+                    <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />~{recommendedTime} min
                   </div>
                 </div>
-                <p className="text-sm mb-4" style={{ color: theme.textMuted }}>
+                <p className="text-xs md:text-sm mb-3 md:mb-4" style={{ color: theme.textMuted }}>
                   You should spend about {recommendedTime} minutes on this task.
                 </p>
-                <div className="prose dark:prose-invert max-w-none mb-20">
+                <div className="prose dark:prose-invert max-w-none mb-6 md:mb-20 text-sm md:text-base">
                   <p className="whitespace-pre-line">{activeTask.prompt}</p>
                 </div>
 
                 {activeTask.imageUrl && (
                   <div className="flex justify-center">
-                    <div className="relative aspect-video rounded-lg overflow-hidden mb-4 border w-250">
+                    <div className="relative aspect-video rounded-lg overflow-hidden mb-4 border w-full md:w-250">
                       <Image
                         src={activeTask.imageUrl}
                         alt={`Task ${activeTask.taskNumber} image`}
@@ -315,11 +315,11 @@ function WritingTestContent({ testId }: { testId: string }) {
               </div>
             }
             rightPanel={
-              <div className="p-6 h-full flex flex-col" style={{ backgroundColor: theme.bg }}>
+              <div className="p-3 md:p-6 h-full flex flex-col" style={{ backgroundColor: theme.bg }}>
                 <div className="flex items-center justify-between mb-1">
-                  <h2 className="text-lg font-bold">Your Response</h2>
+                  <h2 className="text-base md:text-lg font-bold">Your Response</h2>
                 </div>
-                <p className="text-sm mb-4" style={{ color: theme.textMuted }}>
+                <p className="text-xs md:text-sm mb-2 md:mb-4" style={{ color: theme.textMuted }}>
                   Write at least {activeTask.minWords} words
                 </p>
                 <div className="flex-1 min-h-0">
@@ -340,7 +340,7 @@ function WritingTestContent({ testId }: { testId: string }) {
           submission &&
           submission.overallBandScore !== null && (
             <div className="shrink-0 overflow-y-auto max-h-[40%] border-t" style={{ borderColor: theme.border }}>
-              <div className="p-6" style={{ backgroundColor: theme.bg }}>
+              <div className="p-3 md:p-6" style={{ backgroundColor: theme.bg }}>
                 <div className="flex items-center gap-2 mb-1">
                   <Sparkles className="h-5 w-5 text-purple-500" />
                   <h3 className="text-lg font-bold">
@@ -383,7 +383,7 @@ function WritingTestContent({ testId }: { testId: string }) {
 
       {/* Bottom Navigation Bar */}
       <div
-        className="shrink-0 h-14 flex items-center px-4 gap-0"
+        className="shrink-0 h-12 md:h-14 flex items-center px-2 md:px-4 gap-0"
         style={{
           backgroundColor: theme.bg,
           borderTop: `1px solid ${theme.border}`,
@@ -400,27 +400,27 @@ function WritingTestContent({ testId }: { testId: string }) {
               <div key={task.id} className="flex items-center">
                 {taskIdx > 0 && (
                   <div
-                    className="w-px h-6 mx-3"
+                    className="w-px h-5 md:h-6 mx-1.5 md:mx-3"
                     style={{ backgroundColor: theme.border }}
                   />
                 )}
 
                 <button
                   onClick={() => setActiveTaskId(task.id)}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded transition-opacity hover:opacity-80 whitespace-nowrap"
+                  className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded transition-opacity hover:opacity-80 whitespace-nowrap"
                   style={{
                     backgroundColor: isActiveTask ? theme.bgAlt : "transparent",
                     border: isActiveTask ? `1px solid ${theme.border}` : "1px solid transparent",
                   }}
                 >
                   <span
-                    className="text-sm font-bold"
+                    className="text-xs md:text-sm font-bold"
                     style={{ color: theme.text }}
                   >
                     Task {task.taskNumber}
                   </span>
                   {isComplete && (
-                    <Check className="h-4 w-4 text-green-500" />
+                    <Check className="h-3.5 w-3.5 md:h-4 md:w-4 text-green-500" />
                   )}
                 </button>
               </div>
@@ -432,12 +432,12 @@ function WritingTestContent({ testId }: { testId: string }) {
           <button
             onClick={() => setShowSubmitDialog(true)}
             disabled={isSubmitting}
-            className="cursor-pointer shrink-0 ml-3 w-10 h-10 bg-gray-800 hover:bg-gray-900 text-white rounded flex items-center justify-center transition-colors disabled:opacity-50"
+            className="cursor-pointer shrink-0 ml-2 md:ml-3 w-8 h-8 md:w-10 md:h-10 bg-gray-800 hover:bg-gray-900 text-white rounded flex items-center justify-center transition-colors disabled:opacity-50"
           >
             {isSubmitting ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" />
             ) : (
-              <Check className="h-5 w-5" />
+              <Check className="h-4 w-4 md:h-5 md:w-5" />
             )}
           </button>
         )}

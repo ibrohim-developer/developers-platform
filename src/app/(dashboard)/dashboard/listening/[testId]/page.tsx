@@ -251,21 +251,21 @@ function ListeningTestContent({ testId }: { testId: string }) {
     return (
       <div className="min-h-screen bg-muted/30 flex items-center justify-center">
         <Card className="max-w-3xl w-full mx-4">
-          <CardHeader className="px-8 pt-5 pb-4">
-            <CardTitle className="text-3xl">IELTS Listening Test</CardTitle>
-            <CardDescription className="text-base mt-1">
+          <CardHeader className="px-4 md:px-8 pt-5 pb-4">
+            <CardTitle className="text-2xl md:text-3xl">IELTS Listening Test</CardTitle>
+            <CardDescription className="text-sm md:text-base mt-1">
               Please read the instructions carefully before starting
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-8">
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Headphones className="h-5 w-5 text-primary" />
+          <CardContent className="space-y-6 md:space-y-8">
+            <div className="space-y-4 md:space-y-6">
+              <div className="flex items-start gap-3 md:gap-4">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Headphones className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-lg">Listening Sections</p>
-                  <p className="text-base text-muted-foreground">
+                  <p className="font-medium text-base md:text-lg">Listening Sections</p>
+                  <p className="text-sm md:text-base text-muted-foreground">
                     This test contains {sections.length} section
                     {sections.length > 1 ? "s" : ""} with {totalQuestions}{" "}
                     questions total
@@ -273,13 +273,13 @@ function ListeningTestContent({ testId }: { testId: string }) {
                 </div>
               </div>
 
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <Send className="h-5 w-5 text-primary" />
+              <div className="flex items-start gap-3 md:gap-4">
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <Send className="h-4 w-4 md:h-5 md:w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-medium text-lg">Instructions</p>
-                  <ul className="text-base text-muted-foreground space-y-1.5 mt-1 list-disc list-inside">
+                  <p className="font-medium text-base md:text-lg">Instructions</p>
+                  <ul className="text-sm md:text-base text-muted-foreground space-y-1.5 mt-1 list-disc list-inside">
                     <li>Audio will start automatically when you begin.</li>
                     <li>
                       Listen carefully: audio plays once and cannot be paused.
@@ -290,17 +290,17 @@ function ListeningTestContent({ testId }: { testId: string }) {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4">
+            <div className="flex gap-3 pt-2 md:pt-4">
               <Button
                 variant="outline"
                 size="lg"
-                className="flex-1 text-base"
+                className="flex-1 text-sm md:text-base"
                 onClick={() => router.push("/dashboard/listening")}
               >
                 Cancel
               </Button>
               <Button
-                className="flex-1 text-base"
+                className="flex-1 text-sm md:text-base"
                 size="lg"
                 onClick={() => {
                   setHasStarted(true);
@@ -321,13 +321,13 @@ function ListeningTestContent({ testId }: { testId: string }) {
     <div className="h-screen flex flex-col overflow-hidden" style={rootStyle}>
       {/* Top Header Bar */}
       <header
-        className="shrink-0 h-16 flex items-center px-6 justify-between"
+        className="shrink-0 h-12 md:h-16 flex items-center px-3 md:px-6 justify-between"
         style={{
           backgroundColor: theme.bg,
           borderBottom: `1px solid ${theme.border}`,
         }}
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <Button
             variant="outline"
             size="default"
@@ -338,23 +338,23 @@ function ListeningTestContent({ testId }: { testId: string }) {
                 router.push("/dashboard/listening");
               }
             }}
-            className="flex items-center gap-2 text-base px-3"
+            className="flex items-center gap-2 text-sm md:text-base px-2 md:px-3"
           >
-            <ArrowLeft className="h-5 w-5" />
-            <span>Back</span>
+            <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
+            <span className="hidden md:inline">Back</span>
           </Button>
-          <div className="bg-red-600 text-white px-4 py-[3.5px] text-lg font-bold rounded">
+          <div className="bg-red-600 text-white px-2 md:px-4 py-[3.5px] text-sm md:text-lg font-bold rounded">
             IELTS
           </div>
-          <span className="text-lg" style={{ color: theme.textMuted }}>
+          <span className="hidden md:inline text-lg" style={{ color: theme.textMuted }}>
             ID: {testId?.slice(0, 5) || "-----"}
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           <button
             onClick={toggleFullscreen}
-            className="p-2 transition-opacity opacity-70 hover:opacity-100"
+            className="hidden md:block p-2 transition-opacity opacity-70 hover:opacity-100"
           >
             {isFullscreen ? (
               <Minimize2 className="h-6 w-6" />
@@ -368,20 +368,20 @@ function ListeningTestContent({ testId }: { testId: string }) {
 
       {/* Part instruction sub-header */}
       <div
-        className="shrink-0 px-6 py-2.5"
+        className="shrink-0 px-3 md:px-6 py-2 md:py-2.5"
         style={{
           backgroundColor: theme.bgAlt,
           borderBottom: `1px solid ${theme.border}`,
         }}
       >
-        <p className="font-bold text-lg">Part {activePassageIndex + 1}</p>
-        <p style={{ color: theme.textMuted }}>
+        <p className="font-bold text-base md:text-lg">Part {activePassageIndex + 1}</p>
+        <p className="text-sm md:text-base" style={{ color: theme.textMuted }}>
           Listen and answer questions {firstQuestionNum}-{lastQuestionNum}.
         </p>
       </div>
 
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="max-w-4xl mx-auto p-6 space-y-6">
+        <div className="max-w-4xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
           {!isReviewMode && (
             <AudioPlayer audioUrl={currentSection.audioUrl} examMode />
           )}
@@ -419,7 +419,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
       </div>
 
       <div
-        className="shrink-0 h-14 flex items-center px-4 gap-0"
+        className="shrink-0 h-12 md:h-14 flex items-center px-2 md:px-4 gap-0"
         style={{
           backgroundColor: theme.bg,
           borderTop: `1px solid ${theme.border}`,
@@ -439,18 +439,19 @@ function ListeningTestContent({ testId }: { testId: string }) {
               <div key={passage.id} className="flex items-center">
                 {passageIdx > 0 && (
                   <div
-                    className="w-px h-6 mx-3"
+                    className="w-px h-6 mx-1.5 md:mx-3"
                     style={{ backgroundColor: theme.border }}
                   />
                 )}
 
                 {isActivePart ? (
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1 md:gap-1.5">
                     <span
-                      className="text-sm font-bold mr-1 whitespace-nowrap"
+                      className="text-xs md:text-sm font-bold mr-0.5 md:mr-1 whitespace-nowrap"
                       style={{ color: theme.text }}
                     >
-                      Part {passageIdx + 1}
+                      <span className="hidden md:inline">Part {passageIdx + 1}</span>
+                      <span className="md:hidden">P{passageIdx + 1}</span>
                     </span>
                     {passage.questions.map((q, idx) => {
                       const qNum = passageOffset + idx + 1;
@@ -460,7 +461,7 @@ function ListeningTestContent({ testId }: { testId: string }) {
                         <button
                           key={q.id}
                           onClick={() => goToQuestion(qNum)}
-                          className="cursor-pointer w-8 h-8 text-xs font-medium rounded-sm transition-colors"
+                          className="cursor-pointer w-6 h-6 md:w-8 md:h-8 text-[10px] md:text-xs font-medium rounded-sm transition-colors"
                           style={{
                             border: `1px solid ${isActiveQ ? theme.text : theme.border}`,
                             backgroundColor: isAnswered
@@ -478,19 +479,20 @@ function ListeningTestContent({ testId }: { testId: string }) {
                 ) : (
                   <button
                     onClick={() => setActiveSectionId(passage.id)}
-                    className="flex items-center gap-2 px-2 py-1 rounded transition-opacity hover:opacity-80 whitespace-nowrap"
+                    className="flex items-center gap-1 md:gap-2 px-1 md:px-2 py-1 rounded transition-opacity hover:opacity-80 whitespace-nowrap"
                   >
                     <span
-                      className="text-sm font-bold"
+                      className="text-xs md:text-sm font-bold"
                       style={{ color: theme.text }}
                     >
-                      Part {passageIdx + 1}
+                      <span className="hidden md:inline">Part {passageIdx + 1}</span>
+                      <span className="md:hidden">P{passageIdx + 1}</span>
                     </span>
                     <span
-                      className="text-sm"
+                      className="text-xs md:text-sm"
                       style={{ color: theme.textMuted }}
                     >
-                      {passageAnswered} of {passage.questions.length}
+                      {passageAnswered}/{passage.questions.length}
                     </span>
                   </button>
                 )}
@@ -502,9 +504,9 @@ function ListeningTestContent({ testId }: { testId: string }) {
         {!isReviewMode && (
           <button
             onClick={() => setShowSubmitDialog(true)}
-            className="cursor-pointer shrink-0 ml-3 w-10 h-10 bg-gray-800 hover:bg-gray-900 text-white rounded flex items-center justify-center transition-colors"
+            className="cursor-pointer shrink-0 ml-2 md:ml-3 w-8 h-8 md:w-10 md:h-10 bg-gray-800 hover:bg-gray-900 text-white rounded flex items-center justify-center transition-colors"
           >
-            <Check className="h-5 w-5" />
+            <Check className="h-4 w-4 md:h-5 md:w-5" />
           </button>
         )}
       </div>
