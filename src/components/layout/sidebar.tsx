@@ -88,12 +88,10 @@ export function Sidebar({ user }: SidebarProps) {
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex fixed left-0 top-0 z-40 h-screen w-64 bg-card border-r border-border flex-col shrink-0">
         {/* Logo */}
-        <div className="p-8">
-          <Link href="/dashboard" className="inline-block">
+        <div className="p-8 pointer-events-none">
             <span className="text-2xl font-black tracking-tighter text-foreground">
               band<span className="text-primary">.</span>up
             </span>
-          </Link>
         </div>
 
         {/* Navigation */}

@@ -34,7 +34,7 @@ export default function SignUpPage() {
 
   if (success) {
     return (
-      <div className="bg-card shadow-2xl rounded-[24px] p-8 md:p-10 border border-border">
+      <div className="bg-card shadow-2xl rounded-[24px] p-6 sm:p-8 md:p-10 border border-border">
         <div className="pt-4 pb-4 text-center space-y-4">
           <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
             <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
@@ -54,7 +54,7 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="bg-card shadow-2xl rounded-[24px] p-8 md:p-10 border border-border w-120">
+    <div className="bg-card shadow-2xl rounded-[24px] p-6 sm:p-8 md:p-10 border border-border w-full max-w-[480px]">
 
       {/* Header */}
       <div className="flex flex-col items-center mb-8 text-center">

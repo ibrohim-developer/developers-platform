@@ -36,7 +36,7 @@ function SignInForm() {
   }
 
   return (
-    <div className="bg-card shadow-2xl rounded-[24px] p-8 md:p-10 border border-border w-120">
+    <div className="bg-card shadow-2xl rounded-[24px] p-6 sm:p-8 md:p-10 border border-border w-full max-w-[480px]">
       {/* Header */}
       <div className="flex flex-col items-center mb-8 text-center">
         <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-primary/20 dark:shadow-none">
@@ -185,7 +185,7 @@ function SignInForm() {
 export default function SignInPage() {
   return (
     <Suspense fallback={
-      <div className="bg-card shadow-2xl rounded-[24px] p-8 md:p-10 border border-border">
+      <div className="bg-card shadow-2xl rounded-[24px] p-6 sm:p-8 md:p-10 border border-border">
         <div className="py-8 text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-gray-400" />
         </div>

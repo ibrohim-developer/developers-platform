@@ -36,7 +36,6 @@ export function Header({ isLoggedIn = false, userEmail, userAvatar, userName }: 
           <div className="hidden md:flex items-center space-x-10 text-xs font-bold uppercase tracking-widest">
             <a className="hover:text-primary transition-colors" href="#features">Features</a>
             <a className="hover:text-primary transition-colors" href="#how-it-works">How it Works</a>
-            <a className="hover:text-primary transition-colors" href="#pricing">Pricing</a>
             <Link className="hover:text-primary transition-colors" href="/for-business">For Business</Link>
             {isLoggedIn ? (
               <div className="flex items-center gap-3">

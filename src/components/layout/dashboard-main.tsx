@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ScrollContainerContext } from '@/components/test/common/scroll-container-context'
@@ -10,16 +10,17 @@ const testRoutePattern = /^\/dashboard\/((reading|listening|writing|speaking)\/[
 export function DashboardMain({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const isTestPage = testRoutePattern.test(pathname)
+  const mainRef = useRef<HTMLElement | null>(null)
   const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null)
 
-  const callbackRef = useCallback((node: HTMLElement | null) => {
-    setScrollElement(node)
+  useEffect(() => {
+    setScrollElement(mainRef.current)
   }, [])
 
   return (
     <ScrollContainerContext.Provider value={scrollElement}>
       <main
-        ref={callbackRef}
+        ref={mainRef}
         className={cn(
           'flex-1 flex flex-col min-w-0 overflow-y-auto bg-background',
           !isTestPage && 'md:pl-64'
