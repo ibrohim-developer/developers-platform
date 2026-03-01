@@ -50,10 +50,10 @@ export default async function HistoryPage() {
               {attempts.map((attempt) => (
                 <div
                   key={attempt.id}
-                  className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    <div className={`w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center ${
                       attempt.module_type === 'listening' ? 'bg-blue-100 dark:bg-blue-900/30' :
                       attempt.module_type === 'reading' ? 'bg-green-100 dark:bg-green-900/30' :
                       'bg-purple-100 dark:bg-purple-900/30'
@@ -62,9 +62,9 @@ export default async function HistoryPage() {
                       {attempt.module_type === 'reading' && <BookOpen className="w-5 h-5 text-green-600 dark:text-green-400" />}
                       {attempt.module_type === 'writing' && <PenTool className="w-5 h-5 text-purple-600 dark:text-purple-400" />}
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-medium capitalize">{attempt.module_type} Test</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground truncate">
                         {new Date(attempt.created_at).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
@@ -75,8 +75,8 @@ export default async function HistoryPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
+                  <div className="flex items-center justify-between sm:justify-end gap-4 pl-14 sm:pl-0">
+                    <div className="sm:text-right">
                       {attempt.status === 'completed' && attempt.band_score && (
                         <p className="text-2xl font-bold">{attempt.band_score}</p>
                       )}

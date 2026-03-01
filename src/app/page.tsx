@@ -55,6 +55,12 @@ export default function HomePage() {
                 Practice with real exam questions and get instant AI-powered feedback. Target band 5.0 to{' '}
                 <span className="text-primary font-black">8.0+</span> with Swiss-style precision.
               </p>
+              <Link
+                href="/dashboard/reading"
+                className="md:hidden inline-block bg-primary text-white px-6 py-3 font-black hover:bg-primary/90 transition-all uppercase text-[11px] tracking-widest rounded-lg text-center mt-6"
+              >
+                Free Mock Test
+              </Link>
               {/* <div className="flex flex-col sm:flex-row items-center gap-4">
                 <Link
                   href="/sign-up"
@@ -62,9 +68,6 @@ export default function HomePage() {
                 >
                   Start Mock Test
                 </Link>
-                <button className="w-full sm:w-auto border border-black text-black hover:bg-neutral-50 px-10 py-5 rounded-none font-black text-sm tracking-tight transition-all uppercase flex items-center justify-center gap-2">
-                  <Play className="w-4 h-4" /> Watch Demo
-                </button>
               </div> */}
             </div>
           </div>
