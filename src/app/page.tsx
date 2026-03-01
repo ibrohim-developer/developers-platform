@@ -201,7 +201,7 @@ export default function HomePage() {
             <div className="max-w-5xl border border-white/20 bg-neutral-900 rounded-2xl">
               <div className="p-4 md:p-6 border-b border-white/10 flex justify-between items-center gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-[10px] md:text-xs font-black uppercase tracking-widest truncate">Document: Writing_Task_02.txt</span>
+                  <p className="text-[10px] font-black uppercase tracking-widest truncate">AI-Powered Review</p>
                 </div>
                 <div className="bg-primary text-white px-4 md:px-6 py-2 md:py-3 font-black text-xs md:text-sm uppercase tracking-widest rounded-lg whitespace-nowrap">
                   Band 7.5
@@ -381,7 +381,7 @@ export default function HomePage() {
                 The global benchmark for AI-driven IELTS preparation.
               </p>
               <Link
-                href="/sign-up"
+                href="/dashboard/reading"
                 className="inline-block bg-primary text-white px-10 md:px-20 py-6 md:py-8 text-sm md:text-base font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-primary/90 transition-all rounded-xl"
               >
                 Start for free
