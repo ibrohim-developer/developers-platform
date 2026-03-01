@@ -25,6 +25,7 @@ import { useTestStore } from "@/stores/test-store";
 import { getTypeInstruction } from "@/lib/constants/reading-instructions";
 import { useReadingTest } from "@/hooks/use-reading-test";
 import { useFullscreen } from "@/hooks/use-fullscreen";
+import { useNavigationProtection } from "@/hooks/use-navigation-protection";
 import { useQuestionNavigation } from "@/hooks/use-question-navigation";
 import { useTestOptions } from "@/hooks/use-test-options";
 import { useSyncTestTheme } from "@/components/force-light-theme";
@@ -118,6 +119,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
 
   const testOptions = useTestOptions();
   useSyncTestTheme(testOptions.contrast);
+  useNavigationProtection({ enabled: hasStarted && !isReviewMode });
 
   const renderQuestion = (question: Question, index: number) => {
     const globalIndex = questionOffset + index;
@@ -314,11 +316,13 @@ function ReadingTestContent({ testId }: { testId: string }) {
           <Button
             variant="outline"
             size="default"
-            onClick={() =>
-              isReviewMode
-                ? router.push(`/dashboard/results/${reviewAttemptId}`)
-                : router.push("/dashboard/reading")
-            }
+            onClick={() => {
+              if (isReviewMode) {
+                router.push(`/dashboard/results/${reviewAttemptId}`);
+              } else if (window.confirm("If you leave this page, all your answers will be lost and your test progress will not be saved.")) {
+                router.push("/dashboard/reading");
+              }
+            }}
             className="flex items-center gap-2 text-sm md:text-base px-2 md:px-3"
           >
             <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
