@@ -42,9 +42,6 @@ export function ContextFillInBlank({
             />
             {question && (
               <span className="inline-flex items-center gap-1 mx-1 align-middle">
-                <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded bg-gray-200 text-[10px] font-bold text-gray-700">
-                  {question.questionNumber}
-                </span>
                 <Input
                   id={`question-${question.questionId}`}
                   value={
@@ -66,7 +63,7 @@ export function ContextFillInBlank({
                       question.isUnanswered &&
                       "border-red-400 bg-red-50 dark:bg-red-950/20 text-red-500",
                   )}
-                  placeholder="..."
+                  placeholder={`${question.questionNumber}`}
                   disabled={question.disabled}
                 />
                 {question.reviewMode && (

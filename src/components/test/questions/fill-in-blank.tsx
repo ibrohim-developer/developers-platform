@@ -56,39 +56,27 @@ export function FillInBlank({
     const parts = questionText.split("_____");
     return (
       <div id={`question-${questionId}`} className="space-y-3">
-        <div className="flex gap-2 items-start">
-          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gray-200 text-xs font-bold text-gray-700">
-            {questionNumber}
-          </span>
-          <div className="text-sm leading-relaxed flex flex-wrap items-center gap-1">
-            {parts.map((part, index) => (
-              <span key={index} className="inline-flex items-center gap-1">
-                {part}
-                {index < parts.length - 1 && (
-                  <Input
-                    value={displayValue}
-                    onChange={(e) => onChange(e.target.value)}
-                    className={cn(
-                      "inline-block w-32 h-8 text-center mx-1",
-                      reviewMode &&
-                        isCorrect &&
-                        "border-green-500 bg-green-50 dark:bg-green-950/20",
-                      reviewMode &&
-                        !isCorrect &&
-                        !isUnanswered &&
-                        "border-red-500 bg-red-50 dark:bg-red-950/20",
-                      reviewMode &&
-                        isUnanswered &&
-                        "border-red-400 bg-red-50 dark:bg-red-950/20 text-red-500",
-                    )}
-                    placeholder="..."
-                    disabled={disabled}
-                  />
-                )}
-              </span>
-            ))}
-            {getQuestionBadge()}
-          </div>
+        <div className="text-sm leading-relaxed flex flex-wrap items-center gap-1">
+          {parts.map((part, index) => (
+            <span key={index} className="inline-flex items-center gap-1">
+              {part}
+              {index < parts.length - 1 && (
+                <Input
+                  value={displayValue}
+                  onChange={(e) => onChange(e.target.value)}
+                  className={cn(
+                    "inline-block w-32 h-8 text-center mx-1",
+                    reviewMode && isCorrect && "border-green-500 bg-green-50 dark:bg-green-950/20",
+                    reviewMode && !isCorrect && !isUnanswered && "border-red-500 bg-red-50 dark:bg-red-950/20",
+                    reviewMode && isUnanswered && "border-red-400 bg-red-50 dark:bg-red-950/20 text-red-500",
+                  )}
+                  placeholder={`${questionNumber}`}
+                  disabled={disabled}
+                />
+              )}
+            </span>
+          ))}
+          {getQuestionBadge()}
         </div>
       </div>
     );
@@ -96,36 +84,22 @@ export function FillInBlank({
 
   return (
     <div id={`question-${questionId}`} className="space-y-3">
-      <div className="flex gap-2 items-start">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gray-200 text-xs font-bold text-gray-700">
-          {questionNumber}
-        </span>
-        <p className="text-sm leading-relaxed text-gray-800">
-          {questionText}
-          {getQuestionBadge()}
-        </p>
-      </div>
-      <div className="ml-8 space-y-2">
-        <Input
-          value={displayValue}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Type your answer here..."
-          className={cn(
-            "max-w-md",
-            reviewMode &&
-              isCorrect &&
-              "border-green-500 bg-green-50 dark:bg-green-950/20",
-            reviewMode &&
-              !isCorrect &&
-              !isUnanswered &&
-              "border-red-500 bg-red-50 dark:bg-red-950/20",
-            reviewMode &&
-              isUnanswered &&
-              "border-red-400 bg-red-50 dark:bg-red-950/20 text-red-500",
-          )}
-          disabled={disabled}
-        />
-      </div>
+      <p className="text-sm leading-relaxed text-gray-800">
+        {questionText}
+        {getQuestionBadge()}
+      </p>
+      <Input
+        value={displayValue}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={`${questionNumber} ...`}
+        className={cn(
+          "max-w-md",
+          reviewMode && isCorrect && "border-green-500 bg-green-50 dark:bg-green-950/20",
+          reviewMode && !isCorrect && !isUnanswered && "border-red-500 bg-red-50 dark:bg-red-950/20",
+          reviewMode && isUnanswered && "border-red-400 bg-red-50 dark:bg-red-950/20 text-red-500",
+        )}
+        disabled={disabled}
+      />
     </div>
   );
 }

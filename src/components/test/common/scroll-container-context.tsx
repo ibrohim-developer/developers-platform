@@ -1,10 +1,11 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, useContext, type RefObject } from "react";
 
 export const ScrollContainerContext =
-  createContext<HTMLElement | null>(null);
+  createContext<RefObject<HTMLElement | null> | null>(null);
 
 export function useScrollContainer() {
-  return useContext(ScrollContainerContext);
+  const ref = useContext(ScrollContainerContext);
+  return ref?.current ?? null;
 }
