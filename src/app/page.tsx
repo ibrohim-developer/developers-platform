@@ -45,19 +45,19 @@ export default function HomePage() {
               AI-Powered Band Scoring Live
             </div>
 
-            <h1 className="text-7xl md:text-[140px] font-black text-black mb-12 leading-[0.8] tracking-tighter uppercase font-bold">
+            <h1 className="text-5xl md:text-[140px] font-black text-black mb-8 md:md-12 leading-[0.9] tracking-tighter uppercase font-bold">
               Get Your <br />
-              <span className="text-primary">IELTS</span> Band <br className="hidden md:block" /> Score <RotatingText />
+              <span className="text-primary">IELTS</span> Band <br className="hidden md:block" /> Score <br className="md:hidden" /><RotatingText />
             </h1>
 
-            <div className="grid md:grid-cols-2 gap-12 items-end">
+            <div className="grid md:grid-cols-2 gap-4 md:gap-12 items-end">
               <p className="text-xl md:text-2xl text-black max-w-xl leading-snug font-normal tracking-tight">
                 Practice with real exam questions and get instant AI-powered feedback. Target band 5.0 to{' '}
                 <span className="text-primary font-black">8.0+</span> with Swiss-style precision.
               </p>
               <Link
                 href="/dashboard/reading"
-                className="md:hidden inline-block bg-primary text-white px-6 py-3 font-black hover:bg-primary/90 transition-all uppercase text-[11px] tracking-widest rounded-lg text-center mt-6"
+                className="md:hidden inline-block bg-primary text-[13px] text-white px-6 py-3.5 font-black hover:bg-primary/90 transition-all uppercase tracking-widest rounded-lg text-center mt-6"
               >
                 Free Mock Test
               </Link>
@@ -82,23 +82,23 @@ export default function HomePage() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
-              <div className="p-12 border border-black rounded-2xl hover:bg-neutral-50 transition-colors">
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] block mb-12 text-primary">Step 01</span>
-                <h3 className="text-4xl font-black mb-6 uppercase tracking-tighter font-bold">Choose Test</h3>
+              <div className="p-6 md:p-12 border border-black rounded-2xl hover:bg-neutral-50 transition-colors">
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] block mb-6 md:mb-12 text-primary">Step 01</span>
+                <h3 className="text-2xl md:text-4xl font-black mb-6 uppercase tracking-tighter font-bold">Choose Test</h3>
                 <p className="text-neutral-600 leading-snug font-normal text-lg">
                   Select Academic or General training and pick a specific module: Listening, Reading, Writing, or Speaking.
                 </p>
               </div>
-              <div className="p-12 border border-black rounded-2xl hover:bg-neutral-50 transition-colors">
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] block mb-12 text-primary">Step 02</span>
-                <h3 className="text-4xl font-black mb-6 uppercase tracking-tighter font-bold">Execute Tasks</h3>
+              <div className="p-6 md:p-12 border border-black rounded-2xl hover:bg-neutral-50 transition-colors">
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] block mb-6 md:mb-12 text-primary">Step 02</span>
+                <h3 className="text-2xl md:text-4xl font-black mb-6 uppercase tracking-tighter font-bold">Execute Tasks</h3>
                 <p className="text-neutral-600 leading-snug font-normal text-lg">
                   Experience a realistic exam interface with strict time constraints and authentic question types.
                 </p>
               </div>
-              <div className="p-12 border border-black rounded-2xl hover:bg-neutral-50 transition-colors">
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] block mb-12 text-primary">Step 03</span>
-                <h3 className="text-4xl font-black mb-6 uppercase tracking-tighter font-bold">AI Feedback</h3>
+              <div className="p-6 md:p-12 border border-black rounded-2xl hover:bg-neutral-50 transition-colors">
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] block mb-6 md:mb-12 text-primary">Step 03</span>
+                <h3 className="text-2xl md:text-4xl font-black mb-6 uppercase tracking-tighter font-bold">AI Feedback</h3>
                 <p className="text-neutral-600 leading-snug font-normal text-lg">
                   Receive an AI-generated band score and detailed breakdown of your performance metrics instantly.
                 </p>
@@ -112,7 +112,7 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-20 items-start">
               <div>
-                <h2 className="text-6xl md:text-8xl font-black text-black mb-16 leading-[0.85] uppercase tracking-tighter font-bold">
+                <h2 className="text-4xl md:text-8xl font-black text-black mb-10 md:mb-16 leading-[0.85] uppercase tracking-tighter font-bold">
                   Superior <br />Mock Tech.
                 </h2>
 
@@ -166,7 +166,7 @@ export default function HomePage() {
                   </div>
                   <div className="space-y-10">
                     <div className="flex items-baseline justify-between border-b border-black pb-8">
-                      <span className="text-8xl md:text-9xl font-black tracking-tighter text-primary">8.5</span>
+                      <span className="text-6xl md:text-9xl font-black tracking-tighter text-primary">8.5</span>
                       <span className="text-xs font-black uppercase tracking-[0.2em] text-primary">Overall Band</span>
                     </div>
                     <div className="space-y-8">
@@ -194,20 +194,20 @@ export default function HomePage() {
         <section className="py-32 bg-black text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-left mb-20 border-b border-white/20 pb-12">
-              <h2 className="text-6xl md:text-8xl font-black mb-4 uppercase tracking-tighter font-bold">Live Analysis</h2>
+              <h2 className="text-4xl md:text-8xl font-black mb-4 uppercase tracking-tighter font-bold">Live Analysis</h2>
               <p className="text-neutral-400 font-normal text-xl">High-precision linguistic feedback engine.</p>
             </div>
 
             <div className="max-w-5xl border border-white/20 bg-neutral-900 rounded-2xl">
-              <div className="p-6 border-b border-white/10 flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-black uppercase tracking-widest">Document: Writing_Task_02.txt</span>
+              <div className="p-4 md:p-6 border-b border-white/10 flex justify-between items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-[10px] md:text-xs font-black uppercase tracking-widest truncate">Document: Writing_Task_02.txt</span>
                 </div>
-                <div className="bg-primary text-white px-6 py-3 font-black text-sm uppercase tracking-widest rounded-lg">
+                <div className="bg-primary text-white px-4 md:px-6 py-2 md:py-3 font-black text-xs md:text-sm uppercase tracking-widest rounded-lg whitespace-nowrap">
                   Band 7.5
                 </div>
               </div>
-              <div className="p-12">
+              <div className="p-6 md:p-12">
                 <p className="text-2xl md:text-4xl leading-[1.2] font-normal text-white italic">
                   In contemporary society, environmental issues have become a{' '}
                   <span className="bg-primary text-white px-2 not-italic font-black">crucial</span>{' '}
@@ -372,8 +372,8 @@ export default function HomePage() {
         {/* CTA Section */}
         <section className="py-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="border-[16px] border-primary p-20 text-center bg-white rounded-3xl">
-              <h2 className="text-7xl md:text-9xl font-black mb-10 tracking-tighter uppercase leading-[0.8] font-bold">
+            <div className="border-[8px] md:border-[16px] border-primary p-8 md:p-20 text-center bg-white rounded-3xl">
+              <h2 className="text-5xl md:text-9xl font-black mb-10 tracking-tighter uppercase leading-[0.8] font-bold">
                 Join the <br />
                 <span className="text-primary">Standard.</span>
               </h2>
@@ -382,7 +382,7 @@ export default function HomePage() {
               </p>
               <Link
                 href="/sign-up"
-                className="inline-block bg-primary text-white px-20 py-8 text-base font-black uppercase tracking-[0.3em] hover:bg-primary/90 transition-all rounded-xl"
+                className="inline-block bg-primary text-white px-10 md:px-20 py-6 md:py-8 text-sm md:text-base font-black uppercase tracking-[0.2em] md:tracking-[0.3em] hover:bg-primary/90 transition-all rounded-xl"
               >
                 Start for free
               </Link>
