@@ -1,8 +1,16 @@
+import type { Metadata } from "next";
 import Link from "@/components/no-prefetch-link";
 import { Clock } from "lucide-react";
 import { TestFilters } from "@/components/test/common/test-filters";
 import { ListeningVirtualList } from "@/components/test/listening/listening-virtual-list";
 import { fetchListeningTests } from "./actions";
+
+export const metadata: Metadata = {
+  title: "IELTS Listening Practice Tests — Free Mock Exams",
+  description:
+    "Practice IELTS Listening with free mock tests. Real exam-style audio sections with answers and explanations. Improve your band score on BandUp.",
+  alternates: { canonical: "https://bandup.uz/dashboard/listening" },
+};
 
 const listeningFilters = [
   {

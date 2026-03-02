@@ -1,8 +1,16 @@
+import type { Metadata } from "next";
 import Link from "@/components/no-prefetch-link";
 import { Clock } from "lucide-react";
 import { TestFilters } from "@/components/test/common/test-filters";
 import { ReadingVirtualList } from "@/components/test/reading/reading-virtual-list";
 import { fetchReadingTests } from "./actions";
+
+export const metadata: Metadata = {
+  title: "IELTS Reading Practice Tests — Free Mock Exams",
+  description:
+    "Practice IELTS Reading with free mock tests. Academic and General Training passages with detailed answers. Improve your band score on BandUp.",
+  alternates: { canonical: "https://bandup.uz/dashboard/reading" },
+};
 
 const readingFilters = [
   {

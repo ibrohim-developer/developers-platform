@@ -1,8 +1,16 @@
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { Sidebar } from '@/components/layout/sidebar'
 import { DashboardMain } from '@/components/layout/dashboard-main'
 import { ThemeProvider } from '@/components/theme-provider'
 import { createClient } from '@/lib/supabase/server'
+
+export const metadata: Metadata = {
+  title: {
+    template: '%s | BandUp IELTS',
+    default: 'Dashboard | BandUp IELTS',
+  },
+}
 
 async function AuthSidebar() {
   const supabase = await createClient()

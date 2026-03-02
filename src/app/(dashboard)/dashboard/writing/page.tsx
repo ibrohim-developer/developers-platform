@@ -1,8 +1,16 @@
+import type { Metadata } from "next";
 import Link from "@/components/no-prefetch-link";
 import { Clock } from "lucide-react";
 import { TestFilters } from "@/components/test/common/test-filters";
 import { WritingVirtualList } from "@/components/test/writing/writing-virtual-list";
 import { fetchWritingTests } from "./actions";
+
+export const metadata: Metadata = {
+  title: "IELTS Writing Practice Tests — Free AI-Scored Mock Exams",
+  description:
+    "Practice IELTS Writing with free AI-scored mock tests. Task 1 and Task 2 with instant feedback on grammar, vocabulary, coherence, and task achievement.",
+  alternates: { canonical: "https://bandup.uz/dashboard/writing" },
+};
 
 const writingFilters = [
   {
