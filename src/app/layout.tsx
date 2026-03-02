@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     images: ["/opengraph-image"],
   },
   alternates: { canonical: "https://bandup.uz" },
-  verification: { google: "your-google-verification-code" },
+  verification: { google: "google-site-verification=mGZCMSg3RtjuODnMsT5gmZUg1vK2SX0HAnOkHIvD_6Y" },
 };
 
 const organizationSchema = {
