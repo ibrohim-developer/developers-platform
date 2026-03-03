@@ -56,7 +56,7 @@ export function ContextFillInBlank({
 
   return (
     <>
-      <div ref={containerRef} className="space-y-1" />
+      <div ref={containerRef} className="space-y-1 rich-html" />
       {portalTargets.map((target, index) => {
         const question = questions[index];
         if (!question) return null;
@@ -86,6 +86,7 @@ export function ContextFillInBlank({
               )}
               placeholder={`${question.questionNumber}`}
               disabled={question.disabled}
+              autoComplete="off"
             />
             {question.reviewMode && (
               <>

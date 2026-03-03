@@ -415,7 +415,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
                       </h3>
                       {instructionHtml ? (
                         <div
-                          className="text-sm leading-relaxed [&_strong]:font-bold"
+                          className="text-sm leading-relaxed rich-html"
                           style={{ color: theme.textMuted }}
                           dangerouslySetInnerHTML={{
                             __html: instructionHtml,
@@ -431,8 +431,11 @@ function ReadingTestContent({ testId }: { testId: string }) {
                       )}
                     </div>
 
-                    {contextHtml ? (
-                      <div className="text-sm leading-relaxed [&_h2]:text-base [&_h2]:font-bold [&_h2]:mb-2 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:ml-5 [&_ol]:list-decimal [&_ol]:ml-5 [&_li]:mb-1 [&_p]:mb-1">
+                    {contextHtml &&
+                    ["gap_fill", "summary_completion", "short_answer"].includes(
+                      group.type,
+                    ) ? (
+                      <div className="text-sm leading-relaxed rich-html">
                         <ContextFillInBlank
                           contextHtml={contextHtml}
                           questions={group.questions.map((question) => {
@@ -462,6 +465,14 @@ function ReadingTestContent({ testId }: { testId: string }) {
                       </div>
                     ) : (
                       <div className="space-y-6">
+                        {contextHtml && (
+                          <div
+                            className="text-sm leading-relaxed rich-html"
+                            dangerouslySetInnerHTML={{
+                              __html: contextHtml,
+                            }}
+                          />
+                        )}
                         {group.questions.map((question) => {
                           const globalIdx =
                             currentPassage.questions.indexOf(question);

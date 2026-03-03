@@ -90,12 +90,10 @@ export function MultipleAnswer({
             >
               <Checkbox
                 checked={isSelected}
-                onCheckedChange={() => toggleOption(optionLetter)}
                 disabled={disabled}
-                id={`${questionId}-${optionLetter}`}
+                className="pointer-events-none"
               />
               <Label
-                htmlFor={`${questionId}-${optionLetter}`}
                 className={cn("flex-1", !disabled && "cursor-pointer")}
               >
                 <span className="font-semibold mr-2">{optionLetter}.</span>

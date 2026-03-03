@@ -25,7 +25,7 @@ export function PassageDisplay({ title, content, highlight = { bg: "#fef08a", co
   const popupRef = useRef<HTMLDivElement>(null);
   const highlighterRef = useRef<HighlighterType | null>(null);
 
-  const paragraphs = content.split("\n\n").filter((p) => p.trim());
+  const paragraphs = content.split(/\r?\n\r?\n/).filter((p) => p.trim());
   const hasSubtitle =
     paragraphs.length > 1 &&
     paragraphs[0].length < 150 &&

@@ -78,24 +78,30 @@ export function TrueFalseNotGiven({
             <div
               key={option.value}
               className={cn(
-                "flex items-center gap-2",
+                "flex items-center space-x-3 rounded-lg border p-4 transition-colors",
                 !disabled && "cursor-pointer",
-                reviewMode && isUserAnswer && isCorrect && "text-green-600",
-                reviewMode && isUserAnswer && !isCorrect && "text-red-600",
+                reviewMode &&
+                  isUserAnswer &&
+                  isCorrect &&
+                  "border-green-500 bg-green-50 dark:bg-green-950/20",
+                reviewMode &&
+                  isUserAnswer &&
+                  !isCorrect &&
+                  "border-red-500 bg-red-50 dark:bg-red-950/20",
+                !reviewMode &&
+                  value === option.value &&
+                  "border-primary bg-primary/5",
+                !reviewMode && !value && "hover:bg-muted/50",
               )}
               onClick={() => !disabled && onChange(option.value)}
             >
               <RadioGroupItem
                 value={option.value}
                 id={`${questionId}-${option.value}`}
-                className="border-gray-400 data-[state=checked]:border-gray-700"
               />
               <Label
                 htmlFor={`${questionId}-${option.value}`}
-                className={cn(
-                  "text-sm font-normal",
-                  !disabled && "cursor-pointer",
-                )}
+                className={cn("flex-1", !disabled && "cursor-pointer")}
               >
                 {option.label}
               </Label>

@@ -97,11 +97,13 @@ export function MatchingSelect({
             />
           </SelectTrigger>
           <SelectContent>
-            {options.map((option) => (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            ))}
+            {options
+              .filter((option) => option !== "")
+              .map((option, index) => (
+                <SelectItem key={`${index}-${option}`} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
         {reviewMode && !isCorrect && correctAnswer && (

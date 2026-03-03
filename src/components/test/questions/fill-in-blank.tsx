@@ -72,6 +72,7 @@ export function FillInBlank({
                   )}
                   placeholder={`${questionNumber}`}
                   disabled={disabled}
+                  autoComplete="off"
                 />
               )}
             </span>
@@ -92,6 +93,7 @@ export function FillInBlank({
         value={displayValue}
         onChange={(e) => onChange(e.target.value)}
         placeholder={`${questionNumber} ...`}
+        autoComplete="off"
         className={cn(
           "max-w-md",
           reviewMode && isCorrect && "border-green-500 bg-green-50 dark:bg-green-950/20",

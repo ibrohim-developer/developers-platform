@@ -1,6 +1,6 @@
 'use client'
 
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { CheckCircle, XCircle } from 'lucide-react'
@@ -46,6 +46,11 @@ export function MultipleChoice({
     }
   }
 
+  const toggleOption = (letter: string) => {
+    if (disabled) return
+    onChange(value === letter ? '' : letter)
+  }
+
   return (
     <div id={`question-${questionId}`} className="space-y-3">
       <div className="flex gap-2 items-start">
@@ -58,34 +63,29 @@ export function MultipleChoice({
         </p>
       </div>
 
-      <RadioGroup
-        value={value}
-        onValueChange={onChange}
-        disabled={disabled}
-        className="ml-8 space-y-2"
-      >
+      <div className="ml-8 space-y-2">
         {options.map((option, index) => {
           const optionLetter = String.fromCharCode(65 + index)
-          const isUserAnswer = value === optionLetter
+          const isSelected = value === optionLetter
           return (
             <div
               key={`${questionId}-${index}`}
               className={cn(
                 'flex items-center space-x-3 rounded-lg border p-4 transition-colors',
                 !disabled && 'cursor-pointer',
-                reviewMode && isUserAnswer && isCorrect && 'border-green-500 bg-green-50 dark:bg-green-950/20',
-                reviewMode && isUserAnswer && !isCorrect && 'border-red-500 bg-red-50 dark:bg-red-950/20',
-                !reviewMode && value === optionLetter && 'border-primary bg-primary/5',
-                !reviewMode && !value && 'hover:bg-muted/50'
+                reviewMode && isSelected && isCorrect && 'border-green-500 bg-green-50 dark:bg-green-950/20',
+                reviewMode && isSelected && !isCorrect && 'border-red-500 bg-red-50 dark:bg-red-950/20',
+                !reviewMode && isSelected && 'border-primary bg-primary/5',
+                !reviewMode && !isSelected && 'hover:bg-muted/50'
               )}
-              onClick={() => !disabled && onChange(optionLetter)}
+              onClick={() => toggleOption(optionLetter)}
             >
-              <RadioGroupItem
-                value={optionLetter}
-                id={`${questionId}-${optionLetter}`}
+              <Checkbox
+                checked={isSelected}
+                disabled={disabled}
+                className="pointer-events-none"
               />
               <Label
-                htmlFor={`${questionId}-${optionLetter}`}
                 className={cn("flex-1", !disabled && "cursor-pointer")}
               >
                 <span className="font-semibold mr-2">{optionLetter}.</span>
@@ -94,7 +94,7 @@ export function MultipleChoice({
             </div>
           )
         })}
-      </RadioGroup>
+      </div>
     </div>
   )
 }
