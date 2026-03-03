@@ -43,13 +43,17 @@ function validateInitData(initDataRaw: string): { valid: boolean; user?: { id: n
 export async function POST(request: Request) {
   const { initData } = await request.json()
   if (!initData || typeof initData !== 'string') {
+    console.log('[TG Mini App] Missing initData')
     return NextResponse.json({ error: 'Missing initData' }, { status: 400 })
   }
 
   const { valid, user } = validateInitData(initData)
   if (!valid || !user) {
+    console.log('[TG Mini App] Invalid initData signature or expired')
     return NextResponse.json({ error: 'Invalid initData' }, { status: 401 })
   }
+
+  console.log(`[TG Mini App] Authenticated user: ${user.id} (@${user.username})`)
 
   const supabase = createServiceClient()
   const { token_hash, error } = await findOrCreateTelegramUser(supabase, {
@@ -62,8 +66,10 @@ export async function POST(request: Request) {
   })
 
   if (error) {
+    console.error(`[TG Mini App] findOrCreateTelegramUser failed:`, error)
     return NextResponse.json({ error }, { status: 500 })
   }
 
+  console.log(`[TG Mini App] Token generated for user ${user.id}`)
   return NextResponse.json({ token_hash })
 }
