@@ -55,7 +55,6 @@ const menuItems = [
     title: 'Speaking',
     href: '/dashboard/speaking',
     icon: Mic,
-    soon: true,
   },
     {
     title: 'Full Mock Test',
@@ -65,7 +64,7 @@ const menuItems = [
   }
 ]
 
-const testRoutePattern = /^\/dashboard\/((reading|listening|writing|speaking|full-mock-test)\/[^/]+|results\/[^/]+)$/
+const testRoutePattern = /^\/dashboard\/((reading|listening|writing)\/[^/]+|speaking\/mock-exam\/[^/]+|(full-mock-test)\/[^/]+|results\/[^/]+)$/
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
