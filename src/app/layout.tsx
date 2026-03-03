@@ -116,13 +116,13 @@ export default function RootLayout({
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
         <GoogleAnalytics />
-        <TelegramProvider>
-          <Suspense fallback={null}>
+        <Suspense fallback={null}>
+          <TelegramProvider>
             <QueryProvider>
               {children}
             </QueryProvider>
-          </Suspense>
-        </TelegramProvider>
+          </TelegramProvider>
+        </Suspense>
         <Toaster position="top-center" richColors />
       </body>
     </html>
