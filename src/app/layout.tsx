@@ -73,6 +73,10 @@ export const metadata: Metadata = {
       "Free IELTS mock exams and practice tests with AI-powered scoring.",
     images: ["/opengraph-image"],
   },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
   alternates: { canonical: "https://bandup.uz" },
   verification: { google: "google-site-verification=mGZCMSg3RtjuODnMsT5gmZUg1vK2SX0HAnOkHIvD_6Y" },
 };
@@ -82,7 +86,7 @@ const organizationSchema = {
   "@type": "EducationalOrganization",
   name: "BandUp",
   url: "https://bandup.uz",
-  logo: "https://bandup.uz/logo.png",
+  // logo: "https://bandup.uz/logo.png", // TODO: add logo.png to /public and uncomment
   description:
     "Free IELTS mock exams and practice tests with detailed AI-powered score analysis.",
   sameAs: ["https://t.me/bandupuz", "https://instagram.com/bandupuz"],
@@ -93,14 +97,6 @@ const websiteSchema = {
   "@type": "WebSite",
   name: "BandUp IELTS",
   url: "https://bandup.uz",
-  potentialAction: {
-    "@type": "SearchAction",
-    target: {
-      "@type": "EntryPoint",
-      urlTemplate: "https://bandup.uz/search?q={search_term_string}",
-    },
-    "query-input": "required name=search_term_string",
-  },
 };
 
 export default function RootLayout({

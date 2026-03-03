@@ -5,8 +5,18 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
-        disallow: ["/dashboard/", "/api/", "/auth/", "/admin/"],
+        allow: [
+          "/",
+          "/dashboard/reading/",
+          "/dashboard/listening/",
+          "/dashboard/writing/",
+        ],
+        disallow: [
+          "/dashboard/",
+          "/api/",
+          "/auth/",
+          "/admin/",
+        ],
       },
     ],
     sitemap: "https://bandup.uz/sitemap.xml",
