@@ -26,7 +26,7 @@ export function DashboardMain({ children }: { children: React.ReactNode }) {
           !isTestPage && 'md:pl-64'
         )}
       >
-        <div className={cn(!isTestPage && 'p-4 pb-24 md:p-8 md:pb-8')}>
+        <div className={cn(!isTestPage && 'pt-16 px-4 pb-24 md:pt-8 md:px-8 md:pb-8')}>
           {children}
         </div>
       </main>

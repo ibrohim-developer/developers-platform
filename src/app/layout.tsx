@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { QueryProvider } from "@/components/query-provider";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import { JsonLd } from "@/components/json-ld";
+import { TelegramProvider } from "@/components/telegram/telegram-provider";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -106,17 +107,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script src="https://telegram.org/js/telegram-web-app.js" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
         <GoogleAnalytics />
-        <Suspense fallback={null}>
-          <QueryProvider>
-            {children}
-          </QueryProvider>
-        </Suspense>
+        <TelegramProvider>
+          <Suspense fallback={null}>
+            <QueryProvider>
+              {children}
+            </QueryProvider>
+          </Suspense>
+        </TelegramProvider>
         <Toaster position="top-center" richColors />
       </body>
     </html>

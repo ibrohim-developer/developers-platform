@@ -29,5 +29,25 @@ export async function GET(request: Request) {
   )
 
   const result = await response.json()
-  return NextResponse.json(result)
+
+  // Set the bot menu button to open the Mini App
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://bandup.uz'
+  const menuResponse = await fetch(
+    `https://api.telegram.org/bot${BOT_TOKEN}/setChatMenuButton`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        menu_button: {
+          type: 'web_app',
+          text: 'Open BandUp',
+          web_app: { url: `${siteUrl}/dashboard` },
+        },
+      }),
+    }
+  )
+
+  const menuResult = await menuResponse.json()
+
+  return NextResponse.json({ webhook: result, menu_button: menuResult })
 }

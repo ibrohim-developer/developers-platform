@@ -63,9 +63,21 @@ export async function POST(request: Request) {
 
   // Handle /start command
   if (message.text === '/start') {
+    // Mini App button
     await sendMessage(
       chatId,
-      '👋 Welcome! Share your contact to get a login code for the IELTS platform.\n\nTap the button below to share your phone number.',
+      '📖 <b>BandUp — IELTS Mock Exams</b>\n\nTap the button below to open the app.',
+      {
+        inline_keyboard: [
+          [{ text: '📖 Open BandUp', web_app: { url: 'https://bandup.uz/dashboard' } }],
+        ],
+      }
+    )
+
+    // Contact sharing for code-based login
+    await sendMessage(
+      chatId,
+      'Or share your contact to get a login code for the website:',
       {
         keyboard: [
           [{ text: '📱 Share my contact', request_contact: true }],

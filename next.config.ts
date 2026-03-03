@@ -17,22 +17,31 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
   },
   async headers() {
+    const securityHeaders = [
+      { key: "X-DNS-Prefetch-Control", value: "on" },
+      {
+        key: "Strict-Transport-Security",
+        value: "max-age=63072000; includeSubDomains; preload",
+      },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      {
+        key: "Referrer-Policy",
+        value: "strict-origin-when-cross-origin",
+      },
+    ];
+
     return [
       {
-        source: "/(.*)",
+        source: "/api/:path*",
         headers: [
-          { key: "X-DNS-Prefetch-Control", value: "on" },
-          {
-            key: "Strict-Transport-Security",
-            value: "max-age=63072000; includeSubDomains; preload",
-          },
+          ...securityHeaders,
           { key: "X-Frame-Options", value: "DENY" },
-          { key: "X-Content-Type-Options", value: "nosniff" },
-          {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
-          },
         ],
+      },
+      {
+        // Page routes: no X-Frame-Options to allow Telegram Mini App iframe
+        source: "/((?!api).*)",
+        headers: securityHeaders,
       },
     ];
   },

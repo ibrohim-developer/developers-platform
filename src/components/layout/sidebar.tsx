@@ -201,6 +201,72 @@ export function Sidebar({ user }: SidebarProps) {
         </div>
       </aside>
 
+      {/* Mobile Top Header */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-40 bg-card border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3">
+          <span className="text-xl font-black tracking-tighter text-foreground pointer-events-none">
+            band<span className="text-primary">.</span>up
+          </span>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-primary">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.full_name || 'User'} />
+                    <AvatarFallback className="bg-muted text-muted-foreground font-bold text-xs">
+                      {userInitials}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" side="bottom" className="w-64 p-4">
+                <div className="flex flex-col items-center gap-3">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={user?.user_metadata?.avatar_url} alt={user?.user_metadata?.full_name || 'User'} />
+                    <AvatarFallback className="bg-muted text-muted-foreground font-bold text-lg">
+                      {userInitials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col items-center text-center">
+                    <span className="text-sm font-bold">
+                      {user?.user_metadata?.full_name || 'User'}
+                    </span>
+                    {user?.email && (
+                      <span className="text-xs text-muted-foreground truncate max-w-full">
+                        {user.email}
+                      </span>
+                    )}
+                  </div>
+                  <DropdownMenuSeparator className="w-full" />
+                  <DropdownMenuItem
+                    className="cursor-pointer w-full justify-center"
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  >
+                    <Sun className="mr-2 h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                    <Moon className="absolute -ml-2 h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                    <span className="ml-4">Toggle Theme</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="cursor-pointer w-full justify-center group"
+                    onClick={() => signOut()}
+                  >
+                    <LogOut className="mr-2 h-4 w-4 text-foreground group-hover:text-white dark:group-hover:text-white" />
+                    <span>Sign Out</span>
+                  </DropdownMenuItem>
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link
+              href="/sign-in"
+              className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg font-bold text-xs hover:opacity-90 transition-all"
+            >
+              Sign In
+            </Link>
+          )}
+        </div>
+      </header>
+
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border">
         <div className="flex items-center justify-around px-2 py-2 safe-bottom">
