@@ -77,6 +77,7 @@ export async function findOrCreateTelegramUser(
 
   if (existingProfile) {
     userId = existingProfile.id
+    console.log(`[TG Auth] Found existing profile for telegram_id ${userData.telegram_id}, userId: ${userId}`)
 
     // Update profile with latest info
     await supabase
@@ -88,35 +89,57 @@ export async function findOrCreateTelegramUser(
       })
       .eq('id', userId)
   } else {
-    // Create new user
-    const password = crypto.randomBytes(32).toString('hex')
-    const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: {
-        full_name: fullName,
-        avatar_url: userData.photo_url,
-        telegram_id: userData.telegram_id,
-      },
-    })
+    // Check if auth user already exists by email (profile might be missing telegram_id)
+    const { data: existingUsers } = await supabase.auth.admin.listUsers()
+    const existingAuthUser = existingUsers?.users?.find(u => u.email === email)
 
-    if (createError || !newUser.user) {
-      return { error: 'Failed to create user account' }
-    }
+    if (existingAuthUser) {
+      // Auth user exists but profile doesn't have telegram_id — fix the profile
+      userId = existingAuthUser.id
+      console.log(`[TG Auth] Found existing auth user by email ${email}, userId: ${userId}. Updating profile.`)
 
-    userId = newUser.user.id
-
-    // Update profile with telegram-specific fields
-    await supabase
-      .from('profiles')
-      .update({
-        telegram_id: userData.telegram_id,
-        phone: userData.phone,
-        full_name: fullName,
-        avatar_url: userData.photo_url,
+      await supabase
+        .from('profiles')
+        .update({
+          telegram_id: userData.telegram_id,
+          phone: userData.phone,
+          full_name: fullName,
+          avatar_url: userData.photo_url,
+        })
+        .eq('id', userId)
+    } else {
+      // Create new user
+      console.log(`[TG Auth] Creating new user for telegram_id ${userData.telegram_id}`)
+      const password = crypto.randomBytes(32).toString('hex')
+      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: fullName,
+          avatar_url: userData.photo_url,
+          telegram_id: userData.telegram_id,
+        },
       })
-      .eq('id', userId)
+
+      if (createError || !newUser.user) {
+        console.error(`[TG Auth] createUser failed:`, createError?.message || 'no user returned')
+        return { error: `Failed to create user account: ${createError?.message || 'unknown error'}` }
+      }
+
+      userId = newUser.user.id
+
+      // Update profile with telegram-specific fields
+      await supabase
+        .from('profiles')
+        .update({
+          telegram_id: userData.telegram_id,
+          phone: userData.phone,
+          full_name: fullName,
+          avatar_url: userData.photo_url,
+        })
+        .eq('id', userId)
+    }
   }
 
   // Generate a magic link to create a session
@@ -126,6 +149,7 @@ export async function findOrCreateTelegramUser(
   })
 
   if (linkError || !linkData.properties?.hashed_token) {
+    console.error(`[TG Auth] generateLink failed:`, linkError?.message || 'no hashed_token')
     return { error: 'Failed to generate session' }
   }
 
