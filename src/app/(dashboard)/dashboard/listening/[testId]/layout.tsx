@@ -1,15 +1,9 @@
 import type { Metadata } from "next";
 import { cache } from "react";
-import { createClient } from "@/lib/supabase/server";
+import { findOne } from "@/lib/strapi/api";
 
 const getTest = cache(async (testId: string) => {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("tests")
-    .select("id, title, description")
-    .eq("id", testId)
-    .single();
-  return data;
+  return findOne("tests", testId);
 });
 
 type Props = { params: Promise<{ testId: string }> };

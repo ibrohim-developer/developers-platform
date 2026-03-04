@@ -159,6 +159,7 @@ function ReadingTestContent({ testId }: { testId: string }) {
           />
         );
       case "tfng":
+      case "ynng":
         return <TrueFalseNotGiven key={question.id} {...commonProps} />;
       case "gap_fill":
       case "short_answer":

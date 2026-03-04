@@ -23,11 +23,9 @@ export default function SignUpPage() {
 
     const result = await signUp(formData)
 
+    // signUp redirects on success, so if we get here it's an error
     if (result?.error) {
       setError(result.error)
-      setIsLoading(false)
-    } else if (result?.success) {
-      setSuccess(true)
       setIsLoading(false)
     }
   }

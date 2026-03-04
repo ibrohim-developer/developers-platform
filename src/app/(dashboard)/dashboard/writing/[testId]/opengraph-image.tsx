@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { createClient } from "@/lib/supabase/server";
+import { findOne } from "@/lib/strapi/api";
 
 export const alt = "BandUp IELTS Writing Practice Test";
 export const size = { width: 1200, height: 630 };
@@ -11,12 +11,7 @@ export default async function Image({
   params: Promise<{ testId: string }>;
 }) {
   const { testId } = await params;
-  const supabase = await createClient();
-  const { data: test } = await supabase
-    .from("tests")
-    .select("title")
-    .eq("id", testId)
-    .single();
+  const test = await findOne("tests", testId, { fields: ["title"] });
 
   return new ImageResponse(
     (
@@ -32,37 +27,13 @@ export default async function Image({
           padding: "60px",
         }}
       >
-        <div
-          style={{
-            fontSize: 28,
-            color: "#60a5fa",
-            marginBottom: 20,
-            textTransform: "uppercase",
-            letterSpacing: "2px",
-            fontWeight: 700,
-          }}
-        >
+        <div style={{ fontSize: 28, color: "#60a5fa", marginBottom: 20, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 700 }}>
           Writing Practice Test
         </div>
-        <div
-          style={{
-            fontSize: 56,
-            fontWeight: 800,
-            color: "white",
-            textAlign: "center",
-            maxWidth: "900px",
-            lineHeight: 1.2,
-          }}
-        >
+        <div style={{ fontSize: 56, fontWeight: 800, color: "white", textAlign: "center", maxWidth: "900px", lineHeight: 1.2 }}>
           {test?.title || "IELTS Writing Mock Exam"}
         </div>
-        <div
-          style={{
-            fontSize: 24,
-            color: "#94a3b8",
-            marginTop: 30,
-          }}
-        >
+        <div style={{ fontSize: 24, color: "#94a3b8", marginTop: 30 }}>
           bandup.uz — Free IELTS Preparation
         </div>
       </div>

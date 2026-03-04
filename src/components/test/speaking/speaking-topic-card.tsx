@@ -1,4 +1,5 @@
-import { Clock, MessageSquare } from "lucide-react";
+import Link from "next/link";
+import { Clock, MessageSquare, Mic } from "lucide-react";
 import { DifficultyDots } from "@/components/test/common/difficulty-dots";
 
 export interface SpeakingTopicItem {
@@ -47,6 +48,13 @@ export function SpeakingTopicCard({ topic }: { topic: SpeakingTopicItem }) {
         <span className="bg-primary/10 text-primary px-3 py-1.5 rounded-lg font-black text-xs tracking-widest uppercase">
           Part {topic.partNumber}
         </span>
+        <Link
+          href={`/dashboard/speaking/${topic.id}`}
+          className="flex items-center gap-1.5 bg-primary text-primary-foreground px-4 py-1.5 rounded-lg font-bold text-xs tracking-widest uppercase hover:bg-primary/90 transition-colors"
+        >
+          <Mic className="h-3.5 w-3.5" />
+          Practice
+        </Link>
       </div>
     </div>
   );

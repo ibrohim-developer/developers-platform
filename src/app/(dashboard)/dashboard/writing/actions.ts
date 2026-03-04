@@ -1,8 +1,8 @@
 "use server";
 
 import { unstable_cache } from "next/cache";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
+import { find } from "@/lib/strapi/api";
+import { getToken, getCurrentUser } from "@/lib/strapi/server";
 
 const PAGE_SIZE = 20;
 
@@ -18,38 +18,23 @@ interface WritingTest {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const getWritingTests = unstable_cache(
   async (): Promise<WritingTest[]> => {
-    const supabase = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    );
+    const tasks = await find("writing-tasks", {
+      filters: { test: { is_published: { $eq: true } } },
+      populate: {
+        test: { fields: ["title", "description", "difficulty_level", "is_published"] },
+      },
+    });
 
-    const { data: tasks } = await supabase
-      .from("writing_tasks")
-      .select(
-        `
-        id,
-        test_id,
-        tests!inner (
-          id,
-          title,
-          description,
-          difficulty_level,
-          is_published
-        )
-      `,
-      )
-      .eq("tests.is_published", true);
-
-    if (!tasks || tasks.length === 0) {
-      return [];
-    }
+    if (!tasks?.length) return [];
 
     const testMap = new Map<string, any>();
     tasks.forEach((task: any) => {
-      const test = task.tests;
-      if (!testMap.has(test.id)) {
-        testMap.set(test.id, {
-          id: test.id,
+      const test = task.test;
+      if (!test) return;
+      const testDocId = test.documentId;
+      if (!testMap.has(testDocId)) {
+        testMap.set(testDocId, {
+          id: testDocId,
           title: test.title,
           description: test.description ?? "",
           difficulty: test.difficulty_level ?? "medium",
@@ -57,7 +42,7 @@ const getWritingTests = unstable_cache(
           tasks: 0,
         });
       }
-      const testData = testMap.get(test.id);
+      const testData = testMap.get(testDocId);
       testData.tasks += 1;
     });
 
@@ -74,18 +59,23 @@ export async function fetchWritingTests(
   const allTests = await getWritingTests();
 
   const completedTestIds = new Set<string>();
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (session?.user) {
-    const { data: attempts } = await supabase
-      .from("test_attempts")
-      .select("test_id")
-      .eq("user_id", session.user.id)
-      .eq("module_type", "writing")
-      .in("status", ["completed", "evaluating"] as any);
-    attempts?.forEach((a) => completedTestIds.add(a.test_id));
+  const token = await getToken();
+  if (token) {
+    const user = await getCurrentUser();
+    if (user) {
+      const attempts = await find("test-attempts", {
+        filters: {
+          user: { id: { $eq: user.id } },
+          module_type: { $eq: "writing" },
+          status: { $in: ["completed", "evaluating"] },
+        },
+        populate: ["test"],
+        fields: ["status"],
+      }, token);
+      attempts?.forEach((a: any) => {
+        if (a.test?.documentId) completedTestIds.add(a.test.documentId);
+      });
+    }
   }
 
   const filtered = allTests

@@ -9,9 +9,10 @@ const nextConfig: NextConfig = {
         hostname: "lh3.googleusercontent.com",
       },
       {
-        protocol: "https",
-        hostname: "tzfatueonklvemdnhvjc.supabase.co",
-        pathname: "/storage/v1/object/public/**",
+        protocol: "http",
+        hostname: "localhost",
+        port: "1337",
+        pathname: "/uploads/**",
       },
     ],
     formats: ["image/avif", "image/webp"],

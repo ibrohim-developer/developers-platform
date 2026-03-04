@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, find } from "@/lib/strapi/api";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getAuthUser(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -24,59 +19,48 @@ export async function GET(request: NextRequest) {
   }
 
   // Fetch the test attempt
-  const { data: attempt, error: attemptError } = await supabase
-    .from("test_attempts")
-    .select("*")
-    .eq("id", attemptId)
-    .eq("user_id", user.id)
-    .single();
+  const attempts = await find("test-attempts", {
+    filters: {
+      documentId: { $eq: attemptId },
+      user: { id: { $eq: user.id } },
+    },
+    populate: ["test"],
+  });
 
-  if (attemptError || !attempt) {
+  const attempt = attempts?.[0];
+  if (!attempt) {
     return NextResponse.json(
       { error: "Test attempt not found" },
       { status: 404 }
     );
   }
 
-  // Fetch writing tasks for this test
-  const { data: tasks, error: tasksError } = await supabase
-    .from("writing_tasks")
-    .select("id, task_number, task_type, prompt, image_url, min_words, sample_answer")
-    .eq("test_id", (attempt as any).test_id)
-    .order("task_number");
+  const testDocId = attempt.test?.documentId;
 
-  if (tasksError) {
-    return NextResponse.json(
-      { error: "Failed to fetch writing tasks" },
-      { status: 500 }
-    );
-  }
+  // Fetch writing tasks for this test
+  const tasks = await find("writing-tasks", {
+    filters: { test: { documentId: { $eq: testDocId } } },
+    sort: ["task_number"],
+  });
 
   // Fetch writing submissions for this attempt
-  const { data: submissions, error: submissionsError } = await supabase
-    .from("writing_submissions")
-    .select("*")
-    .eq("attempt_id", attemptId);
-
-  if (submissionsError) {
-    return NextResponse.json(
-      { error: "Failed to fetch submissions" },
-      { status: 500 }
-    );
-  }
+  const submissions = await find("writing-submissions", {
+    filters: { test_attempt: { documentId: { $eq: attemptId } } },
+    populate: ["writing_task"],
+  });
 
   return NextResponse.json({
     attempt: {
-      id: (attempt as any).id,
-      testId: (attempt as any).test_id,
-      moduleType: (attempt as any).module_type,
-      status: (attempt as any).status,
-      bandScore: (attempt as any).band_score,
-      timeSpentSeconds: (attempt as any).time_spent_seconds,
-      completedAt: (attempt as any).completed_at,
+      id: attempt.documentId,
+      testId: testDocId,
+      moduleType: attempt.module_type,
+      status: attempt.status,
+      bandScore: attempt.band_score,
+      timeSpentSeconds: attempt.time_spent_seconds,
+      completedAt: attempt.completed_at,
     },
     tasks: (tasks ?? []).map((t: any) => ({
-      id: t.id,
+      id: t.documentId,
       taskNumber: t.task_number,
       taskType: t.task_type,
       prompt: t.prompt,
@@ -85,8 +69,8 @@ export async function GET(request: NextRequest) {
       sampleAnswer: t.sample_answer,
     })),
     submissions: (submissions ?? []).map((s: any) => ({
-      id: s.id,
-      taskId: s.task_id,
+      id: s.documentId,
+      taskId: s.writing_task?.documentId,
       content: s.content,
       wordCount: s.word_count,
       taskAchievementScore: s.task_achievement_score,

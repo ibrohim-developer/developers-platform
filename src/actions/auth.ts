@@ -1,30 +1,50 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { setToken, clearToken, getCurrentUser, STRAPI_URL } from '@/lib/strapi/server'
 
 export async function signUp(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   const fullName = formData.get('fullName') as string
 
-  const supabase = await createClient()
-
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
+  try {
+    const res = await fetch(`${STRAPI_URL}/api/auth/local/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: email.split('@')[0] + '_' + Date.now(),
+        email,
+        password,
         full_name: fullName,
-      },
-    },
-  })
+      }),
+    })
 
-  if (error) {
-    return { error: error.message }
+    const data = await res.json()
+
+    if (data.error) {
+      return { error: data.error.message }
+    }
+
+    await setToken(data.jwt)
+
+    // Strapi register only saves username/email/password by default,
+    // so update the user's full_name via admin API token.
+    if (fullName && data.user?.id) {
+      await fetch(`${STRAPI_URL}/api/users/${data.user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.STRAPI_API_TOKEN}`,
+        },
+        body: JSON.stringify({ full_name: fullName }),
+      })
+    }
+  } catch {
+    return { error: 'Something went wrong' }
   }
 
-  return { success: true, message: 'Check your email to confirm your account' }
+  redirect('/dashboard')
 }
 
 export async function signIn(formData: FormData) {
@@ -32,45 +52,58 @@ export async function signIn(formData: FormData) {
   const password = formData.get('password') as string
   const redirectTo = formData.get('redirect') as string | null
 
-  const supabase = await createClient()
+  try {
+    const res = await fetch(`${STRAPI_URL}/api/auth/local`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier: email, password }),
+    })
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
+    const data = await res.json()
 
-  if (error) {
-    return { error: error.message }
+    if (data.error) {
+      return { error: data.error.message }
+    }
+
+    await setToken(data.jwt)
+  } catch {
+    return { error: 'Something went wrong' }
   }
 
   redirect(redirectTo || '/dashboard')
 }
 
 export async function signOut() {
-  const supabase = await createClient()
-  await supabase.auth.signOut()
+  await clearToken()
   redirect('/')
 }
 
 export async function resetPassword(formData: FormData) {
   const email = formData.get('email') as string
 
-  const supabase = await createClient()
+  try {
+    const res = await fetch(`${STRAPI_URL}/api/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?type=recovery`,
-  })
+    const data = await res.json()
 
-  if (error) {
-    return { error: error.message }
+    if (data.error) {
+      return { error: data.error.message }
+    }
+
+    return { success: true, message: 'Check your email for password reset link' }
+  } catch {
+    return { error: 'Something went wrong' }
   }
-
-  return { success: true, message: 'Check your email for password reset link' }
 }
 
 export async function updatePassword(formData: FormData) {
   const password = formData.get('password') as string
   const confirmPassword = formData.get('confirmPassword') as string
+  const code = formData.get('code') as string
 
   if (password !== confirmPassword) {
     return { error: 'Passwords do not match' }
@@ -80,102 +113,55 @@ export async function updatePassword(formData: FormData) {
     return { error: 'Password must be at least 6 characters' }
   }
 
-  const supabase = await createClient()
+  try {
+    const res = await fetch(`${STRAPI_URL}/api/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code,
+        password,
+        passwordConfirmation: password,
+      }),
+    })
 
-  const { error } = await supabase.auth.updateUser({
-    password,
-  })
+    const data = await res.json()
 
-  if (error) {
-    return { error: error.message }
+    if (data.error) {
+      return { error: data.error.message }
+    }
+
+    return { success: true }
+  } catch {
+    return { error: 'Something went wrong' }
   }
-
-  return { success: true }
 }
 
 export async function getUser() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
+  const user = await getCurrentUser()
+  if (!user) return null
+
+  // Map to match the shape the frontend expects
+  return {
+    id: String(user.id),
+    email: user.email,
+    user_metadata: {
+      full_name: user.full_name,
+      avatar_url: user.avatar_url,
+    },
+  }
 }
 
-export async function signInWithTelegramCode(code: string) {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/telegram/verify-code`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code }),
-    }
-  )
-
-  const data = await response.json()
-
-  if (!response.ok || !data.token_hash) {
-    return { error: data.error || 'Failed to verify Telegram code' }
-  }
-
-  const supabase = await createClient()
-  const { error } = await supabase.auth.verifyOtp({
-    token_hash: data.token_hash,
-    type: 'magiclink',
-  })
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  redirect('/dashboard')
+// Telegram auth stubs — to be implemented later
+export async function signInWithTelegramCode(_code: string) {
+  return { error: 'Telegram auth not yet migrated to Strapi' }
 }
 
-export async function signInWithTelegramWidget(widgetData: Record<string, string | number>) {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/telegram/widget`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(widgetData),
-    }
-  )
-
-  const data = await response.json()
-
-  if (!response.ok || !data.token_hash) {
-    return { error: data.error || 'Failed to verify Telegram login' }
-  }
-
-  const supabase = await createClient()
-  const { error } = await supabase.auth.verifyOtp({
-    token_hash: data.token_hash,
-    type: 'magiclink',
-  })
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  redirect('/dashboard')
+export async function signInWithTelegramWidget(_widgetData: Record<string, string | number>) {
+  return { error: 'Telegram auth not yet migrated to Strapi' }
 }
 
 export async function signInWithGoogle() {
-  const supabase = await createClient()
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent',
-      },
-    },
-  })
-
-  if (error) {
-    return { error: error.message }
-  }
-
-  if (data?.url) {
-    redirect(data.url)
-  }
+  // Strapi Google OAuth — redirect URL is configured in Strapi admin
+  // (Settings → Providers → Google → Redirect URL = http://localhost:3000/auth/callback)
+  redirect(`${STRAPI_URL}/api/connect/google`)
 }

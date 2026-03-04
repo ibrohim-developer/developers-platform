@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, find, create } from "@/lib/strapi/api";
 import { calculateBandScore } from "@/lib/constants/test-config";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getAuthUser(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -28,94 +23,73 @@ export async function POST(request: NextRequest) {
   }
 
   // Fetch correct answers for all answered questions
-  const questionIds = Object.keys(answers);
-  const { data: questions, error: questionsError } = await supabase
-    .from("questions")
-    .select("id, correct_answer")
-    .in("id", questionIds);
+  const questionDocIds = Object.keys(answers);
+  const questions = await find("questions", {
+    filters: { documentId: { $in: questionDocIds } },
+    fields: ["correct_answer"],
+  });
 
-  if (questionsError || !questions) {
+  if (!questions?.length) {
     return NextResponse.json(
       { error: "Failed to fetch questions" },
       { status: 500 }
     );
   }
 
-  // Build a map of correct answers
   const correctAnswerMap = new Map(
-    questions.map((q: any) => [q.id, q.correct_answer])
+    questions.map((q: any) => [q.documentId, q.correct_answer])
   );
 
-  // Normalize answer for comparison (handles comma-separated multi-answers)
   const normalizeAnswer = (answer: string) =>
-    answer.split(',').map((s) => s.trim().toLowerCase()).sort().join(',');
+    answer.split(",").map((s) => s.trim().toLowerCase()).sort().join(",");
 
-  // Score each answer
   let rawScore = 0;
-  const scoredAnswers = questionIds.map((questionId) => {
+  const scoredAnswers = questionDocIds.map((questionId) => {
     const userAnswer = answers[questionId];
     const correctAnswer = correctAnswerMap.get(questionId);
     const isCorrect =
       correctAnswer !== undefined &&
       normalizeAnswer(userAnswer) === normalizeAnswer(correctAnswer);
-
     if (isCorrect) rawScore++;
-
     return { questionId, userAnswer, isCorrect };
   });
 
-  // Calculate band score
   const bandScore = calculateBandScore(rawScore);
 
-  // Create the test attempt as completed
-  const { data: attempt, error: attemptError } = await supabase
-    .from("test_attempts")
-    .insert({
-      user_id: user.id,
-      test_id: testId,
-      module_type: "reading",
-      status: "completed",
-      raw_score: rawScore,
-      band_score: bandScore,
-      completed_at: new Date().toISOString(),
-      time_spent_seconds: timeSpentSeconds,
-    } as any)
-    .select("id")
-    .single();
+  // Create the test attempt
+  const attempt = await create("test-attempts", {
+    user: user.id,
+    test: testId,
+    module_type: "reading",
+    status: "completed",
+    raw_score: rawScore,
+    band_score: bandScore,
+    completed_at: new Date().toISOString(),
+    time_spent_seconds: timeSpentSeconds,
+  });
 
-  if (attemptError || !attempt) {
+  if (!attempt) {
     return NextResponse.json(
       { error: "Failed to create test attempt" },
       { status: 500 }
     );
   }
 
-  const attemptId = (attempt as any).id;
-
   // Insert all user answers
-  const userAnswerRows = scoredAnswers.map((sa) => ({
-    attempt_id: attemptId,
-    question_id: sa.questionId,
-    user_answer: sa.userAnswer,
-    is_correct: sa.isCorrect,
-    points_earned: sa.isCorrect ? 1 : 0,
-  }));
-
-  const { error: insertError } = await supabase
-    .from("user_answers")
-    .insert(userAnswerRows as any);
-
-  if (insertError) {
-    return NextResponse.json(
-      { error: "Failed to save answers" },
-      { status: 500 }
-    );
+  for (const sa of scoredAnswers) {
+    await create("user-answers", {
+      test_attempt: attempt.documentId,
+      question: sa.questionId,
+      user_answer: sa.userAnswer,
+      is_correct: sa.isCorrect,
+      points_earned: sa.isCorrect ? 1 : 0,
+    });
   }
 
   return NextResponse.json({
-    attemptId,
+    attemptId: attempt.documentId,
     rawScore,
     bandScore,
-    totalQuestions: questionIds.length,
+    totalQuestions: questionDocIds.length,
   });
 }

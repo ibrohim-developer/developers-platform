@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { createClient } from "@/lib/supabase/server";
+import { findOne } from "@/lib/strapi/api";
 
 export const alt = "BandUp IELTS Listening Practice Test";
 export const size = { width: 1200, height: 630 };
@@ -11,12 +11,7 @@ export default async function Image({
   params: Promise<{ testId: string }>;
 }) {
   const { testId } = await params;
-  const supabase = await createClient();
-  const { data: test } = await supabase
-    .from("tests")
-    .select("title")
-    .eq("id", testId)
-    .single();
+  const test = await findOne("tests", testId, { fields: ["title"] });
 
   return new ImageResponse(
     (

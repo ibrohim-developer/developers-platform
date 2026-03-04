@@ -1,36 +1,10 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const COOKIE_NAME = 'strapi_jwt'
+
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({
-    request: { headers: request.headers },
-  })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
-          response = NextResponse.next({
-            request: { headers: request.headers },
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
-
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user ?? null
+  const token = request.cookies.get(COOKIE_NAME)?.value
+  const isAuthenticated = !!token
 
   // Public dashboard routes (accessible without auth for SEO)
   const publicPaths = ['/dashboard/reading', '/dashboard/listening', '/dashboard/writing', '/dashboard/speaking', '/dashboard/full-mock-test']
@@ -44,7 +18,7 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith(path)
   )
 
-  if (isProtected && !user) {
+  if (isProtected && !isAuthenticated) {
     const redirectUrl = new URL('/sign-in', request.url)
     redirectUrl.searchParams.set('redirect', request.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
@@ -56,11 +30,11 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith(path)
   )
 
-  if (isAuthPath && user) {
+  if (isAuthPath && isAuthenticated) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  return response
+  return NextResponse.next()
 }
 
 export const config = {

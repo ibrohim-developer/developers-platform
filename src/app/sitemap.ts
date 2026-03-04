@@ -1,29 +1,27 @@
 import type { MetadataRoute } from "next";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { find } from "@/lib/strapi/api";
 
 const BASE = "https://bandup.uz";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [{ data: readingPassages }, { data: listeningSections }, { data: writingTasks }] =
-    await Promise.all([
-      supabase
-        .from("reading_passages")
-        .select("test_id, tests!inner(id, updated_at, is_published)")
-        .eq("tests.is_published", true),
-      supabase
-        .from("listening_sections")
-        .select("test_id, tests!inner(id, updated_at, is_published)")
-        .eq("tests.is_published", true),
-      supabase
-        .from("writing_tasks")
-        .select("test_id, tests!inner(id, updated_at, is_published)")
-        .eq("tests.is_published", true),
-    ]);
+  const [readingPassages, listeningSections, writingTasks] = await Promise.all([
+    find("reading-passages", {
+      filters: { test: { is_published: { $eq: true } } },
+      populate: { test: { fields: ["title", "updatedAt"] } },
+      fields: ["passage_number"],
+    }),
+    find("listening-sections", {
+      filters: { test: { is_published: { $eq: true } } },
+      populate: { test: { fields: ["title", "updatedAt"] } },
+      fields: ["section_number"],
+    }),
+    find("writing-tasks", {
+      filters: { test: { is_published: { $eq: true } } },
+      populate: { test: { fields: ["title", "updatedAt"] } },
+      fields: ["task_number"],
+    }),
+  ]);
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: BASE, lastModified: new Date(), changeFrequency: "weekly", priority: 1 },
@@ -35,20 +33,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const seen = new Set<string>();
 
   const addTestRoutes = (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any[] | null,
     module: string
   ): MetadataRoute.Sitemap => {
     if (!data) return [];
     const routes: MetadataRoute.Sitemap = [];
     for (const row of data) {
-      const key = `${module}/${row.test_id}`;
+      const test = row.test;
+      if (!test) continue;
+      const key = `${module}/${test.documentId}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      const test = row.tests as { id: string; updated_at: string };
       routes.push({
-        url: `${BASE}/dashboard/${module}/${test.id}`,
-        lastModified: new Date(test.updated_at),
+        url: `${BASE}/dashboard/${module}/${test.documentId}`,
+        lastModified: new Date(test.updatedAt),
         changeFrequency: "weekly" as const,
         priority: 0.8,
       });

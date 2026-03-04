@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { create } from '@/lib/strapi/api'
 
 export async function POST(request: NextRequest) {
   const body = await request.json()
@@ -13,22 +13,20 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const supabase = await createClient()
+  try {
+    await create('business-inquiries', {
+      name,
+      phone,
+      learning_centre_name,
+      students_size: String(students_size),
+      message: message || null,
+    })
 
-  const { error } = await (supabase as any).from('business_inquiries').insert({
-    name,
-    phone,
-    learning_centre_name,
-    students_size: String(students_size),
-    message: message || null,
-  })
-
-  if (error) {
+    return NextResponse.json({ message: 'Inquiry submitted successfully' })
+  } catch {
     return NextResponse.json(
       { error: 'Failed to submit inquiry. Please try again.' },
       { status: 500 }
     )
   }
-
-  return NextResponse.json({ message: 'Inquiry submitted successfully' })
 }

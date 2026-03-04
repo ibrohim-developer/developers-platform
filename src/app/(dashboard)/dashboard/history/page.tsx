@@ -1,5 +1,6 @@
 import Link from '@/components/no-prefetch-link'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser, getToken } from '@/lib/strapi/server'
+import { find } from '@/lib/strapi/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -7,20 +8,20 @@ import { History, Headphones, BookOpen, PenTool, ExternalLink } from 'lucide-rea
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function HistoryPage() {
-  const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const token = await getToken()
+  const user = token ? await getCurrentUser() : null
 
   let attempts: any[] | null = null
 
   if (user) {
-    const { data } = await supabase
-      .from('test_attempts')
-      .select('id, module_type, created_at, band_score, status')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(50)
-    attempts = data
+    attempts = await find('test-attempts', {
+      filters: {
+        user: { id: { $eq: user.id } },
+      },
+      sort: ['createdAt:desc'],
+      fields: ['module_type', 'band_score', 'status', 'createdAt'],
+      pagination: { pageSize: 50 },
+    }, token!)
   }
 
   return (
@@ -49,7 +50,7 @@ export default async function HistoryPage() {
             <div className="space-y-4">
               {attempts.map((attempt) => (
                 <div
-                  key={attempt.id}
+                  key={attempt.documentId}
                   className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-4">
@@ -65,7 +66,7 @@ export default async function HistoryPage() {
                     <div className="min-w-0">
                       <p className="font-medium capitalize">{attempt.module_type} Test</p>
                       <p className="text-sm text-muted-foreground truncate">
-                        {new Date(attempt.created_at).toLocaleDateString('en-US', {
+                        {new Date(attempt.createdAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric',
@@ -85,7 +86,7 @@ export default async function HistoryPage() {
                       </Badge>
                     </div>
                     {attempt.status === 'completed' && (
-                      <Link href={`/dashboard/results/${attempt.id}`}>
+                      <Link href={`/dashboard/results/${attempt.documentId}`}>
                         <Button variant="ghost" size="icon">
                           <ExternalLink className="h-4 w-4" />
                         </Button>

@@ -23,10 +23,10 @@ export async function GET(request: Request) {
           path: '/',
           maxAge: 30 * 24 * 60 * 60,
         })
-        return NextResponse.redirect(`${origin}/dashboard/reading`)
+        return NextResponse.redirect(`${origin}/dashboard`)
       }
     } catch {
-      // Fall through to error redirect
+      // Fall through
     }
   }
 

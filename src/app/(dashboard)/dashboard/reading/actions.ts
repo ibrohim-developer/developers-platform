@@ -1,8 +1,8 @@
 "use server";
 
 import { unstable_cache } from "next/cache";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
+import { find } from "@/lib/strapi/api";
+import { getToken, getCurrentUser } from "@/lib/strapi/server";
 
 const PAGE_SIZE = 20;
 
@@ -21,51 +21,24 @@ interface ReadingTest {
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const getReadingTests = unstable_cache(
   async (): Promise<ReadingTest[]> => {
-    const supabase = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    );
-
-    const [{ data: passages }, { data: questionCounts }] = await Promise.all([
-      supabase
-        .from("reading_passages")
-        .select(
-          `
-          id,
-          test_id,
-          passage_number,
-          tests!inner (
-            id,
-            title,
-            description,
-            difficulty_level,
-            is_published
-          )
-        `,
-        )
-        .eq("tests.is_published", true),
-      supabase
-        .from("questions")
-        .select("section_id")
-        .eq("module_type", "reading"),
-    ]);
-
-    if (!passages || passages.length === 0) {
-      return [];
-    }
-
-    const questionCountMap: Record<string, number> = {};
-    (questionCounts ?? []).forEach((q: any) => {
-      questionCountMap[q.section_id] =
-        (questionCountMap[q.section_id] || 0) + 1;
+    const passages = await find("reading-passages", {
+      filters: { test: { is_published: { $eq: true } } },
+      populate: {
+        test: { fields: ["title", "description", "difficulty_level", "is_published"] },
+        questions: { fields: ["question_number"] },
+      },
     });
+
+    if (!passages?.length) return [];
 
     const testMap = new Map<string, any>();
     passages.forEach((passage: any) => {
-      const test = passage.tests;
-      if (!testMap.has(test.id)) {
-        testMap.set(test.id, {
-          id: test.id,
+      const test = passage.test;
+      if (!test) return;
+      const testDocId = test.documentId;
+      if (!testMap.has(testDocId)) {
+        testMap.set(testDocId, {
+          id: testDocId,
           title: test.title,
           description: test.description ?? "",
           difficulty: test.difficulty_level ?? "medium",
@@ -76,9 +49,9 @@ const getReadingTests = unstable_cache(
           type: "academic",
         });
       }
-      const testData = testMap.get(test.id);
+      const testData = testMap.get(testDocId);
       testData.passages += 1;
-      testData.questions += questionCountMap[passage.id] || 0;
+      testData.questions += (passage.questions ?? []).length;
     });
 
     return Array.from(testMap.values());
@@ -94,18 +67,23 @@ export async function fetchReadingTests(
   const allTests = await getReadingTests();
 
   const completedTestIds = new Set<string>();
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (session?.user) {
-    const { data: attempts } = await supabase
-      .from("test_attempts")
-      .select("test_id")
-      .eq("user_id", session.user.id)
-      .eq("module_type", "reading")
-      .eq("status", "completed");
-    attempts?.forEach((a) => completedTestIds.add(a.test_id));
+  const token = await getToken();
+  if (token) {
+    const user = await getCurrentUser();
+    if (user) {
+      const attempts = await find("test-attempts", {
+        filters: {
+          user: { id: { $eq: user.id } },
+          module_type: { $eq: "reading" },
+          status: { $eq: "completed" },
+        },
+        populate: ["test"],
+        fields: ["status"],
+      }, token);
+      attempts?.forEach((a: any) => {
+        if (a.test?.documentId) completedTestIds.add(a.test.documentId);
+      });
+    }
   }
 
   const filtered = allTests

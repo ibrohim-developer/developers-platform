@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, find, create } from "@/lib/strapi/api";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getAuthUser(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -21,48 +17,44 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { error } = await supabase.from("feature_notifications").insert({
-    user_id: user.id,
-    feature,
+  // Check if already subscribed
+  const existing = await find("feature-notifications", {
+    filters: {
+      user: { id: { $eq: user.id } },
+      feature: { $eq: feature },
+    },
   });
 
-  if (error) {
-    if (error.code === "23505") {
-      return NextResponse.json({ message: "Already subscribed" });
-    }
+  if (existing?.length) {
+    return NextResponse.json({ message: "Already subscribed" });
+  }
+
+  try {
+    await create("feature-notifications", {
+      user: user.id,
+      feature,
+    });
+    return NextResponse.json({ message: "Subscribed successfully" });
+  } catch {
     return NextResponse.json(
       { error: "Failed to subscribe" },
       { status: 500 }
     );
   }
-
-  return NextResponse.json({ message: "Subscribed successfully" });
 }
 
-export async function GET() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+export async function GET(request: NextRequest) {
+  const user = await getAuthUser(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data, error } = await supabase
-    .from("feature_notifications")
-    .select("feature")
-    .eq("user_id", user.id);
-
-  if (error) {
-    return NextResponse.json(
-      { error: "Failed to fetch notifications" },
-      { status: 500 }
-    );
-  }
+  const data = await find("feature-notifications", {
+    filters: { user: { id: { $eq: user.id } } },
+    fields: ["feature"],
+  });
 
   return NextResponse.json({
-    features: (data ?? []).map((d) => d.feature),
+    features: (data ?? []).map((d: any) => d.feature),
   });
 }

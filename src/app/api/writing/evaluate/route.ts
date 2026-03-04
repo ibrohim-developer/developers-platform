@@ -1,23 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, find, update } from "@/lib/strapi/api";
 import { evaluateEssay } from "@/lib/evaluate-essay";
 
 export const maxDuration = 120;
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getAuthUser(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { attemptId } = (await request.json()) as { attemptId: string };
-
   if (!attemptId) {
     return NextResponse.json(
       { error: "attemptId is required" },
@@ -26,32 +20,32 @@ export async function POST(request: NextRequest) {
   }
 
   // Verify the attempt belongs to this user and is in "evaluating" status
-  const { data: attempt, error: attemptError } = await supabase
-    .from("test_attempts")
-    .select("id, test_id, status, user_id")
-    .eq("id", attemptId)
-    .single();
+  const attempts = await find("test-attempts", {
+    filters: { documentId: { $eq: attemptId } },
+    populate: ["user", "test"],
+  });
 
-  if (attemptError || !attempt) {
+  const attempt = attempts?.[0];
+  if (!attempt) {
     return NextResponse.json(
       { error: "Test attempt not found" },
       { status: 404 }
     );
   }
 
-  if ((attempt as any).user_id !== user.id) {
+  if (attempt.user?.id !== user.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
-  if ((attempt as any).status !== "evaluating") {
+  if (attempt.status !== "evaluating") {
     return NextResponse.json({ error: "Already evaluated" }, { status: 400 });
   }
 
   // Fetch writing submissions for this attempt
-  const { data: submissions } = await supabase
-    .from("writing_submissions")
-    .select("id, task_id, content")
-    .eq("attempt_id", attemptId);
+  const submissions = await find("writing-submissions", {
+    filters: { test_attempt: { documentId: { $eq: attemptId } } },
+    populate: ["writing_task"],
+  });
 
   if (!submissions?.length) {
     return NextResponse.json(
@@ -60,35 +54,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Fetch writing tasks for prompts and metadata
-  const taskIds = submissions.map((s: any) => s.task_id);
-  const { data: tasks } = await supabase
-    .from("writing_tasks")
-    .select("id, task_number, task_type, prompt, min_words")
-    .in("id", taskIds);
-
-  if (!tasks?.length) {
-    return NextResponse.json(
-      { error: "Writing tasks not found" },
-      { status: 404 }
-    );
-  }
-
-  const taskMap = new Map(tasks.map((t: any) => [t.id, t]));
-
   // Evaluate all essays in parallel
   const evaluationPromises = submissions.map(async (sub: any) => {
-    const task = taskMap.get(sub.task_id);
-    if (!task) return { submissionId: sub.id, evaluation: null, task: null };
+    const task = sub.writing_task;
+    if (!task) return { submissionDocId: sub.documentId, evaluation: null, task: null };
 
     const evaluation = await evaluateEssay(
-      (task as any).prompt,
-      (task as any).task_type,
+      task.prompt,
+      task.task_type,
       sub.content,
-      (task as any).min_words
+      task.min_words
     );
 
-    return { submissionId: sub.id, evaluation, task };
+    return { submissionDocId: sub.documentId, evaluation, task };
   });
 
   const results = await Promise.all(evaluationPromises);
@@ -97,17 +75,14 @@ export async function POST(request: NextRequest) {
   for (const r of results) {
     if (!r.evaluation) continue;
 
-    await supabase
-      .from("writing_submissions")
-      .update({
-        task_achievement_score: r.evaluation.taskAchievementScore,
-        coherence_score: r.evaluation.coherenceScore,
-        lexical_score: r.evaluation.lexicalScore,
-        grammar_score: r.evaluation.grammarScore,
-        overall_band_score: r.evaluation.overallBandScore,
-        feedback: r.evaluation.feedback,
-      } as any)
-      .eq("id", r.submissionId);
+    await update("writing-submissions", r.submissionDocId, {
+      task_achievement_score: r.evaluation.taskAchievementScore,
+      coherence_score: r.evaluation.coherenceScore,
+      lexical_score: r.evaluation.lexicalScore,
+      grammar_score: r.evaluation.grammarScore,
+      overall_band_score: r.evaluation.overallBandScore,
+      feedback: r.evaluation.feedback,
+    });
   }
 
   // Calculate overall band score
@@ -130,14 +105,11 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Update attempt to completed with band score
-  await supabase
-    .from("test_attempts")
-    .update({
-      status: "completed",
-      band_score: bandScore,
-    } as any)
-    .eq("id", attemptId);
+  // Update attempt to completed
+  await update("test-attempts", attemptId, {
+    status: "completed",
+    band_score: bandScore,
+  });
 
   return NextResponse.json({ success: true, bandScore });
 }

@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthUser, create } from "@/lib/strapi/api";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getAuthUser(request);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -27,60 +22,36 @@ export async function POST(request: NextRequest) {
   }
 
   // Create the test attempt with "evaluating" status
-  const { data: attempt, error: attemptError } = await supabase
-    .from("test_attempts")
-    .insert({
-      user_id: user.id,
-      test_id: testId,
-      module_type: "writing",
-      status: "evaluating",
-      band_score: null,
-      completed_at: new Date().toISOString(),
-      time_spent_seconds: timeSpentSeconds,
-    } as any)
-    .select("id")
-    .single();
+  const attempt = await create("test-attempts", {
+    user: user.id,
+    test: testId,
+    module_type: "writing",
+    status: "evaluating",
+    completed_at: new Date().toISOString(),
+    time_spent_seconds: timeSpentSeconds,
+  });
 
-  if (attemptError || !attempt) {
+  if (!attempt) {
     return NextResponse.json(
       { error: "Failed to create test attempt" },
       { status: 500 }
     );
   }
 
-  const attemptId = (attempt as any).id;
-
-  // Save writing submissions with null scores (evaluation happens async)
-  const submissionRows = submissions.map((sub) => {
+  // Save writing submissions with null scores
+  for (const sub of submissions) {
     const wordCount = sub.content
       .trim()
       .split(/\s+/)
       .filter((w: string) => w).length;
 
-    return {
-      attempt_id: attemptId,
-      task_id: sub.taskId,
+    await create("writing-submissions", {
+      test_attempt: attempt.documentId,
+      writing_task: sub.taskId,
       content: sub.content,
       word_count: wordCount,
-      task_achievement_score: null,
-      coherence_score: null,
-      lexical_score: null,
-      grammar_score: null,
-      overall_band_score: null,
-      feedback: null,
-    };
-  });
-
-  const { error: insertError } = await supabase
-    .from("writing_submissions")
-    .insert(submissionRows as any);
-
-  if (insertError) {
-    return NextResponse.json(
-      { error: "Failed to save submissions" },
-      { status: 500 }
-    );
+    });
   }
 
-  return NextResponse.json({ attemptId });
+  return NextResponse.json({ attemptId: attempt.documentId });
 }
